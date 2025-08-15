@@ -1,0 +1,88 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <DTSERVER>20240812120000[-3:BRT]</DTSERVER>
+      <LANGUAGE>POR</LANGUAGE>
+      <FI>
+        <ORG>BRADESCO</ORG>
+        <FID>0237</FID>
+      </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>20240812120000</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>BRL</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>237</BANKID>
+          <ACCTID>7890-1</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20240801000000[-3:BRT]</DTSTART>
+          <DTEND>20240831000000[-3:BRT]</DTEND>
+          
+          <!-- Salário Funcionários -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240802000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-8750.00</TRNAMT>
+            <FITID>BRAD2024080201</FITID>
+            <MEMO>FOLHA PAGTO FUNCIONARIOS AGOSTO/2024</MEMO>
+          </STMTTRN>
+          
+          <!-- Recebimento Vendas -->
+          <STMTTRN>
+            <TRNTYPE>CREDIT</TRNTYPE>
+            <DTPOSTED>20240807000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>12500.00</TRNAMT>
+            <FITID>BRAD2024080702</FITID>
+            <MEMO>RECEBIMENTO CARTAO CREDITO CIELO</MEMO>
+          </STMTTRN>
+          
+          <!-- Impostos Federais -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240812000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-1850.00</TRNAMT>
+            <FITID>BRAD2024081203</FITID>
+            <MEMO>DARF 2172 IR RETIDO FONT</MEMO>
+          </STMTTRN>
+          
+          <!-- Fornecedor Materiais -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240818000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-4200.00</TRNAMT>
+            <FITID>BRAD2024081804</FITID>
+            <MEMO>TED FORNECEDOR PAPELARIA OFFICE LTDA</MEMO>
+          </STMTTRN>
+          
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>45678.90</BALAMT>
+          <DTASOF>20240831120000[-3:BRT]</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

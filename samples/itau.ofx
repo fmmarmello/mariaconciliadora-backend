@@ -1,0 +1,102 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <DTSERVER>20240812120000[-3:BRT]</DTSERVER>
+      <LANGUAGE>POR</LANGUAGE>
+      <FI>
+        <ORG>ITAÚ UNIBANCO</ORG>
+        <FID>0341</FID>
+      </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>20240812120000</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>BRL</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>341</BANKID>
+          <ACCTID>12345-6</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20240801000000[-3:BRT]</DTSTART>
+          <DTEND>20240831000000[-3:BRT]</DTEND>
+          
+          <!-- TED Fornecedor -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240805000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-5250.00</TRNAMT>
+            <FITID>2024080501</FITID>
+            <CHECKNUM>000001</CHECKNUM>
+            <MEMO>TED CPF 123.456.789-00 ABC FORNECEDORES LTDA</MEMO>
+          </STMTTRN>
+          
+          <!-- Boleto Pago -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240808000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-1250.50</TRNAMT>
+            <FITID>2024080802</FITID>
+            <CHECKNUM>000002</CHECKNUM>
+            <MEMO>PGTO BOLETO CONCESSIONARIA ENERGIA</MEMO>
+          </STMTTRN>
+          
+          <!-- Depósito Cliente -->
+          <STMTTRN>
+            <TRNTYPE>CREDIT</TRNTYPE>
+            <DTPOSTED>20240810000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>8500.00</TRNAMT>
+            <FITID>2024081003</FITID>
+            <CHECKNUM>000003</CHECKNUM>
+            <MEMO>DOC CLIENTE MEGA LOJAS LTDA</MEMO>
+          </STMTTRN>
+          
+          <!-- Tarifa Bancária -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240815000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-45.00</TRNAMT>
+            <FITID>2024081504</FITID>
+            <CHECKNUM>000004</CHECKNUM>
+            <MEMO>TARIFA MENSAL PACOTE PME</MEMO>
+          </STMTTRN>
+          
+          <!-- PIX Fornecedor -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240820000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-3200.00</TRNAMT>
+            <FITID>2024082005</FITID>
+            <CHECKNUM>000005</CHECKNUM>
+            <MEMO>PIX CNPJ 12.345.678/0001-99 FORNECEDOR XYZ</MEMO>
+          </STMTTRN>
+          
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>28454.50</BALAMT>
+          <DTASOF>20240831120000[-3:BRT]</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

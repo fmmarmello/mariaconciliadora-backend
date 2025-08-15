@@ -1,0 +1,88 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <DTSERVER>20240812120000[-3:BRT]</DTSERVER>
+      <LANGUAGE>POR</LANGUAGE>
+      <FI>
+        <ORG>SANTANDER</ORG>
+        <FID>0033</FID>
+      </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>20240812120000</TRNUID>
+      <STATUS>
+        <CODE>0</CODE>
+        <SEVERITY>INFO</SEVERITY>
+      </STATUS>
+      <STMTRS>
+        <CURDEF>BRL</CURDEF>
+        <BANKACCTFROM>
+          <BANKID>033</BANKID>
+          <ACCTID>4567-8</ACCTID>
+          <ACCTTYPE>CHECKING</ACCTTYPE>
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20240801000000[-3:BRT]</DTSTART>
+          <DTEND>20240831000000[-3:BRT]</DTEND>
+          
+          <!-- Aluguel -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240803000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-3500.00</TRNAMT>
+            <FITID>SANT2024080301</FITID>
+            <MEMO>PAGTO ALUGUEL PREDIO COMERCIAL</MEMO>
+          </STMTTRN>
+          
+          <!-- Venda Produtos -->
+          <STMTTRN>
+            <TRNTYPE>CREDIT</TRNTYPE>
+            <DTPOSTED>20240809000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>6700.00</TRNAMT>
+            <FITID>SANT2024080902</FITID>
+            <MEMO>VENDA MERCADORIAS CLIENTE SILVA E SILVA</MEMO>
+          </STMTTRN>
+          
+          <!-- Condomínio -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240810000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-850.00</TRNAMT>
+            <FITID>SANT2024081003</FITID>
+            <MEMO>PAGTO CONDOMINIO ED COMERCIAL</MEMO>
+          </STMTTRN>
+          
+          <!-- Marketing -->
+          <STMTTRN>
+            <TRNTYPE>DEBIT</TRNTYPE>
+            <DTPOSTED>20240822000000[-3:BRT]</DTPOSTED>
+            <TRNAMT>-1200.00</TRNAMT>
+            <FITID>SANT2024082204</FITID>
+            <MEMO>PAGTO AGENCIA MARKETING DIGITAL</MEMO>
+          </STMTTRN>
+          
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>28900.75</BALAMT>
+          <DTASOF>20240831120000[-3:BRT]</DTASOF>
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>
