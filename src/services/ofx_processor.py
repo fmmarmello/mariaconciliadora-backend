@@ -12,15 +12,21 @@ class OFXProcessor:
         'caixa': 'CAIXA ECONÔMICA FEDERAL',
         'sicoob': 'SICOOB',
         'nubank': 'NUBANK',
-        'itau': 'ITAÚ'
+        'itau': 'ITAÚ',
+        'bradesco': 'BRADESCO',
+        'santander': 'SANTANDER',
+        'bb': 'BANCO DO BRASIL'
     }
     
     def __init__(self):
         self.bank_patterns = {
-            'caixa': ['caixa', 'cef', 'economica'],
-            'sicoob': ['sicoob', 'sicob'],
-            'nubank': ['nubank', 'nu bank', 'nu pagamentos'],
-            'itau': ['itau', 'itaú', 'banco itau']
+            'caixa': ['caixa', 'cef', 'economica', '104'],
+            'sicoob': ['sicoob', 'sicob', '756'],
+            'nubank': ['nubank', 'nu bank', 'nu pagamentos', '260'],
+            'itau': ['itau', 'itaú', 'banco itau', '341'],
+            'bradesco': ['bradesco', '237'],
+            'santander': ['santander', '033'],
+            'bb': ['banco do brasil', '001']
         }
     
     def identify_bank(self, ofx_content: str) -> str:

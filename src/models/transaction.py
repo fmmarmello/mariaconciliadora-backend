@@ -34,6 +34,31 @@ class Transaction(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 
+class ReconciliationRecord(db.Model):
+    __tablename__ = 'reconciliation_records'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    bank_transaction_id = db.Column(db.Integer, db.ForeignKey('transactions.id'), nullable=False)
+    company_entry_id = db.Column(db.Integer, db.ForeignKey('company_financial.id'), nullable=False)
+    match_score = db.Column(db.Float, nullable=False)  # Score de 0 a 1 indicando a qualidade do match
+    status = db.Column(db.String(20), default='pending')  # 'pending', 'confirmed', 'rejected'
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relacionamentos
+    bank_transaction = db.relationship('Transaction', foreign_keys=[bank_transaction_id])
+    company_entry = db.relationship('CompanyFinancial', foreign_keys=[company_entry_id])
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'bank_transaction_id': self.bank_transaction_id,
+            'company_entry_id': self.company_entry_id,
+            'match_score': self.match_score,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'bank_transaction': self.bank_transaction.to_dict() if self.bank_transaction else None,
+            'company_entry': self.company_entry.to_dict() if self.company_entry else None
+        }
 class UploadHistory(db.Model):
     __tablename__ = 'upload_history'
     
