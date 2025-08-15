@@ -52,7 +52,8 @@ class OFXProcessor:
         bank_name = self.identify_bank(ofx_content)
         
         # Parse do OFX
-        ofx = ofxparse.OfxParser.parse(file_path)
+        with open(file_path, 'rb') as file:
+            ofx = ofxparse.OfxParser.parse(file)
         
         result = {
             'bank_name': bank_name,
