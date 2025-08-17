@@ -399,20 +399,24 @@ def upload_xlsx():
         
         # Salva os dados no banco de dados
         saved_count = 0
-        skipped_count = 0
+        incomplete_entries = []
         errors = []
         
         for i, entry_data in enumerate(financial_data):
-            # Valida se a data é válida
+            # Verifica se a data é válida
             if entry_data['date'] is None:
-                skipped_count += 1
-                errors.append(f"Linha {i+1}: Data inválida ou ausente")
+                # Adiciona à lista de entradas incompletas em vez de pular
+                entry_data['row_number'] = i + 1
+                entry_data['error'] = "Data inválida ou ausente"
+                incomplete_entries.append(entry_data)
                 continue
             
             # Verifica se a descrição está vazia
             if not entry_data['description'] or entry_data['description'].strip() == '':
-                skipped_count += 1
-                errors.append(f"Linha {i+1}: Descrição ausente")
+                # Adiciona à lista de entradas incompletas em vez de pular
+                entry_data['row_number'] = i + 1
+                entry_data['error'] = "Descrição ausente"
+                incomplete_entries.append(entry_data)
                 continue
             
             financial_entry = CompanyFinancial(
@@ -436,15 +440,16 @@ def upload_xlsx():
         
         # Prepara a mensagem de retorno
         message = f'Arquivo processado com sucesso! {saved_count} entradas importadas.'
-        if skipped_count > 0:
-            message += f' {skipped_count} entradas foram ignoradas devido a dados incompletos.'
+        if len(incomplete_entries) > 0:
+            message += f' {len(incomplete_entries)} entradas incompletas encontradas e requerem correção.'
         
         response_data = {
             'success': True,
             'message': message,
             'data': {
                 'entries_imported': saved_count,
-                'entries_skipped': skipped_count
+                'entries_incomplete': len(incomplete_entries),
+                'incomplete_entries': incomplete_entries
             }
         }
         
@@ -462,6 +467,80 @@ def upload_xlsx():
                 os.rmdir(temp_dir)
         
         return jsonify({'error': f'Erro ao processar arquivo: {str(e)}'}), 500
+
+@transactions_bp.route('/upload-xlsx-corrected', methods=['POST'])
+def upload_xlsx_corrected():
+    """
+    Endpoint para upload e processamento de dados corrigidos
+    """
+    try:
+        # Obtém os dados corrigidos do corpo da requisição
+        data = request.get_json()
+        
+        if not data or 'entries' not in data:
+            return jsonify({'error': 'Nenhum dado enviado'}), 400
+        
+        corrected_entries = data['entries']
+        
+        # Salva os dados corrigidos no banco de dados
+        saved_count = 0
+        errors = []
+        
+        for i, entry_data in enumerate(corrected_entries):
+            try:
+                # Valida os dados corrigidos
+                if not entry_data.get('date'):
+                    errors.append(f"Entrada {i+1}: Data ausente")
+                    continue
+                
+                if not entry_data.get('description') or entry_data['description'].strip() == '':
+                    errors.append(f"Entrada {i+1}: Descrição ausente")
+                    continue
+                
+                # Converte a data para o formato correto
+                if isinstance(entry_data['date'], str):
+                    from datetime import datetime
+                    entry_data['date'] = datetime.fromisoformat(entry_data['date'].replace('Z', '+00:00')).date()
+                
+                financial_entry = CompanyFinancial(
+                    date=entry_data['date'],
+                    description=entry_data['description'],
+                    amount=float(entry_data.get('amount', 0)),
+                    category=entry_data.get('category', ''),
+                    cost_center=entry_data.get('cost_center', ''),
+                    department=entry_data.get('department', ''),
+                    project=entry_data.get('project', ''),
+                    transaction_type=entry_data.get('transaction_type', 'expense')
+                )
+                db.session.add(financial_entry)
+                saved_count += 1
+            except Exception as e:
+                errors.append(f"Entrada {i+1}: Erro ao processar - {str(e)}")
+        
+        db.session.commit()
+        
+        # Prepara a mensagem de retorno
+        message = f'Dados corrigidos processados com sucesso! {saved_count} entradas importadas.'
+        if errors:
+            message += f' {len(errors)} entradas com erros.'
+        
+        response_data = {
+            'success': True,
+            'message': message,
+            'data': {
+                'entries_imported': saved_count,
+                'entries_with_errors': len(errors)
+            }
+        }
+        
+        # Adiciona detalhes de erros se houver
+        if errors:
+            response_data['errors'] = errors
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        return jsonify({'error': f'Erro ao processar dados corrigidos: {str(e)}'}), 500
 
 @transactions_bp.route('/company-financial', methods=['GET'])
 def get_company_financial():
