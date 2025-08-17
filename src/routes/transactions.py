@@ -399,7 +399,22 @@ def upload_xlsx():
         
         # Salva os dados no banco de dados
         saved_count = 0
-        for entry_data in financial_data:
+        skipped_count = 0
+        errors = []
+        
+        for i, entry_data in enumerate(financial_data):
+            # Valida se a data é válida
+            if entry_data['date'] is None:
+                skipped_count += 1
+                errors.append(f"Linha {i+1}: Data inválida ou ausente")
+                continue
+            
+            # Verifica se a descrição está vazia
+            if not entry_data['description'] or entry_data['description'].strip() == '':
+                skipped_count += 1
+                errors.append(f"Linha {i+1}: Descrição ausente")
+                continue
+            
             financial_entry = CompanyFinancial(
                 date=entry_data['date'],
                 description=entry_data['description'],
@@ -419,15 +434,33 @@ def upload_xlsx():
         os.remove(temp_path)
         os.rmdir(temp_dir)
         
-        return jsonify({
+        # Prepara a mensagem de retorno
+        message = f'Arquivo processado com sucesso! {saved_count} entradas importadas.'
+        if skipped_count > 0:
+            message += f' {skipped_count} entradas foram ignoradas devido a dados incompletos.'
+        
+        response_data = {
             'success': True,
-            'message': f'Arquivo processado com sucesso! {saved_count} entradas importadas.',
+            'message': message,
             'data': {
-                'entries_imported': saved_count
+                'entries_imported': saved_count,
+                'entries_skipped': skipped_count
             }
-        })
+        }
+        
+        # Adiciona detalhes de erros se houver
+        if errors:
+            response_data['errors'] = errors
+        
+        return jsonify(response_data)
         
     except Exception as e:
+        # Remove o arquivo temporário em caso de erro
+        if 'temp_path' in locals() and os.path.exists(temp_path):
+            os.remove(temp_path)
+            if os.path.exists(temp_dir):
+                os.rmdir(temp_dir)
+        
         return jsonify({'error': f'Erro ao processar arquivo: {str(e)}'}), 500
 
 @transactions_bp.route('/company-financial', methods=['GET'])
