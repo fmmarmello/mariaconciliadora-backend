@@ -17,7 +17,9 @@ class XLSXProcessor:
             'cost_center': ['centro de custo', 'cost center'],
             'department': ['departamento', 'department'],
             'project': ['projeto', 'project'],
-            'transaction_type': ['tipo', 'type', 'transaction type']
+            'transaction_type': ['tipo', 'type', 'transaction type'],
+            'observations': ['observações', 'observations', 'obs'],
+            'monthly_report_value': ['valor para relat mensal', 'valor para relatório mensal', 'monthly report value']
         }
     
     def parse_xlsx_file(self, file_path: str) -> List[Dict[str, Any]]:
@@ -42,8 +44,12 @@ class XLSXProcessor:
                     'cost_center': str(row.get('cost_center', '')),
                     'department': str(row.get('department', '')),
                     'project': str(row.get('project', '')),
-                    'transaction_type': self._determine_transaction_type(row)
+                    'transaction_type': self._determine_transaction_type(row),
+                    'observations': str(row.get('observations', '')),
+                    'monthly_report_value': self._parse_amount(row.get('monthly_report_value'))
                 }
+                if 'saldo' in entry['description'].lower():
+                    continue
                 financial_data.append(entry)
             
             return financial_data
@@ -79,9 +85,9 @@ class XLSXProcessor:
     def _determine_transaction_type(self, row) -> str:
         """Determina se é despesa ou receita"""
         transaction_type = row.get('transaction_type', '').lower()
-        if transaction_type in ['despesa', 'expense', 'débito', 'debit']:
+        if transaction_type in ['despesa', 'expense', 'débito', 'debit', 'retirada sócio',  'impostos / tributos', 'tarifas bancárias', 'juros / multa', 'seguro', 'emprestimo']:
             return 'expense'
-        elif transaction_type in ['receita', 'income', 'crédito', 'credit']:
+        elif transaction_type in ['reembolso','receita', 'income', 'crédito', 'credit','credito']:
             return 'income'
         else:
             # Determina pelo valor (negativo = despesa, positivo = receita)
