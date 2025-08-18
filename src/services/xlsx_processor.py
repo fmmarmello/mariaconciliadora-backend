@@ -2,6 +2,8 @@ import pandas as pd
 from typing import List, Dict, Any
 from datetime import datetime
 import re
+from src.services.duplicate_detection_service import DuplicateDetectionService
+import hashlib
 
 class XLSXProcessor:
     """
@@ -21,6 +23,7 @@ class XLSXProcessor:
             'observations': ['observações', 'observations', 'obs'],
             'monthly_report_value': ['valor para relat mensal', 'valor para relatório mensal', 'monthly report value']
         }
+        self.duplicate_service = DuplicateDetectionService()
     
     def parse_xlsx_file(self, file_path: str) -> List[Dict[str, Any]]:
         """
@@ -37,10 +40,10 @@ class XLSXProcessor:
             financial_data = []
             for _, row in df.iterrows():
                 entry = {
-                    'date': self._parse_date(row.get('date')),
+                    'date': self._parse_date(row.get('data')),
                     'description': str(row.get('description', '')),
-                    'amount': self._parse_amount(row.get('amount')),
-                    'category': str(row.get('category', '')),
+                    'amount': self._parse_amount(row.get('valor')),
+                    'category': str(row.get('tipo', '')),
                     'cost_center': str(row.get('cost_center', '')),
                     'department': str(row.get('department', '')),
                     'project': str(row.get('project', '')),
@@ -49,6 +52,7 @@ class XLSXProcessor:
                     'monthly_report_value': self._parse_amount(row.get('monthly_report_value'))
                 }
                 if 'saldo' in entry['description'].lower():
+                    #ignora se for saldo, aqui faremos esse calculo
                     continue
                 financial_data.append(entry)
             
@@ -69,7 +73,7 @@ class XLSXProcessor:
         if pd.isna(date_value):
             return None
         try:
-            return pd.to_datetime(date_value)
+            return pd.to_datetime(date_value).date()
         except:
             return None
     
@@ -84,12 +88,47 @@ class XLSXProcessor:
     
     def _determine_transaction_type(self, row) -> str:
         """Determina se é despesa ou receita"""
-        transaction_type = row.get('transaction_type', '').lower()
+        transaction_type = row.get('tipo', '').lower()
+        #TODO adicionar IA para interpretar tipos
         if transaction_type in ['despesa', 'expense', 'débito', 'debit', 'retirada sócio',  'impostos / tributos', 'tarifas bancárias', 'juros / multa', 'seguro', 'emprestimo']:
             return 'expense'
         elif transaction_type in ['reembolso','receita', 'income', 'crédito', 'credit','credito']:
             return 'income'
         else:
             # Determina pelo valor (negativo = despesa, positivo = receita)
-            amount = self._parse_amount(row.get('amount'))
+            amount = self._parse_amount(row.get('valor'))
             return 'expense' if amount < 0 else 'income'
+    
+    def detect_duplicates(self, entries: List[Dict]) -> List[int]:
+        """
+        Detecta possíveis entradas duplicadas
+        Returns a list of indices of duplicate entries
+        """
+        duplicates = []
+        seen = set()
+        
+        for i, entry in enumerate(entries):
+            # Verifica se a entrada já existe no banco de dados
+            is_duplicate = self.duplicate_service.check_financial_entry_duplicate(
+                entry.get('date'),
+                entry.get('amount'),
+                entry.get('description')
+            )
+            
+            if is_duplicate:
+                duplicates.append(i)
+                continue
+            
+            # Também verifica duplicatas dentro do próprio arquivo
+            key = (
+                entry.get('date'),
+                entry.get('amount'),
+                entry.get('description', '').lower().strip()
+            )
+            
+            if key in seen:
+                duplicates.append(i)
+            else:
+                seen.add(key)
+        
+        return duplicates

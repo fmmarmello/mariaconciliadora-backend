@@ -9,6 +9,7 @@ from src.services.ofx_processor import OFXProcessor
 from src.services.xlsx_processor import XLSXProcessor
 from src.services.ai_service import AIService
 from src.services.reconciliation_service import ReconciliationService
+from src.services.duplicate_detection_service import DuplicateDetectionService
 
 transactions_bp = Blueprint('transactions', __name__)
 
@@ -46,6 +47,38 @@ def upload_ofx():
         temp_path = os.path.join(temp_dir, filename)
         file.save(temp_path)
         
+        # Verifica se o arquivo é duplicado
+        file_hash = DuplicateDetectionService.calculate_file_hash(temp_path)
+        existing_file = DuplicateDetectionService.check_file_duplicate(file_hash)
+        
+        if existing_file:
+            # Remove o arquivo temporário
+            os.remove(temp_path)
+            os.rmdir(temp_dir)
+            
+            return jsonify({
+                'success': False,
+                'message': 'Arquivo já foi processado anteriormente.',
+                'data': {
+                    'items_imported': 0,
+                    'items_incomplete': 0,
+                    'duplicates_found': 0,
+                    'file_duplicate': True,
+                    'incomplete_items': [],
+                    'original_upload_date': existing_file.upload_date.isoformat() if existing_file.upload_date else None,
+                    'duplicate_details': {
+                        'file_level': {
+                            'is_duplicate': True,
+                            'original_upload_date': existing_file.upload_date.isoformat() if existing_file.upload_date else None
+                        },
+                        'entry_level': {
+                            'count': 0,
+                            'details': []
+                        }
+                    }
+                }
+            })
+        
         # Processa o arquivo OFX
         processor = OFXProcessor()
         ai_service = AIService()
@@ -57,8 +90,9 @@ def upload_ofx():
             # Valida as transações
             valid_transactions = processor.validate_transactions(ofx_data['transactions'])
             
-            # Detecta duplicatas
+            # Detecta duplicatas usando o processor
             duplicates = processor.detect_duplicates(valid_transactions)
+            duplicate_count = len(duplicates)
             
             # Aplica IA para categorização e detecção de anomalias
             categorized_transactions = ai_service.categorize_transactions_batch(valid_transactions)
@@ -66,19 +100,23 @@ def upload_ofx():
             
             # Salva as transações no banco de dados
             saved_count = 0
+            total_entries_processed = len(analyzed_transactions)
+            duplicate_entries_details = []
+            
             for transaction_data in analyzed_transactions:
-                # Verifica se a transação já existe (evita duplicatas)
-                existing = Transaction.query.filter_by(
-                    account_id=ofx_data['account_info'].get('account_id', ''),
-                    date=transaction_data['date'],
-                    amount=transaction_data['amount'],
-                    description=transaction_data['description']
-                ).first()
+                # Verifica se a transação já existe (evita duplicatas) usando o serviço unificado
+                account_id = ofx_data['account_info'].get('account_id', '')
+                is_duplicate = DuplicateDetectionService.check_transaction_duplicate(
+                    account_id,
+                    transaction_data['date'],
+                    transaction_data['amount'],
+                    transaction_data['description']
+                )
                 
-                if not existing:
+                if not is_duplicate:
                     transaction = Transaction(
                         bank_name=ofx_data['bank_name'],
-                        account_id=ofx_data['account_info'].get('account_id', ''),
+                        account_id=account_id,
                         transaction_id=transaction_data.get('transaction_id', ''),
                         date=transaction_data['date'],
                         amount=transaction_data['amount'],
@@ -90,13 +128,24 @@ def upload_ofx():
                     )
                     db.session.add(transaction)
                     saved_count += 1
+                else:
+                    # Adiciona detalhes da duplicata para o response
+                    duplicate_entries_details.append({
+                        'date': transaction_data['date'],
+                        'amount': transaction_data['amount'],
+                        'description': transaction_data['description']
+                    })
             
             # Salva o histórico de upload
             upload_record = UploadHistory(
                 filename=filename,
                 bank_name=ofx_data['bank_name'],
                 transactions_count=saved_count,
-                status='success'
+                status='success',
+                file_hash=file_hash,
+                duplicate_files_count=0,  # This file is not a duplicate
+                duplicate_entries_count=duplicate_count,
+                total_entries_processed=total_entries_processed
             )
             db.session.add(upload_record)
             
@@ -112,9 +161,22 @@ def upload_ofx():
                 'data': {
                     'bank_name': ofx_data['bank_name'],
                     'account_info': ofx_data['account_info'],
-                    'transactions_imported': saved_count,
-                    'duplicates_found': len(duplicates),
-                    'summary': ofx_data['summary']
+                    'items_imported': saved_count,
+                    'items_incomplete': 0,
+                    'duplicates_found': duplicate_count,
+                    'file_duplicate': False,
+                    'incomplete_items': [],
+                    'summary': ofx_data['summary'],
+                    'duplicate_details': {
+                        'file_level': {
+                            'is_duplicate': False,
+                            'original_upload_date': None
+                        },
+                        'entry_level': {
+                            'count': duplicate_count,
+                            'details': duplicate_entries_details
+                        }
+                    }
                 }
             })
             
@@ -125,7 +187,8 @@ def upload_ofx():
                 bank_name='unknown',
                 transactions_count=0,
                 status='error',
-                error_message=str(e)
+                error_message=str(e),
+                file_hash=file_hash if 'file_hash' in locals() else None
             )
             db.session.add(upload_record)
             db.session.commit()
@@ -393,14 +456,62 @@ def upload_xlsx():
         temp_path = os.path.join(temp_dir, filename)
         file.save(temp_path)
         
+        # Verifica se o arquivo é duplicado
+        file_hash = DuplicateDetectionService.calculate_file_hash(temp_path)
+        existing_file = DuplicateDetectionService.check_file_duplicate(file_hash)
+        
+        if existing_file:
+            # Remove o arquivo temporário
+            os.remove(temp_path)
+            os.rmdir(temp_dir)
+            
+            return jsonify({
+                'success': False,
+                'message': 'Arquivo já foi processado anteriormente.',
+                'data': {
+                    'items_imported': 0,
+                    'items_incomplete': 0,
+                    'duplicates_found': 0,
+                    'file_duplicate': True,
+                    'incomplete_items': [],
+                    'original_upload_date': existing_file.upload_date.isoformat() if existing_file.upload_date else None,
+                    'duplicate_details': {
+                        'file_level': {
+                            'is_duplicate': True,
+                            'original_upload_date': existing_file.upload_date.isoformat() if existing_file.upload_date else None
+                        },
+                        'entry_level': {
+                            'count': 0,
+                            'details': []
+                        }
+                    }
+                }
+            })
+        
         # Processa o arquivo XLSX
         processor = XLSXProcessor()
         financial_data = processor.parse_xlsx_file(temp_path)
+        
+        # Detecta entradas duplicadas
+        duplicate_indices = processor.detect_duplicates(financial_data)
+        duplicate_count = len(duplicate_indices)
+        duplicate_entries = []
+        
+        # Cria detalhes das entradas duplicadas
+        for i in duplicate_indices:
+            if i < len(financial_data):
+                entry = financial_data[i]
+                duplicate_entries.append({
+                    'date': entry.get('date'),
+                    'amount': entry.get('amount'),
+                    'description': entry.get('description')
+                })
         
         # Salva os dados no banco de dados
         saved_count = 0
         incomplete_entries = []
         errors = []
+        total_entries_processed = len(financial_data)
         
         for i, entry_data in enumerate(financial_data):
             # Verifica se a data é válida
@@ -419,18 +530,39 @@ def upload_xlsx():
                 incomplete_entries.append(entry_data)
                 continue
             
-            financial_entry = CompanyFinancial(
-                date=entry_data['date'],
-                description=entry_data['description'],
-                amount=entry_data['amount'],
-                category=entry_data['category'],
-                cost_center=entry_data['cost_center'],
-                department=entry_data['department'],
-                project=entry_data['project'],
-                transaction_type=entry_data['transaction_type']
+            # Verifica se a entrada já existe (evita duplicatas)
+            is_duplicate = DuplicateDetectionService.check_financial_entry_duplicate(
+                entry_data['date'],
+                entry_data['amount'],
+                entry_data['description']
             )
-            db.session.add(financial_entry)
-            saved_count += 1
+            
+            if not is_duplicate:
+                financial_entry = CompanyFinancial(
+                    date=entry_data['date'],
+                    description=entry_data['description'],
+                    amount=entry_data['amount'],
+                    category=entry_data['category'],
+                    cost_center=entry_data['cost_center'],
+                    department=entry_data['department'],
+                    project=entry_data['project'],
+                    transaction_type=entry_data['transaction_type']
+                )
+                db.session.add(financial_entry)
+                saved_count += 1
+        
+        # Salva o histórico de upload
+        upload_record = UploadHistory(
+            filename=filename,
+            bank_name='xlsx_file',
+            transactions_count=saved_count,
+            status='success',
+            file_hash=file_hash,
+            duplicate_files_count=0,  # This file is not a duplicate
+            duplicate_entries_count=duplicate_count,
+            total_entries_processed=total_entries_processed
+        )
+        db.session.add(upload_record)
         
         db.session.commit()
         
@@ -442,14 +574,28 @@ def upload_xlsx():
         message = f'Arquivo processado com sucesso! {saved_count} entradas importadas.'
         if len(incomplete_entries) > 0:
             message += f' {len(incomplete_entries)} entradas incompletas encontradas e requerem correção.'
+        if duplicate_count > 0:
+            message += f' {duplicate_count} entradas duplicadas foram ignoradas.'
         
         response_data = {
             'success': True,
             'message': message,
             'data': {
-                'entries_imported': saved_count,
-                'entries_incomplete': len(incomplete_entries),
-                'incomplete_entries': incomplete_entries
+                'items_imported': saved_count,
+                'items_incomplete': len(incomplete_entries),
+                'duplicates_found': duplicate_count,
+                'file_duplicate': False,
+                'incomplete_items': incomplete_entries,
+                'duplicate_details': {
+                    'file_level': {
+                        'is_duplicate': False,
+                        'original_upload_date': None
+                    },
+                    'entry_level': {
+                        'count': duplicate_count,
+                        'details': duplicate_entries
+                    }
+                }
             }
         }
         
@@ -528,8 +674,21 @@ def upload_xlsx_corrected():
             'success': True,
             'message': message,
             'data': {
-                'entries_imported': saved_count,
-                'entries_with_errors': len(errors)
+                'items_imported': saved_count,
+                'items_incomplete': 0,
+                'duplicates_found': 0,
+                'file_duplicate': False,
+                'incomplete_items': [],
+                'duplicate_details': {
+                    'file_level': {
+                        'is_duplicate': False,
+                        'original_upload_date': None
+                    },
+                    'entry_level': {
+                        'count': 0,
+                        'details': []
+                    }
+                }
             }
         }
         

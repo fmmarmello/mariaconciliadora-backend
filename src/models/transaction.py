@@ -70,6 +70,12 @@ class UploadHistory(db.Model):
     status = db.Column(db.String(20), default='success')  # 'success', 'error', 'partial'
     error_message = db.Column(db.Text, nullable=True)
     
+    # New fields for duplicate tracking
+    file_hash = db.Column(db.String(64), nullable=True)  # SHA-256 hash of the file
+    duplicate_files_count = db.Column(db.Integer, default=0)  # Number of duplicate files detected
+    duplicate_entries_count = db.Column(db.Integer, default=0)  # Number of duplicate entries detected
+    total_entries_processed = db.Column(db.Integer, default=0)  # Total entries processed (including duplicates)
+    
     def to_dict(self):
         return {
             'id': self.id,
@@ -78,6 +84,10 @@ class UploadHistory(db.Model):
             'upload_date': self.upload_date.isoformat() if self.upload_date else None,
             'transactions_count': self.transactions_count,
             'status': self.status,
-            'error_message': self.error_message
+            'error_message': self.error_message,
+            'file_hash': self.file_hash,
+            'duplicate_files_count': self.duplicate_files_count,
+            'duplicate_entries_count': self.duplicate_entries_count,
+            'total_entries_processed': self.total_entries_processed
         }
 
