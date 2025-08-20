@@ -33,17 +33,20 @@ class XLSXProcessor:
             # Lê o arquivo XLSX
             df = pd.read_excel(file_path)
             
-            # Normaliza os nomes das colunas
-            df.columns = [self._normalize_column_name(col) for col in df.columns]
+            # Mapeia os nomes das colunas para os nomes padrão
+            column_mapping = self._get_column_mapping(df.columns)
+
+            # Renomeia as colunas do DataFrame
+            df.rename(columns=column_mapping, inplace=True)
             
             # Converte para lista de dicionários
             financial_data = []
             for _, row in df.iterrows():
                 entry = {
-                    'date': self._parse_date(row.get('data')),
+                    'date': self._parse_date(row.get('date')),
                     'description': str(row.get('description', '')),
-                    'amount': self._parse_amount(row.get('valor')),
-                    'category': str(row.get('tipo', '')),
+                    'amount': self._parse_amount(row.get('amount')),
+                    'category': str(row.get('category', '')),
                     'cost_center': str(row.get('cost_center', '')),
                     'department': str(row.get('department', '')),
                     'project': str(row.get('project', '')),
@@ -60,12 +63,25 @@ class XLSXProcessor:
             
         except Exception as e:
             raise Exception(f"Erro ao processar arquivo XLSX: {str(e)}")
-    
+
+    def _get_column_mapping(self, columns: List[str]) -> Dict[str, str]:
+        """Cria um mapeamento de nomes de colunas para os nomes padrão"""
+        mapping = {}
+        normalized_columns = {self._normalize_column_name(col): col for col in columns}
+
+        for standard_name, possible_names in self.supported_columns.items():
+            for possible_name in possible_names:
+                normalized_possible_name = self._normalize_column_name(possible_name)
+                if normalized_possible_name in normalized_columns:
+                    mapping[normalized_columns[normalized_possible_name]] = standard_name
+                    break # Pega a primeira correspondência
+        return mapping
+
     def _normalize_column_name(self, column_name: str) -> str:
         """Normaliza nomes de colunas para padrão consistente"""
         column_name = str(column_name).strip().lower()
         # Remove acentos e caracteres especiais
-        column_name = re.sub(r'[^\w\s]', '', column_name)
+        column_name = re.sub(r'[^a-zA-Z0-9\s]', '', column_name)
         return column_name
     
     def _parse_date(self, date_value) -> datetime:

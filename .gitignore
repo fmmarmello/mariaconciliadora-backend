@@ -19,6 +19,8 @@ lib64/
 parts/
 sdist/
 var/
+wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -31,7 +33,6 @@ MANIFEST
 *.spec
 
 # Installer logs
-debug.log
 pip-log.txt
 pip-delete-this-directory.txt
 
@@ -45,8 +46,10 @@ htmlcov/
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
 .hypothesis/
 .pytest_cache/
+cover/
 
 # Translations
 *.mo
@@ -69,7 +72,7 @@ instance/
 docs/_build/
 
 # PyBuilder
-.target/
+target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -82,12 +85,13 @@ ipython_config.py
 .python-version
 
 # pipenv
-Pipfile.lock
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having sub-dependencies with platform-specific dependencies, it may be better to ignore
+#   Pipfile.lock.
+# Pipfile.lock
 
-# poetry
-poetry.lock
-
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+# PEP 582; used by poetry, pdm and other tools
 __pypackages__/
 
 # Celery stuff
@@ -99,10 +103,10 @@ celerybeat.pid
 
 # Environments
 .env
-.env.*
 .venv
-venv/
 env/
+venv/
+ENV/
 env.bak/
 venv.bak/
 
@@ -119,15 +123,19 @@ venv.bak/
 # mypy
 .mypy_cache/
 .dmypy.json
+dmypy.json
 
 # Pyre type checker
 .pyre/
 
-# pytype static type analyzer
+# pytype static analyzer
 .pytype/
 
 # Cython debug symbols
 cython_debug/
 
-# dotenv environment variables
-.env.local
+# VSCode files
+.vscode/
+
+# Database files
+src/database/app.db
