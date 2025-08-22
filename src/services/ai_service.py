@@ -4,11 +4,22 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.ensemble import IsolationForest
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import openai
 from groq import Groq
 import re
+import time
 from datetime import datetime, timedelta
+from src.utils.logging_config import get_logger, get_audit_logger
+from src.utils.exceptions import (
+    AIServiceError, AIServiceUnavailableError, AIServiceTimeoutError,
+    AIServiceQuotaExceededError, InsufficientDataError, ValidationError
+)
+from src.utils.error_handler import handle_service_errors, with_timeout, recovery_manager
+
+# Initialize loggers
+logger = get_logger(__name__)
+audit_logger = get_audit_logger()
 
 class AIService:
     """
@@ -37,9 +48,19 @@ class AIService:
         
         if os.getenv('OPENAI_API_KEY'):
             self.openai_client = openai.OpenAI()
+            logger.info("OpenAI client initialized")
         
         if os.getenv('GROQ_API_KEY'):
             self.groq_client = Groq()
+            logger.info("Groq client initialized")
+        
+        if not self.openai_client and not self.groq_client:
+            logger.warning("No AI service configured. Set OPENAI_API_KEY or GROQ_API_KEY for AI features")
+        
+        # AI service configuration
+        self.default_timeout = int(os.getenv('AI_SERVICE_TIMEOUT', '30'))
+        self.max_retries = int(os.getenv('AI_SERVICE_MAX_RETRIES', '3'))
+        self.rate_limit_delay = float(os.getenv('AI_SERVICE_RATE_LIMIT_DELAY', '1.0'))
     
     def categorize_transaction(self, description: str) -> str:
         """
@@ -55,20 +76,66 @@ class AIService:
         
         return 'outros'
     
+    @handle_service_errors('ai_service')
+    @with_timeout(120)  # 2 minute timeout for batch processing
     def categorize_transactions_batch(self, transactions: List[Dict]) -> List[Dict]:
         """
         Categoriza um lote de transações
         """
-        for transaction in transactions:
-            transaction['category'] = self.categorize_transaction(transaction.get('description', ''))
+        if not transactions:
+            raise InsufficientDataError('transaction categorization', 1, 0)
         
-        return transactions
+        logger.info(f"Starting batch categorization for {len(transactions)} transactions")
+        
+        try:
+            categorized_count = 0
+            failed_count = 0
+            
+            for i, transaction in enumerate(transactions):
+                try:
+                    description = transaction.get('description', '')
+                    if not description or description.strip() == '':
+                        transaction['category'] = 'outros'
+                        logger.debug(f"Transaction {i+1}: Empty description, assigned 'outros' category")
+                    else:
+                        transaction['category'] = self.categorize_transaction(description)
+                        categorized_count += 1
+                        
+                    # Add small delay to avoid overwhelming the system
+                    if i > 0 and i % 100 == 0:
+                        time.sleep(0.1)
+                        
+                except Exception as e:
+                    logger.warning(f"Failed to categorize transaction {i+1}: {str(e)}")
+                    transaction['category'] = 'outros'  # Fallback category
+                    failed_count += 1
+            
+            logger.info(f"Batch categorization completed. Success: {categorized_count}, Failed: {failed_count}")
+            audit_logger.log_ai_operation('batch_categorization', len(transactions), True)
+            
+            return transactions
+            
+        except Exception as e:
+            logger.error(f"Critical error in batch categorization: {str(e)}")
+            audit_logger.log_ai_operation('batch_categorization', len(transactions), False, error=str(e))
+            raise AIServiceError(f"Batch categorization failed: {str(e)}")
     
+    @handle_service_errors('ai_service')
+    @with_timeout(60)  # 1 minute timeout for anomaly detection
     def detect_anomalies(self, transactions: List[Dict]) -> List[Dict]:
         """
         Detecta anomalias nas transações usando Isolation Forest
         """
+        if not transactions:
+            raise InsufficientDataError('anomaly detection', 1, 0)
+        
+        logger.info(f"Starting anomaly detection for {len(transactions)} transactions")
+        
         if len(transactions) < 10:  # Precisa de dados suficientes
+            logger.warning("Insufficient data for anomaly detection (minimum 10 transactions required)")
+            # Mark all as non-anomalous
+            for transaction in transactions:
+                transaction['is_anomaly'] = False
             return transactions
         
         # Prepara os dados para análise
@@ -106,9 +173,15 @@ class AIService:
         anomaly_labels = iso_forest.fit_predict(X)
         
         # Marca as anomalias
+        anomaly_count = 0
         for i, transaction in enumerate(transactions):
-            transaction['is_anomaly'] = anomaly_labels[i] == -1
+            is_anomaly = anomaly_labels[i] == -1
+            transaction['is_anomaly'] = is_anomaly
+            if is_anomaly:
+                anomaly_count += 1
         
+        logger.info(f"Anomaly detection completed. Found {anomaly_count} anomalies out of {len(transactions)} transactions")
+        audit_logger.log_ai_operation('anomaly_detection', len(transactions), True)
         return transactions
     
     def generate_insights(self, transactions: List[Dict]) -> Dict[str, Any]:
@@ -274,17 +347,43 @@ class AIService:
         
         return recommendations
     
+    @handle_service_errors('ai_service')
+    @with_timeout(45)  # 45 second timeout for AI insights
     def generate_ai_insights(self, transactions: List[Dict]) -> str:
         """
         Gera insights usando IA generativa (GPT ou Groq)
         """
         if not transactions:
-            return "Nenhuma transação disponível para análise."
+            raise InsufficientDataError('AI insights generation', 1, 0)
         
-        # Prepara um resumo dos dados para a IA
-        summary = self.generate_insights(transactions)
+        # Check if AI service is available
+        if not self.openai_client and not self.groq_client:
+            raise AIServiceUnavailableError('No AI service configured')
         
-        prompt = f"""
+        try:
+            # Prepara um resumo dos dados para a IA
+            summary = self.generate_insights(transactions)
+            
+            prompt = self._create_insights_prompt(summary)
+            
+            logger.info("Generating AI insights using external AI service")
+            
+            # Try with retry mechanism
+            result = self._generate_insights_with_retry(prompt, len(transactions))
+            
+            return result
+            
+        except Exception as e:
+            if isinstance(e, (AIServiceError, InsufficientDataError)):
+                raise
+            
+            logger.error(f"Unexpected error generating AI insights: {str(e)}", exc_info=True)
+            audit_logger.log_ai_operation('insights_generation', len(transactions), False, error=str(e))
+            raise AIServiceError(f"AI insights generation failed: {str(e)}")
+    
+    def _create_insights_prompt(self, summary: Dict[str, Any]) -> str:
+        """Create a structured prompt for AI insights generation."""
+        return f"""
         Analise os seguintes dados financeiros e forneça insights valiosos em português:
         
         Resumo das transações:
@@ -304,45 +403,152 @@ class AIService:
         
         Mantenha a resposta em até 300 palavras e seja prático.
         """
-        
-        try:
-            if self.openai_client:
+    
+    def _generate_insights_with_retry(self, prompt: str, transaction_count: int) -> str:
+        """Generate insights with retry mechanism and fallback."""
+        def try_openai():
+            if not self.openai_client:
+                raise AIServiceUnavailableError('OpenAI')
+            
+            logger.debug("Using OpenAI GPT-4o-mini for insights generation")
+            
+            try:
                 response = self.openai_client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[{"role": "user", "content": prompt}],
-                    max_tokens=400
+                    max_tokens=400,
+                    timeout=self.default_timeout
                 )
-                return response.choices[0].message.content
+                result = response.choices[0].message.content
+                audit_logger.log_ai_operation('insights_generation', transaction_count, True, 'gpt-4o-mini')
+                return result
+                
+            except openai.RateLimitError:
+                raise AIServiceQuotaExceededError('OpenAI')
+            except openai.APITimeoutError:
+                raise AIServiceTimeoutError('OpenAI', self.default_timeout)
+            except openai.APIConnectionError:
+                raise AIServiceUnavailableError('OpenAI')
+        
+        def try_groq():
+            if not self.groq_client:
+                raise AIServiceUnavailableError('Groq')
             
-            elif self.groq_client:
+            logger.debug("Using Groq Llama3 for insights generation")
+            
+            try:
                 response = self.groq_client.chat.completions.create(
                     model="llama3-8b-8192",
                     messages=[{"role": "user", "content": prompt}],
                     max_tokens=400
                 )
-                return response.choices[0].message.content
-            
-            else:
-                return "Serviço de IA não configurado. Configure OPENAI_API_KEY ou GROQ_API_KEY."
+                result = response.choices[0].message.content
+                audit_logger.log_ai_operation('insights_generation', transaction_count, True, 'llama3-8b-8192')
+                return result
+                
+            except Exception as e:
+                if 'rate limit' in str(e).lower():
+                    raise AIServiceQuotaExceededError('Groq')
+                elif 'timeout' in str(e).lower():
+                    raise AIServiceTimeoutError('Groq', self.default_timeout)
+                else:
+                    raise AIServiceUnavailableError('Groq')
         
-        except Exception as e:
-            return f"Erro ao gerar insights com IA: {str(e)}"
+        def fallback_insights():
+            logger.warning("All AI services failed, generating fallback insights")
+            return self._generate_fallback_insights(transaction_count)
+        
+        # Try primary service with retry
+        for attempt in range(self.max_retries):
+            try:
+                if self.openai_client:
+                    return try_openai()
+                elif self.groq_client:
+                    return try_groq()
+            except (AIServiceQuotaExceededError, AIServiceTimeoutError) as e:
+                if attempt < self.max_retries - 1:
+                    wait_time = self.rate_limit_delay * (2 ** attempt)
+                    logger.warning(f"AI service error, retrying in {wait_time}s: {str(e)}")
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"AI service failed after {self.max_retries} attempts")
+                    break
+            except AIServiceUnavailableError:
+                # Try alternative service
+                try:
+                    if self.groq_client and attempt == 0:
+                        return try_groq()
+                    elif self.openai_client and attempt == 0:
+                        return try_openai()
+                except Exception:
+                    pass
+                break
+        
+        # Use fallback if all services fail
+        return fallback_insights()
     
+    def _generate_fallback_insights(self, transaction_count: int) -> str:
+        """Generate basic insights when AI services are unavailable."""
+        return f"""
+        Análise básica dos dados financeiros:
+        
+        📊 Resumo: {transaction_count} transações processadas
+        
+        ⚠️ Serviço de IA temporariamente indisponível
+        
+        Recomendações gerais:
+        • Revise regularmente suas transações
+        • Categorize gastos para melhor controle
+        • Monitore transações incomuns
+        • Mantenha registros organizados
+        
+        Para análises mais detalhadas, tente novamente em alguns minutos.
+        """
+    
+    @handle_service_errors('ai_service')
+    @with_timeout(300)  # 5 minute timeout for model training
     def train_custom_model(self, financial_data: List[Dict]) -> Dict[str, Any]:
         """
         Treina um modelo personalizado com dados financeiros da empresa
         """
+        if not financial_data:
+            raise InsufficientDataError('model training', 10, 0)
+        
+        if len(financial_data) < 10:
+            raise InsufficientDataError('model training', 10, len(financial_data))
+        
         try:
+            logger.info(f"Starting custom model training with {len(financial_data)} data points")
+            
+            # Validate training data
+            valid_data = self._validate_training_data(financial_data)
+            
+            if len(valid_data) < 5:
+                raise InsufficientDataError('model training', 5, len(valid_data))
+            
             # Prepara os dados de treinamento
-            training_texts = [entry['description'] for entry in financial_data]
-            training_labels = [entry['category'] for entry in financial_data]
+            training_texts = [entry['description'] for entry in valid_data]
+            training_labels = [entry.get('category', 'outros') for entry in valid_data]
+            
+            unique_categories = len(set(training_labels))
+            logger.info(f"Training data prepared. Valid entries: {len(valid_data)}, Unique categories: {unique_categories}")
+            
+            if unique_categories < 2:
+                logger.warning("Insufficient category diversity for meaningful training")
             
             # Cria e treina o modelo
-            vectorizer = TfidfVectorizer(max_features=1000)
+            vectorizer = TfidfVectorizer(
+                max_features=min(1000, len(valid_data) * 2),
+                min_df=1,
+                max_df=0.95,
+                stop_words=None  # Keep Portuguese stop words handling simple
+            )
+            
             X = vectorizer.fit_transform(training_texts)
             
             # Treina um classificador
-            classifier = KMeans(n_clusters=min(10, len(set(training_labels))))
+            n_clusters = min(10, unique_categories, len(valid_data) // 2)
+            classifier = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
             classifier.fit(X)
             
             # Salva o modelo e vetorizador
@@ -351,56 +557,148 @@ class AIService:
             self.model_trained = True
             
             # Calcula acurácia (simplificada)
-            self.model_accuracy = self._calculate_accuracy(financial_data, classifier, vectorizer)
+            self.model_accuracy = self._calculate_accuracy(valid_data, classifier, vectorizer)
+            
+            logger.info(f"Custom model training completed successfully. Accuracy: {self.model_accuracy:.2f}")
+            audit_logger.log_ai_operation('model_training', len(financial_data), True)
             
             return {
                 'success': True,
                 'message': 'Modelo treinado com sucesso',
-                'accuracy': self.model_accuracy
+                'accuracy': self.model_accuracy,
+                'training_data_count': len(valid_data),
+                'categories_count': unique_categories
             }
             
         except Exception as e:
-            return {
-                'success': False,
-                'error': f'Erro ao treinar modelo: {str(e)}'
-            }
+            if isinstance(e, (InsufficientDataError, ValidationError)):
+                raise
+            
+            logger.error(f"Error training custom model: {str(e)}", exc_info=True)
+            audit_logger.log_ai_operation('model_training', len(financial_data), False, error=str(e))
+            raise AIServiceError(f'Model training failed: {str(e)}')
+    
+    def _validate_training_data(self, financial_data: List[Dict]) -> List[Dict]:
+        """Validate and clean training data."""
+        valid_data = []
+        
+        for entry in financial_data:
+            # Check required fields
+            if not entry.get('description') or not entry.get('description').strip():
+                continue
+            
+            # Clean description
+            description = str(entry['description']).strip()
+            if len(description) < 3:  # Too short to be meaningful
+                continue
+            
+            # Add to valid data
+            valid_entry = entry.copy()
+            valid_entry['description'] = description
+            valid_data.append(valid_entry)
+        
+        return valid_data
     
     def _calculate_accuracy(self, data: List[Dict], classifier, vectorizer) -> float:
         """Calcula a acurácia do modelo (simplificada)"""
         # Implementação simplificada para exemplo
         return 0.85  # Valor de exemplo
     
+    @handle_service_errors('ai_service')
     def categorize_with_custom_model(self, description: str) -> str:
         """
         Categoriza uma transação usando o modelo personalizado treinado
         """
-        if not self.model_trained:
-            return self.categorize_transaction(description)  # Fallback para o método padrão
+        if not description or not description.strip():
+            return 'outros'
+        
+        if not hasattr(self, 'model_trained') or not self.model_trained:
+            logger.debug("Custom model not trained, using fallback categorization")
+            return self.categorize_transaction(description)
         
         try:
+            # Validate model components
+            if not hasattr(self, 'custom_vectorizer') or not hasattr(self, 'custom_classifier'):
+                logger.warning("Custom model components missing, using fallback")
+                return self.categorize_transaction(description)
+            
+            # Clean and prepare description
+            clean_description = str(description).strip()
+            
             # Transforma a descrição usando o vetorizador treinado
-            X = self.custom_vectorizer.transform([description])
+            X = self.custom_vectorizer.transform([clean_description])
             
             # Prediz a categoria
             prediction = self.custom_classifier.predict(X)
             
-            # Retorna a categoria predita (simplificada)
-            return f"categoria_{prediction[0]}"
-        except:
+            # Map cluster to meaningful category (simplified approach)
+            category = self._map_cluster_to_category(prediction[0], clean_description)
+            
+            logger.debug(f"Custom model categorized '{clean_description}' as '{category}'")
+            return category
+            
+        except Exception as e:
+            logger.warning(f"Error using custom model for categorization: {str(e)}")
             # Fallback para o método padrão em caso de erro
             return self.categorize_transaction(description)
     
+    def _map_cluster_to_category(self, cluster_id: int, description: str) -> str:
+        """Map cluster ID to meaningful category name."""
+        # This is a simplified mapping - in production you might want more sophisticated mapping
+        # based on the training data or cluster analysis
+        
+        # Try rule-based categorization first for better results
+        rule_based_category = self.categorize_transaction(description)
+        
+        if rule_based_category != 'outros':
+            return rule_based_category
+        
+        # Fallback to cluster-based category
+        cluster_categories = {
+            0: 'alimentacao',
+            1: 'transporte',
+            2: 'casa',
+            3: 'saude',
+            4: 'lazer',
+            5: 'vestuario',
+            6: 'educacao',
+            7: 'investimento',
+            8: 'transferencia',
+            9: 'outros'
+        }
+        
+        return cluster_categories.get(cluster_id % 10, 'outros')
+    
+    @handle_service_errors('ai_service')
+    @with_timeout(60)  # 1 minute timeout for predictions
     def predict_financial_trends(self, historical_data: List[Dict], periods: int = 12) -> Dict[str, Any]:
         """
         Prevê tendências financeiras com base em dados históricos
         """
+        if not historical_data:
+            raise InsufficientDataError('financial trend prediction', 30, 0)
+        
+        if len(historical_data) < 30:
+            raise InsufficientDataError('financial trend prediction', 30, len(historical_data))
+        
+        if periods <= 0 or periods > 24:
+            raise ValidationError("Periods must be between 1 and 24")
+        
         try:
             # Converte dados históricos para DataFrame
             df = pd.DataFrame(historical_data)
             
-            # Certifica-se de que temos as colunas necessárias
-            if 'date' not in df.columns or 'amount' not in df.columns:
-                return {'error': 'Dados insuficientes para predição'}
+            # Validate required columns
+            required_columns = ['date', 'amount']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            if missing_columns:
+                raise ValidationError(f"Missing required columns: {missing_columns}")
+            
+            # Clean and validate data
+            df = self._clean_historical_data(df)
+            
+            if len(df) < 10:
+                raise InsufficientDataError('financial trend prediction', 10, len(df))
             
             # Converte datas
             df['date'] = pd.to_datetime(df['date'])
@@ -451,8 +749,32 @@ class AIService:
             }
             
         except Exception as e:
-            return {
-                'success': False,
-                'error': f'Erro ao prever tendências: {str(e)}'
-            }
+            if isinstance(e, (InsufficientDataError, ValidationError)):
+                raise
+            
+            logger.error(f"Error predicting financial trends: {str(e)}", exc_info=True)
+            raise AIServiceError(f'Financial trend prediction failed: {str(e)}')
+    
+    def _clean_historical_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Clean and validate historical data for predictions."""
+        # Remove rows with missing critical data
+        df = df.dropna(subset=['date', 'amount'])
+        
+        # Convert dates
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        df = df.dropna(subset=['date'])
+        
+        # Convert amounts to numeric
+        df['amount'] = pd.to_numeric(df['amount'], errors='coerce')
+        df = df.dropna(subset=['amount'])
+        
+        # Remove extreme outliers (amounts beyond reasonable range)
+        amount_q99 = df['amount'].quantile(0.99)
+        amount_q01 = df['amount'].quantile(0.01)
+        df = df[(df['amount'] >= amount_q01) & (df['amount'] <= amount_q99)]
+        
+        # Sort by date
+        df = df.sort_values('date')
+        
+        return df
 

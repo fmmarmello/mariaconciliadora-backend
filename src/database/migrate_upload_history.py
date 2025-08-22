@@ -31,8 +31,12 @@ def migrate_upload_history_table():
     # Commit changes and close connection
     conn.commit()
     conn.close()
-    
+    # Use proper logging instead of print
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("UploadHistory table migration completed successfully.")
     print("UploadHistory table migration completed successfully.")
+
 
 if __name__ == "__main__":
     migrate_upload_history_table()

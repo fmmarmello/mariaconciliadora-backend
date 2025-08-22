@@ -1,13 +1,13 @@
 import os
-import logging
 from datetime import datetime, timedelta
 from src.models.user import db
 from src.models.transaction import Transaction, UploadHistory
 from src.models.company_financial import CompanyFinancial
+from src.utils.logging_config import get_logger, get_audit_logger
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Initialize loggers
+logger = get_logger(__name__)
+audit_logger = get_audit_logger()
 
 class TestDataDeletionService:
     """
@@ -120,65 +120,96 @@ class TestDataDeletionService:
         try:
             # First confirmation: Identify and list the data that would be deleted
             if not force:
+                logger.info("=== TRIPLE CHECK DELETE - STEP 1 ===")
                 print("=== TRIPLE CHECK DELETE - STEP 1 ===")
                 test_data_summary = self.identify_test_data(days_old)
                 total_count = test_data_summary.get('total_count', 0)
                 if total_count == 0:
+                    logger.info("No test data found for deletion.")
                     print("No test data found for deletion.")
                     return False
                 
-                print(f"Found the following test data (older than {days_old} days):")
-                print(f"  - Transactions: {test_data_summary.get('transactions', 0)}")
-                print(f"  - Company Financial Entries: {test_data_summary.get('company_financial', 0)}")
-                print(f"  - Upload History Records: {test_data_summary.get('upload_history', 0)}")
-                print(f"  - Total Records: {total_count}")
+                message = f"Found the following test data (older than {days_old} days):"
+                details = [
+                    f"  - Transactions: {test_data_summary.get('transactions', 0)}",
+                    f"  - Company Financial Entries: {test_data_summary.get('company_financial', 0)}",
+                    f"  - Upload History Records: {test_data_summary.get('upload_history', 0)}",
+                    f"  - Total Records: {total_count}"
+                ]
+                
+                logger.info(message)
+                print(message)
+                for detail in details:
+                    logger.info(detail)
+                    print(detail)
                 
                 confirm1 = input("Do you want to proceed with listing the detailed data? (yes/no): ")
                 if confirm1.lower() != 'yes':
+                    logger.info("Deletion cancelled at step 1.")
                     print("Deletion cancelled at step 1.")
                     return False
             
             # Second confirmation: Confirm the deletion action with a warning
             if not force:
+                logger.info("=== TRIPLE CHECK DELETE - STEP 2 ===")
                 print("\n=== TRIPLE CHECK DELETE - STEP 2 ===")
                 test_data_details = self.get_test_data_details(days_old)
-                print(f"Detailed test data to be deleted:")
-                print(f"  - Transactions: {len(test_data_details.get('transactions', []))}")
-                print(f"  - Company Financial Entries: {len(test_data_details.get('company_financial', []))}")
-                print(f"  - Upload History Records: {len(test_data_details.get('upload_history', []))}")
                 
-                print("\nWARNING: This action will permanently delete the data listed above.")
-                print("This operation cannot be undone.")
+                details_message = "Detailed test data to be deleted:"
+                details = [
+                    f"  - Transactions: {len(test_data_details.get('transactions', []))}",
+                    f"  - Company Financial Entries: {len(test_data_details.get('company_financial', []))}",
+                    f"  - Upload History Records: {len(test_data_details.get('upload_history', []))}"
+                ]
+                
+                logger.info(details_message)
+                print(details_message)
+                for detail in details:
+                    logger.info(detail)
+                    print(detail)
+                
+                warning_msg = "WARNING: This action will permanently delete the data listed above. This operation cannot be undone."
+                logger.warning(warning_msg)
+                print(f"\n{warning_msg}")
                 
                 confirm2 = input("Do you want to proceed with the deletion? (yes/no): ")
                 if confirm2.lower() != 'yes':
+                    logger.info("Deletion cancelled at step 2.")
                     print("Deletion cancelled at step 2.")
                     return False
             
             # Third confirmation: Final confirmation before actual deletion
             if not force:
+                logger.info("=== TRIPLE CHECK DELETE - STEP 3 ===")
                 print("\n=== TRIPLE CHECK DELETE - STEP 3 ===")
-                print("This is your final confirmation.")
+                final_warning = "This is your final confirmation."
+                logger.warning(final_warning)
+                print(final_warning)
                 confirm3 = input("Do you really want to permanently delete all test data? Type 'DELETE' to confirm: ")
                 if confirm3 != 'DELETE':
+                    logger.info("Deletion cancelled at step 3.")
                     print("Deletion cancelled at step 3.")
                     return False
             
             # Perform the actual deletion
+            logger.info("Starting test data deletion process")
             print("\nDeleting test data...")
             result = self._delete_test_data(days_old)
             
             if result:
-                print("Test data deletion completed successfully.")
-                logger.info("Test data deletion completed successfully.")
+                success_msg = "Test data deletion completed successfully."
+                logger.info(success_msg)
+                print(success_msg)
             else:
-                print("Test data deletion failed.")
-                logger.error("Test data deletion failed.")
+                error_msg = "Test data deletion failed."
+                logger.error(error_msg)
+                print(error_msg)
             
             return result
             
         except Exception as e:
-            logger.error(f"Error during triple check delete: {str(e)}")
+            error_msg = f"Error during triple check delete: {str(e)}"
+            logger.error(error_msg, exc_info=True)
             print(f"Error during deletion: {str(e)}")
             return False
     
@@ -218,9 +249,13 @@ class TestDataDeletionService:
                 ).delete()
                 
                 # Log the deletion
-                logger.info(f"Deleted {deleted_transactions} transactions, "
-                           f"{deleted_financial} financial entries, "
-                           f"{deleted_upload_history} upload history records")
+                deletion_summary = f"Deleted {deleted_transactions} transactions, {deleted_financial} financial entries, {deleted_upload_history} upload history records"
+                logger.info(deletion_summary)
+                
+                # Audit log the deletion
+                audit_logger.log_database_operation('delete', 'transactions', deleted_transactions, True)
+                audit_logger.log_database_operation('delete', 'company_financial', deleted_financial, True)
+                audit_logger.log_database_operation('delete', 'upload_history', deleted_upload_history, True)
                 
                 print(f"Deleted {deleted_transactions} transactions")
                 print(f"Deleted {deleted_financial} company financial entries")
