@@ -17,11 +17,17 @@ import mimetypes
 import html
 import urllib.parse
 import hashlib
-import magic
+try:
+    import magic
+except ImportError:
+    magic = None
 from datetime import datetime, date, timedelta
 from typing import Any, Dict, List, Optional, Union, Callable
 from decimal import Decimal, InvalidOperation
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 from .exceptions import (
     ValidationError, RequiredFieldError, InvalidFormatError,
@@ -256,7 +262,8 @@ class FileValidator:
         """Validate file content based on extension."""
         if file_ext in ['.xlsx', '.xls']:
             # Try to read Excel file
-            pd.read_excel(file_path, nrows=1)
+            if pd is not None:
+                pd.read_excel(file_path, nrows=1)
         elif file_ext in ['.ofx', '.qfx']:
             # Try to read OFX file
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -758,13 +765,13 @@ class EnhancedFileValidator(FileValidator):
             # Check file content type using python-magic if available
             if self.check_content:
                 try:
-                    import magic
-                    file_type = magic.from_file(file_path, mime=True)
-                    if self.allowed_mime_types and file_type not in self.allowed_mime_types:
-                        result.add_error(f"File content type {file_type} doesn't match allowed types")
-                except ImportError:
-                    # python-magic not available, skip content type check
-                    pass
+                    if magic is not None:
+                        file_type = magic.from_file(file_path, mime=True)
+                        if self.allowed_mime_types and file_type not in self.allowed_mime_types:
+                            result.add_error(f"File content type {file_type} doesn't match allowed types")
+                    else:
+                        # python-magic not available, skip content type check
+                        pass
                 except Exception as e:
                     result.add_warning(f"Could not verify file content type: {str(e)}")
             

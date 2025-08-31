@@ -56,5 +56,5 @@ responses==0.24.1
 freezegun==1.4.0
 
 # Security and validation dependencies
-python-magic==0.4.27
+# python-magic==0.4.27  # Removed due to Windows compatibility issues
 bleach==6.1.0

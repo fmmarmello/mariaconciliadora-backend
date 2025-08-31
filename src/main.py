@@ -71,7 +71,7 @@ def serve(path):
 
 if __name__ == '__main__':
     # Use environment variable for debug mode, default to False for production safety
-    debug_mode = os.getenv('FLASK_DEBUG', 'false').lower().strip() in ['true', '1', 'yes', 'on']
+    debug_mode = os.getenv('FLASK_DEBUG', 'true').lower().strip() in ['true', '1', 'yes', 'on']
     port = int(os.getenv('FLASK_PORT', 5000))
     host = os.getenv('FLASK_HOST', '0.0.0.0')
     
