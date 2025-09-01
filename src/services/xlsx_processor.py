@@ -12,6 +12,14 @@ from src.utils.exceptions import (
 )
 from src.utils.error_handler import handle_service_errors, with_timeout, recovery_manager
 from src.utils.validators import validate_file_upload, company_financial_validator
+from src.utils.advanced_validation_engine import advanced_validation_engine
+from src.utils.cross_field_validation_engine import cross_field_validation_engine
+from src.utils.business_logic_validator import business_logic_validator
+from src.utils.financial_business_rules import financial_business_rules
+from src.utils.temporal_validation_engine import temporal_validation_engine
+from src.utils.referential_integrity_validator import referential_integrity_validator
+from src.services.data_completeness_analyzer import DataCompletenessAnalyzer
+from src.services.missing_data_handler import MissingDataHandler
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -35,6 +43,11 @@ class XLSXProcessor:
             'monthly_report_value': ['valor para relat mensal', 'valor para relatório mensal', 'monthly report value']
         }
         self.duplicate_service = DuplicateDetectionService()
+
+        # Initialize data quality services
+        self.completeness_analyzer = DataCompletenessAnalyzer()
+        self.missing_data_handler = MissingDataHandler()
+        self.data_quality_enabled = True
     
     @handle_service_errors('xlsx_processor')
     @with_timeout(120)  # 2 minute timeout for XLSX processing
@@ -85,7 +98,24 @@ class XLSXProcessor:
             
             # Validate processed data
             self._validate_processed_data(financial_data, filename)
-            
+
+            # Perform data quality analysis if enabled
+            if self.data_quality_enabled and financial_data:
+                try:
+                    logger.info("Performing data quality analysis on processed XLSX data")
+                    quality_result = self._analyze_data_quality(financial_data)
+                    # Return both data and quality analysis
+                    return {
+                        'financial_data': financial_data,
+                        'data_quality': quality_result
+                    }
+                except Exception as e:
+                    logger.warning(f"Data quality analysis failed: {str(e)}")
+                    return {
+                        'financial_data': financial_data,
+                        'data_quality': {'error': str(e)}
+                    }
+
             logger.info(f"XLSX parsing completed successfully. Processed: {len(financial_data)} entries")
             return financial_data
             
@@ -191,7 +221,7 @@ class XLSXProcessor:
         return financial_data
     
     def _process_single_row(self, row: pd.Series, index: int) -> Dict[str, Any]:
-        """Process a single XLSX row with validation."""
+        """Process a single XLSX row with comprehensive validation using all engines."""
         try:
             entry = {
                 'date': self._parse_date(row.get('data')),
@@ -205,17 +235,100 @@ class XLSXProcessor:
                 'observations': str(row.get('observations', '')),
                 'monthly_report_value': self._parse_amount(row.get('monthly_report_value'))
             }
-            
-            # Validate the entry using company financial validator
-            validation_result = company_financial_validator.validate_entry(entry)
-            
-            if not validation_result.is_valid:
-                logger.debug(f"Row {index + 1} validation failed: {validation_result.errors}")
+
+            # Comprehensive validation context
+            validation_context = {
+                'schema_name': 'company_financial',
+                'rule_group': 'company_financial',
+                'source': 'xlsx_processor',
+                'row_index': index + 1,
+                'validation_profile': 'comprehensive'
+            }
+
+            # Track validation results from all engines
+            all_errors = []
+            all_warnings = []
+
+            # 1. Advanced Validation Engine (existing)
+            try:
+                advanced_result = advanced_validation_engine.validate(
+                    entry,
+                    profile='company_financial',
+                    context=validation_context
+                )
+                all_errors.extend([f"Advanced: {err}" for err in advanced_result.errors])
+                all_warnings.extend([f"Advanced: {warn}" for warn in advanced_result.warnings])
+            except Exception as e:
+                logger.warning(f"Advanced validation engine error for row {index + 1}: {str(e)}")
+                all_warnings.append(f"Advanced validation engine failed: {str(e)}")
+
+            # 2. Cross-Field Validation Engine
+            try:
+                cross_field_result = cross_field_validation_engine.validate(
+                    entry, rule_group='financial_transaction', context=validation_context
+                )
+                all_errors.extend([f"Cross-field: {err}" for err in cross_field_result.errors])
+                all_warnings.extend([f"Cross-field: {warn}" for warn in cross_field_result.warnings])
+            except Exception as e:
+                logger.warning(f"Cross-field validation engine error for row {index + 1}: {str(e)}")
+                all_warnings.append(f"Cross-field validation engine failed: {str(e)}")
+
+            # 3. Business Logic Validator
+            try:
+                business_logic_result = business_logic_validator.validate(
+                    entry, rule_group='transaction_validation', context=validation_context
+                )
+                all_errors.extend([f"Business Logic: {err}" for err in business_logic_result.errors])
+                all_warnings.extend([f"Business Logic: {warn}" for warn in business_logic_result.warnings])
+            except Exception as e:
+                logger.warning(f"Business logic validator error for row {index + 1}: {str(e)}")
+                all_warnings.append(f"Business logic validator failed: {str(e)}")
+
+            # 4. Financial Business Rules
+            try:
+                financial_result = financial_business_rules.validate(
+                    entry, rule_group='transaction_processing', context=validation_context
+                )
+                all_errors.extend([f"Financial: {err}" for err in financial_result.errors])
+                all_warnings.extend([f"Financial: {warn}" for warn in financial_result.warnings])
+            except Exception as e:
+                logger.warning(f"Financial business rules error for row {index + 1}: {str(e)}")
+                all_warnings.append(f"Financial business rules failed: {str(e)}")
+
+            # 5. Temporal Validation Engine
+            try:
+                temporal_result = temporal_validation_engine.validate(
+                    entry, rule_group='date_validation', context=validation_context
+                )
+                all_errors.extend([f"Temporal: {err}" for err in temporal_result.errors])
+                all_warnings.extend([f"Temporal: {warn}" for warn in temporal_result.warnings])
+            except Exception as e:
+                logger.warning(f"Temporal validation engine error for row {index + 1}: {str(e)}")
+                all_warnings.append(f"Temporal validation engine failed: {str(e)}")
+
+            # 6. Referential Integrity Validator
+            try:
+                referential_result = referential_integrity_validator.validate(
+                    entry, rule_group='foreign_key_validation', context=validation_context
+                )
+                all_errors.extend([f"Referential: {err}" for err in referential_result.errors])
+                all_warnings.extend([f"Referential: {warn}" for warn in referential_result.warnings])
+            except Exception as e:
+                logger.warning(f"Referential integrity validator error for row {index + 1}: {str(e)}")
+                all_warnings.append(f"Referential integrity validator failed: {str(e)}")
+
+            # Check if entry is valid (no critical errors)
+            if all_errors:
+                logger.debug(f"Row {index + 1} comprehensive validation failed: {all_errors}")
                 # Return None for invalid entries - they will be skipped
                 return None
-            
+
+            # Log warnings if any
+            if all_warnings:
+                logger.debug(f"Row {index + 1} validation warnings: {all_warnings}")
+
             return entry
-            
+
         except Exception as e:
             logger.debug(f"Error processing row {index + 1}: {str(e)}")
             return None
@@ -801,3 +914,219 @@ class XLSXProcessor:
             analysis['recommendations'].append('File type could not be determined - manual review recommended')
 
         return analysis
+
+    def _analyze_data_quality(self, financial_data: List[Dict]) -> Dict[str, Any]:
+        """
+        Analyze data quality of processed XLSX financial data
+
+        Args:
+            financial_data: List of processed financial data dictionaries
+
+        Returns:
+            Dictionary with data quality analysis results
+        """
+        try:
+            logger.info(f"Analyzing data quality for {len(financial_data)} XLSX entries")
+
+            # Convert to DataFrame for analysis
+            df = pd.DataFrame(financial_data)
+
+            # Perform completeness analysis
+            completeness_report = self.completeness_analyzer.generate_completeness_report(df)
+
+            # Get imputation recommendations
+            recommendations = self.missing_data_handler.get_imputation_recommendations(df)
+
+            # Check for critical data quality issues specific to financial data
+            critical_issues = self._identify_critical_financial_issues(completeness_report, df)
+
+            # Auto-apply imputation if confidence is high
+            imputation_applied = False
+            imputed_data = None
+
+            if self._should_auto_impute_financial_data(completeness_report):
+                try:
+                    logger.info("Auto-applying imputation for financial data quality improvement")
+                    imputation_result = self.missing_data_handler.analyze_and_impute(df)
+                    imputed_data = imputation_result.imputed_data
+                    imputation_applied = True
+
+                    logger.info(f"Auto-imputation applied: {imputation_result.imputation_count} values imputed")
+                except Exception as e:
+                    logger.warning(f"Auto-imputation failed: {str(e)}")
+
+            quality_result = {
+                'completeness_analysis': completeness_report,
+                'recommendations': recommendations,
+                'critical_issues': critical_issues,
+                'auto_imputation_applied': imputation_applied,
+                'data_quality_score': self._calculate_financial_data_quality_score(completeness_report),
+                'processing_timestamp': datetime.now().isoformat()
+            }
+
+            if imputation_applied and imputed_data is not None:
+                quality_result['imputed_financial_data'] = imputed_data.to_dict('records')
+
+            logger.info(f"Financial data quality analysis completed. Score: {quality_result['data_quality_score']:.3f}")
+            return quality_result
+
+        except Exception as e:
+            logger.error(f"Error in financial data quality analysis: {str(e)}")
+            return {
+                'error': str(e),
+                'completeness_analysis': None,
+                'recommendations': [],
+                'critical_issues': [{'type': 'analysis_error', 'message': str(e)}],
+                'data_quality_score': 0.0
+            }
+
+    def _identify_critical_financial_issues(self, completeness_report: Dict[str, Any], df: pd.DataFrame) -> List[Dict[str, Any]]:
+        """
+        Identify critical data quality issues specific to financial data
+
+        Args:
+            completeness_report: Completeness analysis results
+            df: DataFrame with financial data
+
+        Returns:
+            List of critical financial issues
+        """
+        critical_issues = []
+
+        try:
+            # Check critical financial fields
+            critical_fields = ['date', 'amount', 'description']
+            for field in critical_fields:
+                if field in completeness_report.get('field_completeness', {}):
+                    completeness = completeness_report['field_completeness'][field]['completeness_score']
+                    if completeness < 0.9:  # Less than 90% complete for critical financial fields
+                        critical_issues.append({
+                            'type': 'critical_financial_field_incomplete',
+                            'field': field,
+                            'completeness': completeness,
+                            'severity': 'high',
+                            'message': f"Critical financial field '{field}' has low completeness ({completeness:.1%})"
+                        })
+
+            # Check for amount anomalies
+            if 'amount' in df.columns:
+                amounts = df['amount'].dropna()
+                if len(amounts) > 0:
+                    # Check for extreme outliers
+                    q1, q3 = amounts.quantile([0.25, 0.75])
+                    iqr = q3 - q1
+                    lower_bound = q1 - 3 * iqr
+                    upper_bound = q3 + 3 * iqr
+
+                    extreme_outliers = amounts[(amounts < lower_bound) | (amounts > upper_bound)]
+                    if len(extreme_outliers) > len(amounts) * 0.05:  # More than 5%
+                        critical_issues.append({
+                            'type': 'amount_anomalies',
+                            'affected_records': len(extreme_outliers),
+                            'percentage': len(extreme_outliers) / len(amounts),
+                            'severity': 'medium',
+                            'message': f"High number of extreme amount outliers detected ({len(extreme_outliers)} records)"
+                        })
+
+            # Check for missing transaction types
+            if 'transaction_type' in df.columns:
+                missing_types = df['transaction_type'].isnull().sum()
+                if missing_types > len(df) * 0.1:  # More than 10%
+                    critical_issues.append({
+                        'type': 'missing_transaction_types',
+                        'affected_records': missing_types,
+                        'percentage': missing_types / len(df),
+                        'severity': 'medium',
+                        'message': f"High number of missing transaction types ({missing_types} records)"
+                    })
+
+            # Check for data consistency issues
+            if len(df) > 0:
+                # Check for transactions with zero amount
+                if 'amount' in df.columns:
+                    zero_amounts = (df['amount'].fillna(0) == 0).sum()
+                    if zero_amounts > len(df) * 0.05:  # More than 5%
+                        critical_issues.append({
+                            'type': 'zero_amount_transactions',
+                            'affected_records': zero_amounts,
+                            'percentage': zero_amounts / len(df),
+                            'severity': 'low',
+                            'message': f"High number of zero-amount transactions ({zero_amounts} records)"
+                        })
+
+        except Exception as e:
+            logger.warning(f"Error identifying critical financial issues: {str(e)}")
+
+        return critical_issues
+
+    def _should_auto_impute_financial_data(self, completeness_report: Dict[str, Any]) -> bool:
+        """
+        Determine if auto-imputation should be applied for financial data
+
+        Args:
+            completeness_report: Completeness analysis results
+
+        Returns:
+            Boolean indicating if auto-imputation should be applied
+        """
+        try:
+            overall_completeness = completeness_report.get('dataset_completeness', 1.0)
+
+            # For financial data, be more conservative with auto-imputation
+            if overall_completeness < 0.75:
+                return False  # Too much missing data for financial records
+
+            if overall_completeness > 0.95:
+                return False  # Very complete data, no need for imputation
+
+            # Check critical financial fields
+            critical_fields = ['date', 'amount', 'description']
+            for field in critical_fields:
+                if field in completeness_report.get('field_completeness', {}):
+                    field_completeness = completeness_report['field_completeness'][field]['completeness_score']
+                    if field_completeness < 0.8:  # Critical field too incomplete
+                        return False
+
+            return True
+
+        except Exception as e:
+            logger.warning(f"Error determining auto-imputation for financial data: {str(e)}")
+            return False
+
+    def _calculate_financial_data_quality_score(self, completeness_report: Dict[str, Any]) -> float:
+        """
+        Calculate data quality score specifically for financial data
+
+        Args:
+            completeness_report: Completeness analysis results
+
+        Returns:
+            Financial data quality score between 0 and 1
+        """
+        try:
+            base_score = completeness_report.get('dataset_completeness', 0.0)
+
+            # Apply financial-specific adjustments
+            financial_penalty = 0.0
+
+            # Higher penalty for missing critical financial fields
+            critical_fields = ['date', 'amount', 'description']
+            for field in critical_fields:
+                if field in completeness_report.get('field_completeness', {}):
+                    field_score = completeness_report['field_completeness'][field]['completeness_score']
+                    if field_score < 0.9:
+                        financial_penalty += (0.9 - field_score) * 0.3  # 30% penalty per critical field
+
+            # Penalty for missing transaction types
+            if 'transaction_type' in completeness_report.get('field_completeness', {}):
+                type_score = completeness_report['field_completeness']['transaction_type']['completeness_score']
+                if type_score < 0.8:
+                    financial_penalty += (0.8 - type_score) * 0.1  # 10% penalty
+
+            quality_score = max(0.0, base_score - financial_penalty)
+
+            return round(quality_score, 3)
+
+        except Exception as e:
+            logger.warning(f"Error calculating financial data quality score: {str(e)}")
+            return 0.0

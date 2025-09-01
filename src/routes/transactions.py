@@ -110,12 +110,23 @@ def upload_ofx():
         ofx_data = processor.parse_ofx_file(temp_path)
         logger.info(f"OFX parsed successfully. Bank: {ofx_data['bank_name']}, Transactions: {len(ofx_data['transactions'])}")
         
-        # Valida as transações
-        valid_transactions = processor.validate_transactions(ofx_data['transactions'])
-        logger.info(f"Transaction validation completed. Valid transactions: {len(valid_transactions)}")
-        
+        # Valida as transações usando Advanced Validation Engine
+        validation_result = processor.validate_transactions(ofx_data['transactions'])
+        valid_transactions = validation_result['valid_transactions']
+        invalid_transactions = validation_result['invalid_transactions']
+        warnings = validation_result['warnings']
+
+        logger.info(f"Advanced validation completed. Valid: {len(valid_transactions)}, "
+                   f"Invalid: {len(invalid_transactions)}, Warnings: {len(warnings)}")
+
         if not valid_transactions:
             raise InsufficientDataError('OFX processing', 1, 0)
+
+        # Log validation issues for monitoring
+        if invalid_transactions:
+            logger.warning(f"Found {len(invalid_transactions)} invalid transactions during OFX processing")
+        if warnings:
+            logger.info(f"Found {len(warnings)} transaction warnings during OFX processing")
         
         # Detecta duplicatas usando o processor
         duplicates = processor.detect_duplicates(valid_transactions)
@@ -187,6 +198,10 @@ def upload_ofx():
         audit_logger.log_file_processing_result(filename, True, saved_count, duplicate_count)
         audit_logger.log_database_operation('insert', 'transactions', saved_count, True)
         
+        # Prepare validation summary for response
+        validation_summary = validation_result.get('validation_summary', {})
+        validation_duration = validation_result.get('validation_duration_ms', 0)
+
         return jsonify({
             'success': True,
             'message': f'Arquivo processado com sucesso! {saved_count} transações importadas.',
@@ -194,11 +209,20 @@ def upload_ofx():
                 'bank_name': ofx_data['bank_name'],
                 'account_info': ofx_data['account_info'],
                 'items_imported': saved_count,
-                'items_incomplete': 0,
+                'items_incomplete': len(invalid_transactions),
                 'duplicates_found': duplicate_count,
                 'file_duplicate': False,
-                'incomplete_items': [],
+                'incomplete_items': invalid_transactions,
+                'validation_warnings': warnings,
                 'summary': ofx_data['summary'],
+                'validation_summary': {
+                    'total_validated': len(ofx_data['transactions']),
+                    'valid_count': len(valid_transactions),
+                    'invalid_count': len(invalid_transactions),
+                    'warnings_count': len(warnings),
+                    'validation_duration_ms': validation_duration,
+                    'validation_status': validation_summary.get('status', 'UNKNOWN')
+                },
                 'duplicate_details': {
                     'file_level': {
                         'is_duplicate': False,

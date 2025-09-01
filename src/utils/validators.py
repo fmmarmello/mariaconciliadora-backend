@@ -33,6 +33,7 @@ from .exceptions import (
     ValidationError, RequiredFieldError, InvalidFormatError,
     FileSizeExceededError, InvalidFileFormatError, FileCorruptedError
 )
+from .validation_result import ValidationResult
 
 
 class ValidationResult:
@@ -590,26 +591,26 @@ class SecurityValidator:
     def validate_input_security(cls, value: str, field_name: str = "input") -> ValidationResult:
         """Comprehensive security validation for input."""
         result = ValidationResult()
-        
+
         if not isinstance(value, str):
             return result
-        
+
         # Check for XSS
         if cls.detect_xss(value):
             result.add_error(f"Potential XSS attack detected in {field_name}")
-        
+
         # Check for SQL injection
         if cls.detect_sql_injection(value):
             result.add_error(f"Potential SQL injection detected in {field_name}")
-        
+
         # Check for path traversal
         if cls.detect_path_traversal(value):
             result.add_error(f"Potential path traversal attack detected in {field_name}")
-        
+
         # Check for command injection
         if cls.detect_command_injection(value):
             result.add_error(f"Potential command injection detected in {field_name}")
-        
+
         return result
 
 

@@ -18,7 +18,12 @@ from src.models.user import db
 from src.routes.user import user_bp
 from src.routes.transactions import transactions_bp
 from src.routes.test_data import test_data_bp
-from src.utils.validation_middleware import validation_middleware, csrf_protection
+from src.routes.model_manager import model_manager_bp
+from src.routes.outlier_analysis import outlier_bp
+from src.routes.language_processing import language_bp
+from src.routes.data_augmentation import data_augmentation_bp
+from src.utils.validation_middleware import csrf_protection
+from src.utils.advanced_validation_middleware import advanced_validation_middleware
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
@@ -30,6 +35,10 @@ CORS(app, origins=cors_origins)
 app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(transactions_bp, url_prefix='/api')
 app.register_blueprint(test_data_bp, url_prefix='/api')
+app.register_blueprint(model_manager_bp, url_prefix='/api')
+app.register_blueprint(outlier_bp, url_prefix='/api/outlier-analysis')
+app.register_blueprint(language_bp, url_prefix='/api/language')
+app.register_blueprint(data_augmentation_bp, url_prefix='/api/data-augmentation')
 
 # Database configuration using environment variable
 DATABASE_URL = os.getenv('DATABASE_URL', f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}")
@@ -37,8 +46,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-# Initialize validation middleware and security features
-validation_middleware.init_app(app)
+# Initialize advanced validation middleware and security features
+advanced_validation_middleware.init_app(app)
 csrf_protection.init_app(app)
 
 with app.app_context():

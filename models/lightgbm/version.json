@@ -1,0 +1,12 @@
+{
+  "model_name": "lightgbm",
+  "version": "677b6199",
+  "timestamp": "2025-09-01T11:55:45.698398",
+  "config": {
+    "n_estimators": 100,
+    "max_depth": 6,
+    "learning_rate": 0.1,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8
+  }
+}

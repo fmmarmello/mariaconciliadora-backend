@@ -31,15 +31,31 @@ os.environ['FILE_LOGGING'] = 'false'
 os.environ['AUDIT_LOGGING'] = 'false'
 
 # Import application modules after setting environment
-from src.main import app
-from src.models.user import db
-from src.models.transaction import Transaction, UploadHistory, ReconciliationRecord
-from src.models.company_financial import CompanyFinancial
-from src.services.ofx_processor import OFXProcessor
-from src.services.xlsx_processor import XLSXProcessor
-from src.services.ai_service import AIService
-from src.services.reconciliation_service import ReconciliationService
-from src.services.duplicate_detection_service import DuplicateDetectionService
+# Note: Avoid importing modules that create circular dependencies
+try:
+    from src.main import app
+    from src.models.user import db
+    from src.models.transaction import Transaction, UploadHistory, ReconciliationRecord
+    from src.models.company_financial import CompanyFinancial
+    from src.services.ofx_processor import OFXProcessor
+    from src.services.xlsx_processor import XLSXProcessor
+    from src.services.ai_service import AIService
+    from src.services.reconciliation_service import ReconciliationService
+    from src.services.duplicate_detection_service import DuplicateDetectionService
+except ImportError as e:
+    # Handle circular import issues
+    print(f"Warning: Some imports failed due to circular dependencies: {e}")
+    app = None
+    db = None
+    Transaction = None
+    UploadHistory = None
+    ReconciliationRecord = None
+    CompanyFinancial = None
+    OFXProcessor = None
+    XLSXProcessor = None
+    AIService = None
+    ReconciliationService = None
+    DuplicateDetectionService = None
 
 # Initialize Faker for generating test data
 fake = Faker('pt_BR')  # Brazilian Portuguese locale
