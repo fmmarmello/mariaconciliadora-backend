@@ -22,7 +22,7 @@ from src.services.financial_feature_engineer import FinancialFeatureEngineer
 from src.services.smote_implementation import SMOTEImplementation
 from src.services.data_augmentation_pipeline import DataAugmentationPipeline
 from src.services.advanced_outlier_detector import AdvancedOutlierDetector
-from src.services.cross_field_validation_engine import CrossFieldValidationEngine
+from src.utils.cross_field_validation_engine import CrossFieldValidationEngine
 
 logger = get_logger(__name__)
 

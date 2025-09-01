@@ -461,7 +461,9 @@ class ModelManager:
         # Initialize components
         self.models = {}
         self.feature_engineer = FeatureEngineer(self.config.get('feature_engineer_config', {}))
-        self.data_augmentation_pipeline = DataAugmentationPipeline(self.config.get('data_augmentation_config', {}))
+        # Initialize data augmentation pipeline with proper config
+        augmentation_config = self.config.get('data_augmentation_config', self._get_default_augmentation_config())
+        self.data_augmentation_pipeline = DataAugmentationPipeline(augmentation_config)
         self.model_versions = {}
         self.performance_history = {}
         self.fallback_models = []
@@ -544,6 +546,39 @@ class ModelManager:
                 'bert': {
                     'bert_config': {}
                 }
+            }
+        }
+
+    def _get_default_augmentation_config(self) -> Dict[str, Any]:
+        """Get default data augmentation configuration"""
+        return {
+            'text_augmentation': {
+                'enabled': True,
+                'strategies': ['synonym_replacement', 'back_translation', 'paraphrasing']
+            },
+            'numerical_augmentation': {
+                'enabled': True,
+                'strategies': ['gaussian_noise', 'scaling']
+            },
+            'categorical_augmentation': {
+                'enabled': True,
+                'strategies': ['label_preservation', 'similar_category_mapping']
+            },
+            'temporal_augmentation': {
+                'enabled': True,
+                'strategies': ['date_shifting', 'pattern_generation']
+            },
+            'synthetic_generation': {
+                'enabled': True,
+                'method': 'vae',
+                'sample_size_ratio': 0.5
+            },
+            'quality_control': {
+                'enabled': True
+            },
+            'general': {
+                'augmentation_ratio': 2.0,
+                'random_seed': 42
             }
         }
 

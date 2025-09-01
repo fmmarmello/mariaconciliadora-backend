@@ -1,3 +1,4 @@
+# Core dependencies
 annotated-types==0.7.0
 anyio==4.10.0
 beautifulsoup4==4.13.4
@@ -12,44 +13,81 @@ greenlet==3.2.4
 groq==0.31.0
 h11==0.16.0
 httpcore==1.0.9
-httpx
+httpx==0.28.1
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.6
 jiter==0.10.0
 joblib==1.5.1
-jsonschema==4.19.0
+jsonschema==4.25.1
 lxml==6.0.0
 MarkupSafe==3.0.2
-numpy
+numpy==1.26.4
 ofxparse==0.21
-python-dotenv==1.1.1
 openai==1.99.9
+openpyxl==3.1.2
 pandas==2.3.1
 pydantic==2.11.7
 pydantic_core==2.33.2
 python-dateutil==2.9.0.post0
+python-dotenv==1.1.1
 pytz==2025.2
 scikit-learn==1.7.1
 scipy==1.16.1
-xgboost
-lightgbm
-optuna
-transformers
-torch
-sentence-transformers
 six==1.17.0
 sniffio==1.3.1
 soupsieve==2.7
 SQLAlchemy==2.0.41
 threadpoolctl==3.6.0
-tqdm
+tqdm==4.67.1
 typing-inspection==0.4.1
 typing_extensions==4.14.0
 tzdata==2025.2
 Werkzeug==3.1.3
-openpyxl==3.1.2
 psutil==6.1.0
+
+# Machine Learning - Models
+xgboost==3.0.4
+lightgbm==4.6.0
+optuna==4.5.0
+imbalanced-learn==0.12.3
+
+# Machine Learning - NLP & Transformers
+transformers[torch]==4.41.0
+torch==2.6.0 # Pinned to a compatible version
+sentence-transformers==2.6.1 # Pinned to a recent version
+spacy==3.8.7
+pt-core-news-lg @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_lg-3.8.0/pt_core_news_lg-3.8.0-py3-none-any.whl
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
+es-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl
+fr-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.8.0/fr_core_news_sm-3.8.0-py3-none-any.whl
+de-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-3.8.0/de_core_news_sm-3.8.0-py3-none-any.whl
+it-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/it_core_news_sm-3.8.0/it_core_news_sm-3.8.0-py3-none-any.whl
+datasets==2.18.0
+accelerate==0.30.0
+sacremoses==0.1.1
+nltk==3.8.1
+
+# Machine Learning - Generative Models
+tensorflow==2.20.0 # Pinned to a compatible version
+tensorflow-probability==0.24.0 # Pinned to a recent version
+diffusers==0.24.0
+matplotlib==3.8.4
+seaborn==0.13.0
+
+# Translation and Internationalization
+googletrans==4.0.0-rc1 # Pinned to a recent version
+translate==3.6.1
+babel==2.14.0
+langdetect==1.0.9
+pycld2==0.41
+morfessor==2.0.6
+langid==1.1.6
+
+# Advanced feature engineering
+umap-learn==0.5.6
+category-encoders==2.6.3
+holidays==0.57
 
 # Testing dependencies
 pytest==7.4.4
@@ -63,50 +101,5 @@ faker==22.0.0
 responses==0.24.1
 freezegun==1.4.0
 
-# Security and validation dependencies
-# python-magic==0.4.27  # Removed due to Windows compatibility issues
+# Security and validation
 bleach==6.1.0
-
-# Advanced feature engineering dependencies
-umap-learn==0.5.6
-category-encoders==2.6.3
-holidays==0.57
-
-# BERT and Portuguese NLP dependencies
-transformers[torch]==4.41.0
-datasets==2.18.0
-accelerate==0.30.0
-sacremoses==0.1.1
-spacy==3.8.7
-pt-core-news-lg @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_lg-3.8.0/pt_core_news_lg-3.8.0-py3-none-any.whl
-nltk==3.8.1
-
-# Multi-language support dependencies
-langdetect==1.0.9
-pycld2==0.41
-morfessor==2.0.6
-langid==1.1.6
-
-# Additional language models for spaCy
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl
-es-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.8.0/es_core_news_sm-3.8.0-py3-none-any.whl
-fr-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.8.0/fr_core_news_sm-3.8.0-py3-none-any.whl
-de-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/de_core_news_sm-3.8.0/de_core_news_sm-3.8.0-py3-none-any.whl
-it-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/it_core_news_sm-3.8.0/it_core_news_sm-3.8.0-py3-none-any.whl
-
-# Translation and internationalization
-googletrans
-translate==3.6.1
-babel==2.14.0
-
-# Imbalanced data handling and SMOTE variants
-imbalanced-learn==0.12.0
-
-# Advanced generative models
-tensorflow==2.20.0
-tensorflow-probability==0.23.0
-diffusers==0.24.0
-
-# Additional ML libraries for generative models
-matplotlib==3.8.2
-seaborn==0.13.0

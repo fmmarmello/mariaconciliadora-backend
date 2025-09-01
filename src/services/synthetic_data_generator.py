@@ -8,11 +8,21 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import random
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
-import tensorflow_probability as tfp
-from diffusers import DDPMScheduler, UNet2DModel
+try:
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras import layers
+    import tensorflow_probability as tfp
+    from diffusers import DDPMScheduler, UNet2DModel
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    TENSORFLOW_AVAILABLE = False
+    tf = None
+    keras = None
+    layers = None
+    tfp = None
+    DDPMScheduler = None
+    UNet2DModel = None
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -576,6 +586,9 @@ class DiffusionModel:
     """Diffusion model for high-quality synthetic data generation"""
 
     def __init__(self, input_shape: Tuple[int, ...], num_timesteps: int = 1000):
+        if not TENSORFLOW_AVAILABLE:
+            raise ImportError("DiffusionModel requires TensorFlow and diffusers libraries")
+
         self.input_shape = input_shape
         self.num_timesteps = num_timesteps
 
@@ -954,6 +967,10 @@ class AdvancedSyntheticDataGenerator(AugmentationStrategy):
     def _train_diffusion(self, data: np.ndarray, epochs: int):
         """Train Diffusion model"""
         try:
+            if not TENSORFLOW_AVAILABLE:
+                self.logger.warning("Diffusion model training skipped - TensorFlow not available")
+                return
+
             # Reshape data for diffusion model
             if len(data.shape) == 2:
                 # For tabular data, we need to reshape appropriately

@@ -48,7 +48,12 @@ class DataAugmentationPipeline:
         Args:
             config: Configuration dictionary for augmentation settings
         """
-        self.config = config or self._get_default_config()
+        default_config = self._get_default_config()
+        if config:
+            # Merge provided config with defaults
+            self.config = self._merge_configs(default_config, config)
+        else:
+            self.config = default_config
         self.logger = get_logger(__name__)
 
         # Initialize augmentation engines
@@ -138,6 +143,20 @@ class DataAugmentationPipeline:
                 'cache_enabled': True
             }
         }
+
+    def _merge_configs(self, default_config: Dict[str, Any], user_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Merge user config with default config"""
+        merged = default_config.copy()
+
+        def deep_merge(base: Dict[str, Any], update: Dict[str, Any]) -> Dict[str, Any]:
+            for key, value in update.items():
+                if key in base and isinstance(base[key], dict) and isinstance(value, dict):
+                    base[key] = deep_merge(base[key], value)
+                else:
+                    base[key] = value
+            return base
+
+        return deep_merge(merged, user_config)
 
     def _initialize_components(self):
         """Initialize augmentation components"""

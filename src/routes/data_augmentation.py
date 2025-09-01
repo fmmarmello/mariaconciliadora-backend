@@ -7,7 +7,7 @@ from datetime import datetime
 from src.services.data_augmentation_pipeline import DataAugmentationPipeline
 from src.utils.logging_config import get_logger
 from src.utils.exceptions import ValidationError
-from src.utils.error_handler import handle_exceptions
+from src.utils.error_handler import handle_errors
 
 logger = get_logger(__name__)
 
@@ -27,7 +27,7 @@ def get_augmentation_pipeline() -> DataAugmentationPipeline:
 
 
 @data_augmentation_bp.route('/health', methods=['GET'])
-@handle_exceptions
+@handle_errors
 def health_check():
     """Health check endpoint for data augmentation service"""
     return jsonify({
@@ -38,7 +38,7 @@ def health_check():
 
 
 @data_augmentation_bp.route('/augment', methods=['POST'])
-@handle_exceptions
+@handle_errors
 def augment_data():
     """
     Augment dataset with comprehensive data augmentation pipeline
@@ -111,7 +111,7 @@ def augment_data():
 
 
 @data_augmentation_bp.route('/augment/text', methods=['POST'])
-@handle_exceptions
+@handle_errors
 def augment_text():
     """
     Augment text data specifically
@@ -174,7 +174,7 @@ def augment_text():
 
 
 @data_augmentation_bp.route('/augment/numerical', methods=['POST'])
-@handle_exceptions
+@handle_errors
 def augment_numerical():
     """
     Augment numerical data specifically
@@ -237,7 +237,7 @@ def augment_numerical():
 
 
 @data_augmentation_bp.route('/generate-synthetic', methods=['POST'])
-@handle_exceptions
+@handle_errors
 def generate_synthetic():
     """
     Generate synthetic data using trained models
@@ -312,7 +312,7 @@ def generate_synthetic():
 
 
 @data_augmentation_bp.route('/validate-quality', methods=['POST'])
-@handle_exceptions
+@handle_errors
 def validate_quality():
     """
     Validate quality of augmented data
@@ -368,7 +368,7 @@ def validate_quality():
 
 
 @data_augmentation_bp.route('/metrics', methods=['GET'])
-@handle_exceptions
+@handle_errors
 def get_metrics():
     """Get augmentation system metrics and statistics"""
     try:
@@ -410,7 +410,7 @@ def get_metrics():
 
 
 @data_augmentation_bp.route('/config', methods=['GET'])
-@handle_exceptions
+@handle_errors
 def get_config():
     """Get current augmentation configuration"""
     try:
@@ -430,7 +430,7 @@ def get_config():
 
 
 @data_augmentation_bp.route('/config', methods=['POST'])
-@handle_exceptions
+@handle_errors
 def update_config():
     """
     Update augmentation configuration
@@ -471,7 +471,7 @@ def update_config():
 
 
 @data_augmentation_bp.route('/reset', methods=['POST'])
-@handle_exceptions
+@handle_errors
 def reset_pipeline():
     """Reset the augmentation pipeline"""
     try:
