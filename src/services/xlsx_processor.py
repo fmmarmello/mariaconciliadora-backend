@@ -65,7 +65,20 @@ class XLSXProcessor:
             # Normalize column names
             original_columns = df.columns.tolist()
             df.columns = [self._normalize_column_name(col) for col in df.columns]
-            logger.debug(f"Column normalization completed. Original: {original_columns}")
+            logger.info(f"Column normalization completed. Original: {original_columns}, Normalized: {df.columns.tolist()}")
+
+            # Debug: Log what columns we found
+            found_columns = {}
+            for standard_col, variations in self.supported_columns.items():
+                for norm_col in df.columns:
+                    for variation in variations:
+                        if variation in norm_col or norm_col in variation:
+                            if standard_col not in found_columns:
+                                found_columns[standard_col] = []
+                            found_columns[standard_col].append(norm_col)
+                            break
+
+            logger.info(f"Column mapping results: {found_columns}")
             
             # Process rows with validation
             financial_data = self._process_xlsx_rows(df)
@@ -78,8 +91,12 @@ class XLSXProcessor:
             
         except pd.errors.EmptyDataError:
             raise FileCorruptedError(filename)
-        except pd.errors.ExcelFileError:
-            raise FileCorruptedError(filename)
+        except (pd.errors.ClosedFileError, ValueError) as e:
+            # Handle various pandas Excel reading errors
+            if "Excel file format cannot be determined" in str(e) or "Unsupported format" in str(e):
+                raise FileCorruptedError(filename)
+            else:
+                raise FileCorruptedError(filename)
         except Exception as e:
             if isinstance(e, (FileProcessingError, ValidationError)):
                 raise
@@ -418,8 +435,369 @@ class XLSXProcessor:
             date_key = date_key
         else:
             date_key = str(date_key)
-        
+
         amount_key = float(entry.get('amount', 0))
         description_key = str(entry.get('description', '')).lower().strip()
-        
+
         return (date_key, amount_key, description_key)
+
+    @handle_service_errors('xlsx_processor')
+    @with_timeout(60)  # 1 minute timeout for analysis
+    def analyze_xlsx_file(self, file_path: str) -> Dict[str, Any]:
+        """
+        Analyze XLSX file structure and content to determine type and provide detailed analysis
+        """
+        logger.info(f"Starting XLSX file analysis: {file_path}")
+
+        # Validate file exists
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(os.path.basename(file_path))
+
+        # Validate file format
+        filename = os.path.basename(file_path)
+        validation_result = validate_file_upload(file_path, filename, 'xlsx')
+        if not validation_result.is_valid:
+            raise InvalidFileFormatError(filename, ['xlsx'])
+
+        try:
+            # Read XLSX file
+            df = self._read_xlsx_with_recovery(file_path)
+            logger.info(f"XLSX file loaded successfully. Rows: {len(df)}, Columns: {len(df.columns)}")
+
+            # Analyze file structure
+            analysis_result = self._analyze_file_structure(df, filename)
+
+            # Determine file type
+            file_type = self._determine_file_type(df, analysis_result)
+
+            # Generate detailed analysis
+            detailed_analysis = self._generate_detailed_analysis(df, analysis_result, file_type)
+
+            logger.info(f"XLSX analysis completed successfully. Type: {file_type}")
+
+            # Convert pandas/numpy types to Python native types for JSON serialization
+            def convert_to_native_types(obj):
+                if isinstance(obj, dict):
+                    return {key: convert_to_native_types(value) for key, value in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_to_native_types(item) for item in obj]
+                elif hasattr(obj, 'item'):  # numpy types
+                    return obj.item()
+                elif hasattr(obj, 'isoformat'):  # datetime objects
+                    return obj.isoformat()
+                else:
+                    return obj
+
+            return {
+                'file_type': file_type,
+                'analysis': convert_to_native_types(detailed_analysis),
+                'structure': convert_to_native_types(analysis_result),
+                'summary': {
+                    'total_rows': int(len(df)),
+                    'total_columns': int(len(df.columns)),
+                    'filename': filename,
+                    'file_size': int(os.path.getsize(file_path))
+                }
+            }
+
+        except Exception as e:
+            if isinstance(e, (FileProcessingError, ValidationError)):
+                raise
+            logger.error(f"Unexpected error analyzing XLSX file: {str(e)}", exc_info=True)
+            raise FileProcessingError(f"Erro ao analisar arquivo XLSX: {str(e)}", filename)
+
+    def _analyze_file_structure(self, df: pd.DataFrame, filename: str) -> Dict[str, Any]:
+        """Analyze the structure of the XLSX file."""
+        structure = {
+            'columns': [],
+            'data_types': {},
+            'missing_values': {},
+            'sample_data': {},
+            'patterns': {}
+        }
+
+        # Analyze each column
+        for col in df.columns:
+            col_name = str(col).strip()
+            structure['columns'].append(col_name)
+
+            # Determine data type
+            sample_values = df[col].dropna().head(10).tolist()
+            data_type = self._infer_column_type(sample_values)
+            structure['data_types'][col_name] = data_type
+
+            # Count missing values
+            missing_count = df[col].isna().sum()
+            structure['missing_values'][col_name] = missing_count
+
+            # Get sample data
+            structure['sample_data'][col_name] = [str(val) for val in sample_values[:5]]
+
+            # Detect patterns
+            structure['patterns'][col_name] = self._detect_column_patterns(sample_values, data_type)
+
+        return structure
+
+    def _infer_column_type(self, sample_values: List) -> str:
+        """Infer the data type of a column based on sample values."""
+        if not sample_values:
+            return 'empty'
+
+        # Check for dates
+        date_count = 0
+        for val in sample_values:
+            if pd.isna(val):
+                continue
+            try:
+                pd.to_datetime(str(val))
+                date_count += 1
+            except:
+                pass
+
+        if date_count > len(sample_values) * 0.5:
+            return 'date'
+
+        # Check for numeric values
+        numeric_count = 0
+        for val in sample_values:
+            if pd.isna(val):
+                continue
+            try:
+                float(str(val).replace(',', '').replace('.', '').replace('R$', '').replace(' ', ''))
+                numeric_count += 1
+            except:
+                pass
+
+        if numeric_count > len(sample_values) * 0.5:
+            return 'numeric'
+
+        # Check for boolean values
+        bool_keywords = ['sim', 'não', 'yes', 'no', 'true', 'false', '1', '0']
+        bool_count = 0
+        for val in sample_values:
+            if pd.isna(val):
+                continue
+            if str(val).lower().strip() in bool_keywords:
+                bool_count += 1
+
+        if bool_count > len(sample_values) * 0.5:
+            return 'boolean'
+
+        return 'text'
+
+    def _detect_column_patterns(self, sample_values: List, data_type: str) -> Dict[str, Any]:
+        """Detect patterns in column data."""
+        patterns = {
+            'has_currency_symbol': False,
+            'has_percentage': False,
+            'has_parentheses': False,
+            'common_prefixes': [],
+            'common_suffixes': [],
+            'unique_values_ratio': 0
+        }
+
+        if not sample_values:
+            return patterns
+
+        # Convert to strings for analysis
+        str_values = [str(val) for val in sample_values if not pd.isna(val)]
+
+        if not str_values:
+            return patterns
+
+        # Check for currency symbols
+        currency_symbols = ['R$', '$', '€', '£', '¥']
+        for val in str_values:
+            for symbol in currency_symbols:
+                if symbol in val:
+                    patterns['has_currency_symbol'] = True
+                    break
+            if patterns['has_currency_symbol']:
+                break
+
+        # Check for percentages
+        if any('%' in val for val in str_values):
+            patterns['has_percentage'] = True
+
+        # Check for parentheses (often used for negative numbers)
+        if any('(' in val and ')' in val for val in str_values):
+            patterns['has_parentheses'] = True
+
+        # Calculate unique values ratio
+        unique_values = set(str(val).lower().strip() for val in str_values)
+        patterns['unique_values_ratio'] = len(unique_values) / len(str_values)
+
+        # Detect common prefixes/suffixes for text columns
+        if data_type == 'text' and len(str_values) > 3:
+            prefixes = []
+            suffixes = []
+
+            for val in str_values:
+                if len(val) > 3:
+                    prefixes.append(val[:3])
+                    suffixes.append(val[-3:])
+
+            if prefixes:
+                from collections import Counter
+                prefix_counts = Counter(prefixes)
+                common_prefixes = [prefix for prefix, count in prefix_counts.items() if count > 1]
+                patterns['common_prefixes'] = common_prefixes[:3]
+
+            if suffixes:
+                suffix_counts = Counter(suffixes)
+                common_suffixes = [suffix for suffix, count in suffix_counts.items() if count > 1]
+                patterns['common_suffixes'] = common_suffixes[:3]
+
+        return patterns
+
+    def _determine_file_type(self, df: pd.DataFrame, structure: Dict[str, Any]) -> str:
+        """Determine if the file is Bank Statement or Company Financial Data."""
+        # Bank statement indicators
+        bank_indicators = [
+            'saldo', 'balance', 'extrato', 'statement', 'banco', 'bank',
+            'agencia', 'agency', 'conta', 'account', 'transacao', 'transaction',
+            'credito', 'debito', 'credit', 'debit', 'transferencia', 'transfer'
+        ]
+
+        # Company financial data indicators
+        company_indicators = [
+            'categoria', 'category', 'centro de custo', 'cost center',
+            'departamento', 'department', 'projeto', 'project',
+            'tipo', 'type', 'observacoes', 'observations', 'relatorio', 'report'
+        ]
+
+        # Analyze column names
+        column_names = [col.lower() for col in structure['columns']]
+        bank_score = 0
+        company_score = 0
+
+        for col in column_names:
+            for indicator in bank_indicators:
+                if indicator in col:
+                    bank_score += 1
+                    break
+
+            for indicator in company_indicators:
+                if indicator in col:
+                    company_score += 1
+                    break
+
+        # Analyze data patterns
+        numeric_columns = [col for col, dtype in structure['data_types'].items() if dtype == 'numeric']
+        date_columns = [col for col, dtype in structure['data_types'].items() if dtype == 'date']
+
+        # Bank statements typically have balance columns and transaction amounts
+        balance_indicators = ['saldo', 'balance']
+        balance_columns = [col for col in column_names if any(ind in col for ind in balance_indicators)]
+
+        # Company data often has more categorical columns
+        categorical_indicators = ['categoria', 'tipo', 'departamento', 'projeto']
+        categorical_columns = [col for col in column_names if any(ind in col for ind in categorical_indicators)]
+
+        # Additional scoring based on structure
+        if balance_columns:
+            bank_score += 2
+        if categorical_columns:
+            company_score += 2
+
+        # Check for transaction patterns (mixed positive/negative amounts)
+        if numeric_columns:
+            sample_numeric_data = []
+            for col in numeric_columns[:3]:  # Check first 3 numeric columns
+                values = df[col].dropna()
+                if len(values) > 10:
+                    sample_numeric_data.extend(values.head(20).tolist())
+
+            if sample_numeric_data:
+                positive_count = 0
+                negative_count = 0
+
+                for val in sample_numeric_data:
+                    try:
+                        # Convert to float for comparison
+                        num_val = float(val) if not isinstance(val, (int, float)) else val
+                        if num_val > 0:
+                            positive_count += 1
+                        elif num_val < 0:
+                            negative_count += 1
+                    except (ValueError, TypeError):
+                        # Skip non-numeric values
+                        continue
+
+                # If we have both positive and negative values, likely bank statement
+                if positive_count > 0 and negative_count > 0:
+                    bank_score += 1
+
+        # Final decision
+        if bank_score > company_score:
+            return 'Bank Statement'
+        elif company_score > bank_score:
+            return 'Company Financial Data'
+        else:
+            # If scores are equal, check for specific patterns
+            if balance_columns and len(numeric_columns) >= 2:
+                return 'Bank Statement'
+            elif categorical_columns and len(date_columns) >= 1:
+                return 'Company Financial Data'
+            else:
+                return 'Unknown'
+
+    def _generate_detailed_analysis(self, df: pd.DataFrame, structure: Dict[str, Any], file_type: str) -> Dict[str, Any]:
+        """Generate detailed analysis based on file type."""
+        analysis = {
+            'decision_factors': [],
+            'column_analysis': {},
+            'data_quality': {},
+            'recommendations': []
+        }
+
+        # Decision factors
+        if file_type == 'Bank Statement':
+            analysis['decision_factors'] = [
+                'Presence of balance/transaction columns',
+                'Mixed positive and negative amounts',
+                'Bank-related terminology in column names'
+            ]
+        elif file_type == 'Company Financial Data':
+            analysis['decision_factors'] = [
+                'Presence of category/cost center columns',
+                'Structured categorization fields',
+                'Company financial terminology'
+            ]
+        else:
+            analysis['decision_factors'] = [
+                'Unclear data structure',
+                'Mixed or ambiguous column types',
+                'Insufficient distinguishing features'
+            ]
+
+        # Column analysis
+        for col, dtype in structure['data_types'].items():
+            col_analysis = {
+                'type': dtype,
+                'missing_percentage': (structure['missing_values'][col] / len(df)) * 100,
+                'patterns': structure['patterns'][col]
+            }
+            analysis['column_analysis'][col] = col_analysis
+
+        # Data quality assessment
+        total_missing = sum(structure['missing_values'].values())
+        missing_percentage = (total_missing / (len(df) * len(df.columns))) * 100
+
+        analysis['data_quality'] = {
+            'overall_completeness': 100 - missing_percentage,
+            'columns_with_missing_data': len([col for col, count in structure['missing_values'].items() if count > 0]),
+            'total_missing_values': total_missing
+        }
+
+        # Recommendations
+        if missing_percentage > 20:
+            analysis['recommendations'].append('High percentage of missing data - consider data cleaning')
+
+        if len(structure['columns']) < 3:
+            analysis['recommendations'].append('Limited number of columns - may need additional data fields')
+
+        if file_type == 'Unknown':
+            analysis['recommendations'].append('File type could not be determined - manual review recommended')
+
+        return analysis

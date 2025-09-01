@@ -311,7 +311,8 @@ def with_database_transaction(func: Callable) -> Callable:
 def with_timeout(timeout_seconds: int):
     """
     Decorator to add timeout to function execution.
-    
+    Cross-platform compatible (works on both Unix and Windows).
+
     Usage:
         @with_timeout(30)
         def long_running_operation():
@@ -321,25 +322,55 @@ def with_timeout(timeout_seconds: int):
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            import signal
-            
-            def timeout_handler(signum, frame):
-                raise TimeoutError(func.__name__, timeout_seconds)
-            
-            # Set up timeout
-            old_handler = signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(timeout_seconds)
-            
-            try:
-                result = func(*args, **kwargs)
-                signal.alarm(0)  # Cancel timeout
-                return result
-            except Exception as e:
-                signal.alarm(0)  # Cancel timeout
-                raise
-            finally:
-                signal.signal(signal.SIGALRM, old_handler)
-        
+            import platform
+            import threading
+
+            if platform.system() == 'Windows':
+                # Windows implementation using threading
+                result = [None]
+                exception = [None]
+
+                def target():
+                    try:
+                        result[0] = func(*args, **kwargs)
+                    except Exception as e:
+                        exception[0] = e
+
+                thread = threading.Thread(target=target)
+                thread.daemon = True
+                thread.start()
+                thread.join(timeout_seconds)
+
+                if thread.is_alive():
+                    # Thread is still running, timeout occurred
+                    raise TimeoutError(func.__name__, timeout_seconds)
+                elif exception[0]:
+                    # Exception occurred in thread
+                    raise exception[0]
+                else:
+                    # Success
+                    return result[0]
+            else:
+                # Unix implementation using signals
+                import signal
+
+                def timeout_handler(signum, frame):
+                    raise TimeoutError(func.__name__, timeout_seconds)
+
+                # Set up timeout
+                old_handler = signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(timeout_seconds)
+
+                try:
+                    result = func(*args, **kwargs)
+                    signal.alarm(0)  # Cancel timeout
+                    return result
+                except Exception as e:
+                    signal.alarm(0)  # Cancel timeout
+                    raise
+                finally:
+                    signal.signal(signal.SIGALRM, old_handler)
+
         return wrapper
     return decorator
 

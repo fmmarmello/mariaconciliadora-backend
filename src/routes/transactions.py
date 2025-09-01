@@ -16,7 +16,7 @@ from src.utils.exceptions import (
     ValidationError, FileProcessingError, InvalidFileFormatError,
     FileSizeExceededError, DuplicateFileError, InsufficientDataError
 )
-from src.utils.validators import validate_pagination_params, validate_file_upload
+from src.utils.validators import validate_pagination_params, validate_file_upload as validate_file_content
 from src.utils.validation_middleware import (
     validate_file_upload, validate_input_fields, validate_financial_data,
     rate_limit, require_content_type, sanitize_path_params
@@ -81,7 +81,7 @@ def upload_ofx():
         logger.info(f"OFX file uploaded: {filename} ({file_size} bytes)")
         
         # Additional file validation
-        validation_result = validate_file_upload(temp_path, filename, 'ofx')
+        validation_result = validate_file_content(temp_path, filename, 'ofx')
         if not validation_result.is_valid:
             raise FileProcessingError(f"File validation failed: {', '.join(validation_result.errors)}", filename)
         
@@ -98,7 +98,7 @@ def upload_ofx():
                 'original_upload_date': existing_file.upload_date.isoformat() if existing_file.upload_date else None
             })
             
-            raise DuplicateFileError(filename, existing_file.upload_date.isoformat() if existing_file.upload_date else None)
+            raise DuplicateFileError(filename, original_upload_date=existing_file.upload_date.isoformat() if existing_file.upload_date else None)
         
         # Processa o arquivo OFX
         processor = OFXProcessor()
@@ -1235,12 +1235,81 @@ def get_reconciliation_report():
     try:
         reconciliation_service = ReconciliationService()
         report = reconciliation_service.get_reconciliation_report()
-        
+
         return jsonify({
             'success': True,
             'data': report
         })
-        
+
     except Exception as e:
         return jsonify({'error': f'Erro ao gerar relatório: {str(e)}'}), 500
+
+@transactions_bp.route('/analyze-xlsx', methods=['POST'])
+@handle_errors
+@with_resource_check
+@rate_limit(max_requests=30, window_minutes=60)  # Lower limit for analysis operations
+@validate_file_upload(['xlsx'], max_size_mb=10)
+def analyze_xlsx():
+    """
+    Endpoint para analisar arquivo XLSX e determinar tipo/conteúdo
+    """
+    logger.info("XLSX analysis request received")
+
+    # Validate request
+    if 'file' not in request.files:
+        logger.warning("Analysis request without file")
+        raise ValidationError("Nenhum arquivo enviado", user_message="Nenhum arquivo foi enviado.")
+
+    file = request.files['file']
+
+    if file.filename == '':
+        logger.warning("Analysis request with empty filename")
+        raise ValidationError("Nenhum arquivo selecionado", user_message="Nenhum arquivo foi selecionado.")
+
+    if not allowed_xlsx_file(file.filename):
+        logger.warning(f"Analysis request with invalid file type: {file.filename}")
+        raise InvalidFileFormatError(file.filename, ['xlsx'])
+
+    # Save file temporarily
+    filename = secure_filename(file.filename)
+    temp_dir = tempfile.mkdtemp()
+    temp_path = os.path.join(temp_dir, filename)
+
+    try:
+        file.save(temp_path)
+
+        # Validate file size
+        file_size = os.path.getsize(temp_path)
+        if file_size > MAX_FILE_SIZE:
+            raise FileSizeExceededError(filename, file_size, MAX_FILE_SIZE)
+
+        logger.info(f"XLSX file uploaded for analysis: {filename} ({file_size} bytes)")
+
+        # Additional file validation
+        validation_result = validate_file_content(temp_path, filename, 'xlsx')
+        if not validation_result.is_valid:
+            raise FileProcessingError(f"File validation failed: {', '.join(validation_result.errors)}", filename)
+
+        # Analyze the XLSX file
+        logger.info(f"Starting XLSX analysis for file: {filename}")
+        processor = XLSXProcessor()
+        analysis_result = processor.analyze_xlsx_file(temp_path)
+
+        logger.info(f"XLSX analysis completed successfully for file: {filename}")
+
+        return jsonify({
+            'success': True,
+            'message': f'Análise do arquivo {filename} concluída com sucesso.',
+            'data': analysis_result
+        })
+
+    finally:
+        # Always clean up temporary files
+        try:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            if os.path.exists(temp_dir):
+                os.rmdir(temp_dir)
+        except Exception as cleanup_error:
+            logger.warning(f"Error cleaning up temporary files: {str(cleanup_error)}")
 

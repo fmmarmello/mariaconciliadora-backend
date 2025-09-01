@@ -214,15 +214,18 @@ class FileCorruptedError(FileProcessingError):
 
 class DuplicateFileError(FileProcessingError):
     """Raised when a duplicate file is detected."""
-    
+
     def __init__(self, filename: str, original_upload_date: Optional[str] = None, **kwargs):
+        # Remove status_code from kwargs to avoid conflict with parent class
+        kwargs.pop('status_code', None)
         super().__init__(
             message=f"Duplicate file detected: {filename}",
             filename=filename,
             user_message="Este arquivo já foi processado anteriormente.",
-            status_code=409,
             **kwargs
         )
+        # Set status_code after super().__init__ to avoid conflict
+        self.status_code = 409
         if original_upload_date:
             self.details['original_upload_date'] = original_upload_date
 

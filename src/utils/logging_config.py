@@ -129,6 +129,7 @@ class AuditLogger:
         self.reconciliation_logger = logger_config.get_audit_logger('reconciliation')
         self.ai_logger = logger_config.get_audit_logger('ai')
         self.database_logger = logger_config.get_audit_logger('database')
+        self.security_logger = logger_config.get_audit_logger('security')
     
     def log_file_upload(self, filename: str, file_type: str, user_id: Optional[str] = None, 
                        file_size: Optional[int] = None, file_hash: Optional[str] = None):
@@ -224,6 +225,16 @@ class AuditLogger:
             'timestamp': datetime.now().isoformat()
         }
         self.financial_logger.info(f"Financial transaction: {json.dumps(audit_data)}")
+
+    def log_security_event(self, event_type: str, details: Optional[Dict] = None):
+        """Log security-related events."""
+        audit_data = {
+            'operation': 'security_event',
+            'event_type': event_type,
+            'details': details or {},
+            'timestamp': datetime.now().isoformat()
+        }
+        self.security_logger.info(f"Security event: {json.dumps(audit_data)}")
 
 
 # Global instances

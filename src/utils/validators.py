@@ -418,18 +418,18 @@ def validate_file_upload(file_path: str, filename: str, file_type: str) -> Valid
         'ofx': {
             'extensions': ['ofx', 'qfx'],
             'max_size': 16 * 1024 * 1024,  # 16MB
-            'mime_types': ['application/x-ofx']
+            'mime_types': ['application/x-ofx', 'text/plain', 'application/octet-stream', None, 'text/xml', 'application/xml']  # Allow more types for OFX files
         },
         'xlsx': {
             'extensions': ['xlsx'],
             'max_size': 10 * 1024 * 1024,  # 10MB
-            'mime_types': ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+            'mime_types': ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/octet-stream']
         }
     }
     
     if file_type not in file_configs:
         raise ValidationError(f"Unsupported file type: {file_type}")
-    
+
     config = file_configs[file_type]
     validator = FileValidator(
         allowed_extensions=config['extensions'],
