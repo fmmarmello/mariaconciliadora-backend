@@ -276,7 +276,7 @@ class TestCrossFieldValidationEngine:
         assert hasattr(result, 'is_valid')
         assert hasattr(result, 'errors')
         assert hasattr(result, 'warnings')
-        assert hasattr(result, 'validation_duration')
+        assert hasattr(result, 'validation_duration_ms')
 
         assert isinstance(result.errors, list)
         assert isinstance(result.warnings, list)
@@ -339,11 +339,15 @@ class TestValidationCondition:
         null_condition = ValidationCondition("field", "is_null")
         not_null_condition = ValidationCondition("field", "not_null")
 
-        assert null_condition.evaluate({"field": None})
-        assert not null_condition.evaluate({"field": None})
+        # Test is_null condition
+        assert null_condition.evaluate({"field": None})  # None should be null
+        assert not not_null_condition.evaluate({"field": None})  # None should not be not-null
 
-        assert not null_condition.evaluate({"field": "value"})
-        assert not null_condition.evaluate({"field": ""})
+        # Test not_null condition
+        assert not_null_condition.evaluate({"field": "value"})  # Non-empty string should be not-null
+        assert not_null_condition.evaluate({"field": ""})  # Empty string should be not-null
+        assert not null_condition.evaluate({"field": "value"})  # Non-empty string should not be null
+        assert not null_condition.evaluate({"field": ""})  # Empty string should not be null
 
 
 class TestCrossFieldRule:

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 import re
 import os
+import pandas as pd
 from src.utils.logging_config import get_logger
 from src.utils.exceptions import (
     FileProcessingError, FileNotFoundError, InvalidFileFormatError,

@@ -35,7 +35,7 @@ class DependencyType(Enum):
 class ValidationCondition:
     """Represents a validation condition for cross-field validation."""
 
-    def __init__(self, field: str, operator: str, value: Any,
+    def __init__(self, field: str, operator: str, value: Any = None,
                  case_sensitive: bool = False):
         self.field = field
         self.operator = operator
@@ -46,26 +46,31 @@ class ValidationCondition:
         """Evaluate the condition against the data."""
         field_value = data.get(self.field)
 
-        if field_value is None:
-            return self.operator in ['is_null', 'not_exists']
-
         # Handle different operators
         if self.operator == 'equals':
+            if field_value is None:
+                return self.value is None
             if not self.case_sensitive and isinstance(field_value, str) and isinstance(self.value, str):
                 return field_value.lower() == self.value.lower()
             return field_value == self.value
 
         elif self.operator == 'not_equals':
+            if field_value is None:
+                return self.value is not None
             if not self.case_sensitive and isinstance(field_value, str) and isinstance(self.value, str):
                 return field_value.lower() != self.value.lower()
             return field_value != self.value
 
         elif self.operator == 'contains':
+            if field_value is None:
+                return False
             if isinstance(field_value, str) and isinstance(self.value, str):
                 return self.value.lower() in field_value.lower() if not self.case_sensitive else self.value in field_value
             return False
 
         elif self.operator == 'in':
+            if field_value is None:
+                return False
             if isinstance(self.value, list):
                 if not self.case_sensitive and isinstance(field_value, str):
                     return field_value.lower() in [v.lower() if isinstance(v, str) else v for v in self.value]
@@ -73,12 +78,16 @@ class ValidationCondition:
             return False
 
         elif self.operator == 'greater_than':
+            if field_value is None:
+                return False
             try:
                 return float(field_value) > float(self.value)
             except (ValueError, TypeError):
                 return False
 
         elif self.operator == 'less_than':
+            if field_value is None:
+                return False
             try:
                 return float(field_value) < float(self.value)
             except (ValueError, TypeError):
@@ -89,6 +98,9 @@ class ValidationCondition:
 
         elif self.operator == 'not_null':
             return field_value is not None
+
+        elif self.operator == 'not_exists':
+            return field_value is None
 
         return False
 
@@ -142,11 +154,12 @@ class CrossFieldRule:
 
     def _validate_required_if(self, data: Dict[str, Any], result: ValidationResult):
         """Validate required fields when conditions are met."""
+        primary_value = data.get(self.primary_field)
         for field in self.dependent_fields:
             value = data.get(field)
             if value is None or (isinstance(value, str) and value.strip() == ''):
                 result.add_error(
-                    self.error_message.format(field=field, primary=self.primary_field),
+                    self.error_message.format(field=field, primary=primary_value),
                     field,
                     self.severity
                 )
