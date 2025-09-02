@@ -4,8 +4,10 @@ from dotenv import load_dotenv
 # DON'T CHANGE THIS !!!
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-# Load environment variables from .env file
+# Load environment variables from .env and .env.local files
+# .env.local will override .env
 load_dotenv()
+load_dotenv(dotenv_path='.env.local', override=True)
 
 # Initialize logging system
 from src.utils.logging_config import setup_logging, get_logger
@@ -25,7 +27,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-in-production
 
 # Configurar CORS - use specific origins in production
 cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000,http://localhost:5173').split(',')
-CORS(app, origins=cors_origins)
+CORS(app, origins=cors_origins, supports_credentials=True, expose_headers=["Content-Type", "X-Request-ID"])
 
 app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(transactions_bp, url_prefix='/api')

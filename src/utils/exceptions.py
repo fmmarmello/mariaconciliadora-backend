@@ -102,12 +102,12 @@ class ValidationError(BaseApplicationError):
         user_message: Optional[str] = None,
         **kwargs
     ):
+        kwargs.setdefault('user_message', user_message or "Dados inválidos fornecidos.")
+        kwargs.setdefault('status_code', 400)
+        kwargs.setdefault('category', ErrorCategory.VALIDATION)
+        kwargs.setdefault('severity', ErrorSeverity.LOW)
         super().__init__(
             message=message,
-            user_message=user_message or "Dados inválidos fornecidos.",
-            status_code=400,
-            category=ErrorCategory.VALIDATION,
-            severity=ErrorSeverity.LOW,
             **kwargs
         )
         if field:
@@ -146,11 +146,11 @@ class FileProcessingError(BaseApplicationError):
     """Base class for file processing errors."""
     
     def __init__(self, message: str, filename: Optional[str] = None, **kwargs):
+        kwargs.setdefault('status_code', 422)
+        kwargs.setdefault('category', ErrorCategory.FILE_PROCESSING)
+        kwargs.setdefault('severity', ErrorSeverity.MEDIUM)
         super().__init__(
             message=message,
-            status_code=422,
-            category=ErrorCategory.FILE_PROCESSING,
-            severity=ErrorSeverity.MEDIUM,
             **kwargs
         )
         if filename:
@@ -235,12 +235,12 @@ class DatabaseError(BaseApplicationError):
     """Base class for database-related errors."""
     
     def __init__(self, message: str, **kwargs):
+        kwargs.setdefault('user_message', "Erro no banco de dados. Tente novamente.")
+        kwargs.setdefault('status_code', 500)
+        kwargs.setdefault('category', ErrorCategory.DATABASE)
+        kwargs.setdefault('severity', ErrorSeverity.HIGH)
         super().__init__(
             message=message,
-            user_message="Erro no banco de dados. Tente novamente.",
-            status_code=500,
-            category=ErrorCategory.DATABASE,
-            severity=ErrorSeverity.HIGH,
             **kwargs
         )
 
@@ -303,12 +303,12 @@ class AIServiceError(BaseApplicationError):
     """Base class for AI service errors."""
     
     def __init__(self, message: str, **kwargs):
+        kwargs.setdefault('user_message', "Erro no serviço de IA. Funcionalidade limitada disponível.")
+        kwargs.setdefault('status_code', 503)
+        kwargs.setdefault('category', ErrorCategory.AI_SERVICE)
+        kwargs.setdefault('severity', ErrorSeverity.MEDIUM)
         super().__init__(
             message=message,
-            user_message="Erro no serviço de IA. Funcionalidade limitada disponível.",
-            status_code=503,
-            category=ErrorCategory.AI_SERVICE,
-            severity=ErrorSeverity.MEDIUM,
             **kwargs
         )
 
@@ -358,11 +358,11 @@ class BusinessLogicError(BaseApplicationError):
     """Base class for business logic errors."""
     
     def __init__(self, message: str, **kwargs):
+        kwargs.setdefault('status_code', 422)
+        kwargs.setdefault('category', ErrorCategory.BUSINESS_LOGIC)
+        kwargs.setdefault('severity', ErrorSeverity.MEDIUM)
         super().__init__(
             message=message,
-            status_code=422,
-            category=ErrorCategory.BUSINESS_LOGIC,
-            severity=ErrorSeverity.MEDIUM,
             **kwargs
         )
 
@@ -400,12 +400,12 @@ class SystemError(BaseApplicationError):
     """Base class for system-level errors."""
     
     def __init__(self, message: str, **kwargs):
+        kwargs.setdefault('user_message', "Erro interno do sistema. Tente novamente.")
+        kwargs.setdefault('status_code', 500)
+        kwargs.setdefault('category', ErrorCategory.SYSTEM)
+        kwargs.setdefault('severity', ErrorSeverity.HIGH)
         super().__init__(
             message=message,
-            user_message="Erro interno do sistema. Tente novamente.",
-            status_code=500,
-            category=ErrorCategory.SYSTEM,
-            severity=ErrorSeverity.HIGH,
             **kwargs
         )
 
@@ -450,12 +450,12 @@ class AuthenticationError(BaseApplicationError):
     """Raised when authentication fails."""
     
     def __init__(self, message: str = "Authentication failed", **kwargs):
+        kwargs.setdefault('user_message', "Falha na autenticação. Verifique suas credenciais.")
+        kwargs.setdefault('status_code', 401)
+        kwargs.setdefault('category', ErrorCategory.AUTHENTICATION)
+        kwargs.setdefault('severity', ErrorSeverity.MEDIUM)
         super().__init__(
             message=message,
-            user_message="Falha na autenticação. Verifique suas credenciais.",
-            status_code=401,
-            category=ErrorCategory.AUTHENTICATION,
-            severity=ErrorSeverity.MEDIUM,
             **kwargs
         )
 
@@ -464,12 +464,12 @@ class AuthorizationError(BaseApplicationError):
     """Raised when authorization fails."""
     
     def __init__(self, message: str = "Access denied", **kwargs):
+        kwargs.setdefault('user_message', "Acesso negado. Você não tem permissão para esta operação.")
+        kwargs.setdefault('status_code', 403)
+        kwargs.setdefault('category', ErrorCategory.AUTHORIZATION)
+        kwargs.setdefault('severity', ErrorSeverity.MEDIUM)
         super().__init__(
             message=message,
-            user_message="Acesso negado. Você não tem permissão para esta operação.",
-            status_code=403,
-            category=ErrorCategory.AUTHORIZATION,
-            severity=ErrorSeverity.MEDIUM,
             **kwargs
         )
 
@@ -479,12 +479,12 @@ class ExternalServiceError(BaseApplicationError):
     """Base class for external service errors."""
     
     def __init__(self, message: str, service_name: str, **kwargs):
+        kwargs.setdefault('user_message', "Serviço externo temporariamente indisponível.")
+        kwargs.setdefault('status_code', 503)
+        kwargs.setdefault('category', ErrorCategory.EXTERNAL_SERVICE)
+        kwargs.setdefault('severity', ErrorSeverity.MEDIUM)
         super().__init__(
             message=message,
-            user_message="Serviço externo temporariamente indisponível.",
-            status_code=503,
-            category=ErrorCategory.EXTERNAL_SERVICE,
-            severity=ErrorSeverity.MEDIUM,
             **kwargs
         )
         self.details['service_name'] = service_name

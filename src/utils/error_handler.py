@@ -376,7 +376,7 @@ def with_timeout(timeout_seconds: int):
     return decorator
 
 
-def check_resource_limits():
+def check_resource_limits(memory_limit=90, disk_limit=95, cpu_limit=95):
     """
     Check system resource limits and raise error if exceeded.
     
@@ -385,48 +385,58 @@ def check_resource_limits():
     """
     # Check memory usage
     memory = psutil.virtual_memory()
-    if memory.percent > 90:
+    if memory.percent > memory_limit:
         raise ResourceLimitError(
             resource='memory',
-            limit='90%',
+            limit=f'{memory_limit}%',
             current=f'{memory.percent:.1f}%'
         )
     
     # Check disk usage
     disk = psutil.disk_usage('/')
-    if disk.percent > 95:
+    if disk.percent > disk_limit:
         raise ResourceLimitError(
             resource='disk',
-            limit='95%',
+            limit=f'{disk_limit}%',
             current=f'{disk.percent:.1f}%'
         )
     
     # Check CPU usage (average over last 1 minute)
     cpu_percent = psutil.cpu_percent(interval=1)
-    if cpu_percent > 95:
+    if cpu_percent > cpu_limit:
         raise ResourceLimitError(
             resource='cpu',
-            limit='95%',
+            limit=f'{cpu_limit}%',
             current=f'{cpu_percent:.1f}%'
         )
 
 
-def with_resource_check(func: Callable) -> Callable:
+def with_resource_check(_func=None, *, memory_limit=90, disk_limit=95, cpu_limit=95):
     """
     Decorator to check resource limits before function execution.
     
     Usage:
         @with_resource_check
+        def regular_operation():
+            # Your code here
+            pass
+
+        @with_resource_check(memory_limit=95)
         def resource_intensive_operation():
             # Your code here
             pass
     """
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        check_resource_limits()
-        return func(*args, **kwargs)
-    
-    return wrapper
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            check_resource_limits(memory_limit, disk_limit, cpu_limit)
+            return func(*args, **kwargs)
+        return wrapper
+
+    if _func is None:
+        return decorator
+    else:
+        return decorator(_func)
 
 
 def create_error_response(

@@ -1000,14 +1000,38 @@ class RequestValidator:
     def validate_url(url: str) -> ValidationResult:
         """Validate request URL."""
         result = ValidationResult()
-        
+
         if len(url) > RequestValidator.MAX_URL_LENGTH:
             result.add_error(f"URL length {len(url)} exceeds maximum {RequestValidator.MAX_URL_LENGTH}")
-        
-        # Check for URL injection attempts
-        if SecurityValidator.detect_xss(url) or SecurityValidator.detect_sql_injection(url):
-            result.add_error("Malicious content detected in URL")
-        
+
+        try:
+            from urllib.parse import urlparse, parse_qs, unquote
+
+            parsed_url = urlparse(url)
+            path = unquote(parsed_url.path)
+
+            # Check path for injection
+            if SecurityValidator.detect_xss(path) or SecurityValidator.detect_sql_injection(path):
+                result.add_error("Malicious content detected in URL path")
+
+            # Check query parameters
+            query_params = parse_qs(parsed_url.query)
+            for key, values in query_params.items():
+                # Skip validation for known safe, numeric parameters
+                if key.lower() in ['limit', 'page', 'per_page']:
+                    continue
+
+                for value in values:
+                    value_decoded = unquote(value)
+                    if SecurityValidator.detect_xss(value_decoded) or SecurityValidator.detect_sql_injection(value_decoded):
+                        result.add_error(f"Malicious content detected in URL parameter: '{key}'")
+                        # No need to check other values for this key
+                        break
+        except ImportError:
+            # Fallback to old behavior if parsing fails for some reason
+            if SecurityValidator.detect_xss(url) or SecurityValidator.detect_sql_injection(url):
+                result.add_error("Malicious content detected in URL")
+
         return result
     
     @staticmethod

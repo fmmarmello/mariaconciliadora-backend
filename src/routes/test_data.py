@@ -66,10 +66,14 @@ def delete_test_data():
                 'error': 'Insufficient permissions for test data deletion'
             }), 403
         
-        # Get query parameters
-        mode = request.args.get('mode')
-        days_old = request.args.get('days_old', 30, type=int)
-        force = request.args.get('force', 'false').lower() == 'true'
+        # Get data from request body
+        data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Missing request body'}), 400
+
+        mode = data.get('mode')
+        days_old = data.get('days_old', 30)
+        force = str(data.get('force', 'false')).lower() == 'true'
         
         # Validate mode parameter
         if not mode or mode not in ['preview', 'confirmation', 'execution']:

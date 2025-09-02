@@ -20,7 +20,7 @@ from .validators import (
     sanitize_filename, sanitize_path, rate_limiter, SecurityValidator,
     InputSanitizer, RequestValidator, BusinessRuleValidator
 )
-from .exceptions import ValidationError, AuthorizationError
+from .exceptions import ValidationError, AuthorizationError, BaseApplicationError
 from .logging_config import get_logger, get_audit_logger
 
 logger = get_logger(__name__)
@@ -173,6 +173,8 @@ def validate_input_fields(*field_names: str):
                 
                 return func(*args, **kwargs)
                 
+            except BaseApplicationError as e:
+                raise e
             except Exception as e:
                 logger.error(f"Error in input validation decorator: {str(e)}", exc_info=True)
                 return jsonify({
@@ -183,11 +185,10 @@ def validate_input_fields(*field_names: str):
         return wrapper
     return decorator
 
-
-    def validate_file_upload(allowed_extensions: List[str], max_size_mb: int = 16):
+def validate_file_upload(allowed_extensions: List[str], max_size_mb: int = 16):
     """
     Decorator to validate file uploads.
-    
+
     Args:
         allowed_extensions: List of allowed file extensions
         max_size_mb: Maximum file size in MB
@@ -202,22 +203,22 @@ def validate_input_fields(*field_names: str):
                         'error': True,
                         'message': 'No file provided'
                     }), 400
-                
+
                 file = request.files['file']
-                
+
                 if file.filename == '':
                     return jsonify({
                         'error': True,
                         'message': 'No file selected'
                     }), 400
-                
+
                 # Sanitize filename
                 original_filename = file.filename
                 sanitized_filename = sanitize_filename(original_filename)
-                
+
                 if sanitized_filename != original_filename:
                     logger.info(f"Filename sanitized: {original_filename} -> {sanitized_filename}")
-                
+
                 # Validate file extension
                 file_ext = sanitized_filename.split('.')[-1].lower()
                 if file_ext not in [ext.lower() for ext in allowed_extensions]:
@@ -225,20 +226,22 @@ def validate_input_fields(*field_names: str):
                         'error': True,
                         'message': f'Invalid file type. Allowed: {", ".join(allowed_extensions)}'
                     }), 400
-                
+
                 # Store sanitized filename for use in the route
                 g.sanitized_filename = sanitized_filename
                 g.original_filename = original_filename
-                
+
                 return func(*args, **kwargs)
-                
+
+            except BaseApplicationError as e:
+                raise e # Re-raise application errors to be handled by the main error handler
             except Exception as e:
                 logger.error(f"Error in file upload validation: {str(e)}", exc_info=True)
                 return jsonify({
                     'error': True,
                     'message': 'File validation error'
                 }), 500
-        
+
         return wrapper
     return decorator
 
@@ -283,6 +286,8 @@ def validate_financial_data(data_type: str = 'transaction'):
                 
                 return func(*args, **kwargs)
                 
+            except BaseApplicationError as e:
+                raise e
             except Exception as e:
                 logger.error(f"Error in financial data validation: {str(e)}", exc_info=True)
                 return jsonify({
@@ -329,6 +334,8 @@ def rate_limit(max_requests: int = 100, window_minutes: int = 60):
                 
                 return func(*args, **kwargs)
                 
+            except BaseApplicationError as e:
+                raise e
             except Exception as e:
                 logger.error(f"Error in rate limiting: {str(e)}", exc_info=True)
                 return jsonify({
@@ -403,6 +410,8 @@ def sanitize_path_params(*param_names: str):
                 
                 return func(*args, **kwargs)
                 
+            except BaseApplicationError as e:
+                raise e
             except Exception as e:
                 logger.error(f"Error in path parameter sanitization: {str(e)}", exc_info=True)
                 return jsonify({

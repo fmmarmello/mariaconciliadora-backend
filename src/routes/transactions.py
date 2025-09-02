@@ -41,7 +41,7 @@ def allowed_xlsx_file(filename):
 
 @transactions_bp.route('/upload-ofx', methods=['POST'])
 @handle_errors
-@with_resource_check
+@with_resource_check(memory_limit=95)
 @rate_limit(max_requests=50, window_minutes=60)  # Limit file uploads
 @validate_file_upload(['ofx', 'qfx'], max_size_mb=16)
 def upload_ofx():
