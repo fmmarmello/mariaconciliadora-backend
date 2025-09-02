@@ -184,7 +184,7 @@ def validate_input_fields(*field_names: str):
     return decorator
 
 
-def validate_file_upload(allowed_extensions: List[str], max_size_mb: int = 16):
+    def validate_file_upload(allowed_extensions: List[str], max_size_mb: int = 16):
     """
     Decorator to validate file uploads.
     
@@ -195,6 +195,7 @@ def validate_file_upload(allowed_extensions: List[str], max_size_mb: int = 16):
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
+            logger.info(f"Request files: {request.files}")
             try:
                 if 'file' not in request.files:
                     return jsonify({

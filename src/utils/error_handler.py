@@ -324,6 +324,7 @@ def with_timeout(timeout_seconds: int):
         def wrapper(*args, **kwargs):
             import platform
             import threading
+            logger.info(f"Platform system: {platform.system()}")
 
             if platform.system() == 'Windows':
                 # Windows implementation using threading
