@@ -50,40 +50,50 @@ class ValidationMiddleware:
             # Skip validation for static files and health checks
             if request.endpoint in ['static', 'health', None]:
                 return
-            
+
+            # Detect file upload endpoints
+            is_file_upload = False
+            if request.endpoint and ('upload' in request.endpoint or 'analyze' in request.endpoint):
+                is_file_upload = True
+                logger.info(f"Detected file upload endpoint: {request.endpoint}")
+
             # Get request information
             client_ip = request.environ.get('REMOTE_ADDR', 'unknown')
             content_length = request.content_length or 0
             headers = dict(request.headers)
             url = request.url
-            
+
             # Validate request
             validation_result = validate_api_request(
                 request.get_json(silent=True) or {},
                 headers,
                 url,
                 content_length,
-                client_ip
+                client_ip,
+                is_file_upload=is_file_upload
             )
-            
+
             if not validation_result.is_valid:
                 logger.warning(f"Request validation failed from {client_ip}: {validation_result.errors}")
+                logger.warning(f"Request headers: {headers}")
+                logger.warning(f"Request method: {request.method}, URL: {url}")
                 audit_logger.log_security_event('request_validation_failed', {
                     'client_ip': client_ip,
                     'errors': validation_result.errors,
-                    'url': url
+                    'url': url,
+                    'headers': headers
                 })
-                
+
                 return jsonify({
                     'error': True,
                     'message': 'Request validation failed',
                     'details': validation_result.errors
                 }), 400
-            
+
             # Log warnings if any
             if validation_result.warnings:
                 logger.info(f"Request validation warnings from {client_ip}: {validation_result.warnings}")
-            
+
         except Exception as e:
             logger.error(f"Error in request validation: {str(e)}", exc_info=True)
             return jsonify({

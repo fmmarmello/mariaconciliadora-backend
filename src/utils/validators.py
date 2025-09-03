@@ -33,6 +33,7 @@ from .exceptions import (
     ValidationError, RequiredFieldError, InvalidFormatError,
     FileSizeExceededError, InvalidFileFormatError, FileCorruptedError
 )
+from .logging_config import get_logger
 
 
 class ValidationResult:
@@ -970,30 +971,30 @@ class RequestValidator:
         return result
     
     @staticmethod
-    def validate_headers(headers: Dict[str, str]) -> ValidationResult:
+    def validate_headers(headers: Dict[str, str], skip_content_type_validation: bool = False, is_file_upload: bool = False) -> ValidationResult:
         """Validate request headers."""
         result = ValidationResult()
-        
+
         # Check total header size
         total_header_size = sum(len(k) + len(v) for k, v in headers.items())
         if total_header_size > RequestValidator.MAX_HEADER_SIZE:
             result.add_error(f"Total header size {total_header_size} exceeds maximum {RequestValidator.MAX_HEADER_SIZE}")
-        
+
         # Validate individual headers
         for key, value in headers.items():
             # Check for header injection
             if '\n' in key or '\r' in key or '\n' in value or '\r' in value:
                 result.add_error(f"Header injection detected in {key}")
-            
+
             # Validate specific headers
-            if key.lower() == 'content-type':
-                if not RequestValidator._validate_content_type(value):
+            if key.lower() == 'content-type' and not skip_content_type_validation:
+                if not RequestValidator._validate_content_type(value, is_file_upload):
                     result.add_error(f"Invalid content-type: {value}")
-            
+
             elif key.lower() == 'user-agent':
                 if len(value) > 512:
                     result.add_error("User-Agent header too long")
-        
+
         return result
     
     @staticmethod
@@ -1035,22 +1036,52 @@ class RequestValidator:
         return result
     
     @staticmethod
-    def _validate_content_type(content_type: str) -> bool:
+    def _validate_content_type(content_type: str, is_file_upload: bool = False) -> bool:
         """Validate content-type header."""
-        allowed_types = [
-            'application/json',
-            'application/x-www-form-urlencoded',
-            'multipart/form-data',
-            'text/plain',
-            'application/octet-stream',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'application/vnd.ms-excel',
-            'application/x-ofx'
-        ]
-        
+        logger = get_logger(__name__)
+
+        logger.info(f"Validating content-type: '{content_type}' (file_upload: {is_file_upload})")
+
+        # For file upload endpoints, be more lenient
+        if is_file_upload:
+            allowed_types = [
+                'multipart/form-data',
+                'application/octet-stream',
+                'application/x-ofx',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'undefined'  # Allow undefined for file uploads (browser may not set it properly)
+            ]
+        else:
+            allowed_types = [
+                'application/json',
+                'application/x-www-form-urlencoded',
+                'multipart/form-data',
+                'text/plain',
+                'application/octet-stream',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.ms-excel',
+                'application/x-ofx'
+            ]
+
+        # Handle undefined content-type
+        if content_type is None or content_type.lower() == 'undefined':
+            # For file uploads, allow undefined content-type
+            if is_file_upload:
+                logger.info("Content-type is undefined but allowed for file upload")
+                return True
+            else:
+                logger.warning("Content-type is undefined and not allowed for non-file-upload endpoint")
+                return False
+
         # Extract main content type (ignore charset and other parameters)
         main_type = content_type.split(';')[0].strip().lower()
-        return main_type in allowed_types
+        logger.info(f"Extracted main content-type: '{main_type}'")
+
+        is_valid = main_type in allowed_types
+        logger.info(f"Content-type validation result: {is_valid}")
+
+        return is_valid
 
 
 class BusinessRuleValidator:
@@ -1189,47 +1220,50 @@ class BusinessRuleValidator:
 
 def validate_api_request(request_data: Dict[str, Any], headers: Dict[str, str],
                         url: str, content_length: int = 0,
-                        client_ip: str = None) -> ValidationResult:
+                        client_ip: str = None, skip_content_type_validation: bool = False,
+                        is_file_upload: bool = False) -> ValidationResult:
     """
     Comprehensive API request validation.
-    
+
     Args:
         request_data: Request payload data
         headers: Request headers
         url: Request URL
         content_length: Content length in bytes
         client_ip: Client IP address for rate limiting
-        
+        skip_content_type_validation: Skip content-type validation for file uploads
+        is_file_upload: Whether this is a file upload request
+
     Returns:
         ValidationResult with all validation results
     """
     result = ValidationResult()
-    
+
     # Request size validation
     size_result = RequestValidator.validate_request_size(content_length)
     result.merge(size_result)
-    
+
     # Header validation
-    header_result = RequestValidator.validate_headers(headers)
+    header_result = RequestValidator.validate_headers(headers, skip_content_type_validation, is_file_upload)
     result.merge(header_result)
-    
+
     # URL validation
     url_result = RequestValidator.validate_url(url)
     result.merge(url_result)
-    
+
     # Rate limiting (if IP provided)
     if client_ip:
         rate_limiter = RateLimitValidator()
         rate_result = rate_limiter.validate_rate_limit(client_ip)
         result.merge(rate_result)
-    
+
     # Input security validation for all string values in request data
     if isinstance(request_data, dict):
         for key, value in request_data.items():
             if isinstance(value, str):
                 security_result = validate_input_security(value, key)
                 result.merge(security_result)
-    
+
     return result
 
 
