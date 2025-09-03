@@ -376,25 +376,71 @@ def with_timeout(timeout_seconds: int):
     return decorator
 
 
-def check_resource_limits(memory_limit=90, disk_limit=95, cpu_limit=95):
+def check_resource_limits(memory_limit=96, disk_limit=95, cpu_limit=95):
     """
     Check system resource limits and raise error if exceeded.
     
     Raises:
         ResourceLimitError: If resource limits are exceeded
     """
-    # Check memory usage
+    # Capture process memory to differentiate system vs process pressure
+    try:
+        process = psutil.Process()
+        mem_info = process.memory_info()
+        process_mem_mb = mem_info.rss / (1024 * 1024)
+        process_mem_percent = process.memory_percent()
+    except Exception as _e:
+        process = None
+        process_mem_mb = None
+        process_mem_percent = None
+
+    # Check memory usage with process-aware policy
     memory = psutil.virtual_memory()
-    if memory.percent > memory_limit:
+    system_threshold = max(memory_limit, 96)
+    process_threshold_percent = 35.0
+    process_threshold_mb = 1500.0
+
+    process_meets = False
+    if process is not None and process_mem_mb is not None and process_mem_percent is not None:
+        process_meets = (process_mem_percent >= process_threshold_percent) or (process_mem_mb >= process_threshold_mb)
+
+    if memory.percent >= system_threshold and process_meets:
+        # Log snapshot for diagnostics
+        if process_mem_mb is not None:
+            logger.warning(
+                f"Resource check (process-aware): system_mem={memory.percent:.1f}% >= {system_threshold}% "
+                f"and process_mem={process_mem_mb:.1f}MB ({process_mem_percent:.1f}%) >= "
+                f"{process_threshold_mb:.0f}MB or {process_threshold_percent:.1f}% | pid={process.pid}"
+            )
+        else:
+            logger.warning(
+                f"Resource check (process-aware): system_mem={memory.percent:.1f}% >= {system_threshold}% "
+                "process_mem_unavailable"
+            )
+        details = {}
+        if process is not None:
+            details.update({
+                'process_pid': process.pid,
+                'process_mem_mb': f"{process_mem_mb:.1f}",
+                'process_mem_percent': f"{process_mem_percent:.1f}",
+                'policy': 'process-aware',
+                'thresholds': {
+                    'system_percent': system_threshold,
+                    'process_percent': process_threshold_percent,
+                    'process_mem_mb': process_threshold_mb
+                }
+            })
         raise ResourceLimitError(
             resource='memory',
-            limit=f'{memory_limit}%',
-            current=f'{memory.percent:.1f}%'
+            limit=f'{system_threshold}%',
+            current=f'{memory.percent:.1f}%',
+            details=details
         )
     
     # Check disk usage
     disk = psutil.disk_usage('/')
     if disk.percent > disk_limit:
+        logger.warning(f"Resource check: disk high {disk.percent:.1f}% > limit {disk_limit}%")
         raise ResourceLimitError(
             resource='disk',
             limit=f'{disk_limit}%',
@@ -404,6 +450,7 @@ def check_resource_limits(memory_limit=90, disk_limit=95, cpu_limit=95):
     # Check CPU usage (average over last 1 minute)
     cpu_percent = psutil.cpu_percent(interval=1)
     if cpu_percent > cpu_limit:
+        logger.warning(f"Resource check: cpu high {cpu_percent:.1f}% > limit {cpu_limit}%")
         raise ResourceLimitError(
             resource='cpu',
             limit=f'{cpu_limit}%',
