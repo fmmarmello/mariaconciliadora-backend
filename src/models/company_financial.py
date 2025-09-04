@@ -14,6 +14,7 @@ class CompanyFinancial(db.Model):
     department = db.Column(db.String(50))
     project = db.Column(db.String(50))
     transaction_type = db.Column(db.String(10), nullable=False)  # 'expense' or 'income'
+    justificativa = db.Column(db.Text, nullable=True)  # Justificativa de ajuste
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -28,5 +29,6 @@ class CompanyFinancial(db.Model):
             'department': self.department,
             'project': self.project,
             'transaction_type': self.transaction_type,
+            'justificativa': self.justificativa,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }

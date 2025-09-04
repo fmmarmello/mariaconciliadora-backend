@@ -17,6 +17,7 @@ logger = get_logger(__name__)
 from flask import Flask, send_from_directory
 from flask_cors import CORS
 from src.models.user import db
+from sqlalchemy import inspect, text
 from src.routes.user import user_bp
 from src.routes.transactions import transactions_bp
 from src.routes.test_data import test_data_bp
@@ -45,6 +46,24 @@ csrf_protection.init_app(app)
 
 with app.app_context():
     db.create_all()
+    # Auto-migrate: ensure new columns exist in existing databases
+    try:
+        engine = db.engine
+        inspector = inspect(engine)
+
+        def ensure_column(table_name: str, column_name: str, column_def_sql: str):
+            columns = [col['name'] for col in inspector.get_columns(table_name)]
+            if column_name not in columns:
+                logger.info(f"Adding missing column '{column_name}' to table '{table_name}'")
+                with engine.connect() as conn:
+                    conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_def_sql}"))
+                    conn.commit()
+
+        # Add justificativa columns if missing
+        ensure_column('transactions', 'justificativa', 'TEXT')
+        ensure_column('company_financial', 'justificativa', 'TEXT')
+    except Exception as e:
+        logger.warning(f"Auto-migration step failed: {e}")
 
 # Test data deletion feature controlled by environment variable
 ENABLE_TEST_DATA_DELETION = os.getenv('ENABLE_TEST_DATA_DELETION', 'false').lower() == 'true'

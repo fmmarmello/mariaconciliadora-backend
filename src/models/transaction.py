@@ -16,6 +16,7 @@ class Transaction(db.Model):
     balance = db.Column(db.Float, nullable=True)
     category = db.Column(db.String(50), nullable=True)  # Categoria sugerida pela IA
     is_anomaly = db.Column(db.Boolean, default=False)  # Marcada como anomalia pela IA
+    justificativa = db.Column(db.Text, nullable=True)  # Justificativa de ajuste manual
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def to_dict(self):
@@ -31,6 +32,7 @@ class Transaction(db.Model):
             'balance': self.balance,
             'category': self.category,
             'is_anomaly': self.is_anomaly,
+            'justificativa': self.justificativa,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

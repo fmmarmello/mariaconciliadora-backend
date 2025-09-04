@@ -783,7 +783,8 @@ def upload_xlsx_corrected():
                     cost_center=entry_data.get('cost_center', ''),
                     department=entry_data.get('department', ''),
                     project=entry_data.get('project', ''),
-                    transaction_type=entry_data.get('transaction_type', 'expense')
+                    transaction_type=entry_data.get('transaction_type', 'expense'),
+                    justificativa=entry_data.get('justificativa')
                 )
                 db.session.add(financial_entry)
                 saved_count += 1
@@ -827,6 +828,95 @@ def upload_xlsx_corrected():
         
     except Exception as e:
         return jsonify({'error': f'Erro ao processar dados corrigidos: {str(e)}'}), 500
+
+# Update a bank transaction (adjust fields and justificativa)
+@transactions_bp.route('/transactions/<int:transaction_id>', methods=['PUT'])
+@handle_errors
+@rate_limit(max_requests=200, window_minutes=60)
+@require_content_type('application/json')
+@sanitize_path_params('transaction_id')
+def update_transaction(transaction_id):
+    data = request.get_json() or {}
+
+    tx = Transaction.query.get(transaction_id)
+    if not tx:
+        return jsonify({'error': 'Transação não encontrada'}), 404
+
+    # Update allowed fields if provided
+    try:
+        if 'date' in data and data['date']:
+            # Accept ISO string or date string YYYY-MM-DD
+            if isinstance(data['date'], str):
+                tx.date = datetime.fromisoformat(data['date'].replace('Z', '+00:00')).date()
+        if 'amount' in data and data['amount'] is not None:
+            tx.amount = float(data['amount'])
+        if 'description' in data:
+            tx.description = str(data['description']).strip()
+        if 'category' in data:
+            tx.category = str(data['category']).strip() if data['category'] is not None else None
+        if 'transaction_type' in data and data['transaction_type'] in ['debit', 'credit']:
+            tx.transaction_type = data['transaction_type']
+        if 'is_anomaly' in data:
+            tx.is_anomaly = bool(data['is_anomaly'])
+        if 'justificativa' in data:
+            tx.justificativa = str(data['justificativa']).strip() if data['justificativa'] else None
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Transação atualizada com sucesso',
+            'data': tx.to_dict()
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Erro ao atualizar transação: {str(e)}'}), 500
+
+
+# Update a company financial entry (adjust fields and justificativa)
+@transactions_bp.route('/company-financial/<int:entry_id>', methods=['PUT'])
+@handle_errors
+@rate_limit(max_requests=200, window_minutes=60)
+@require_content_type('application/json')
+@sanitize_path_params('entry_id')
+def update_company_financial(entry_id):
+    data = request.get_json() or {}
+
+    entry = CompanyFinancial.query.get(entry_id)
+    if not entry:
+        return jsonify({'error': 'Entrada financeira não encontrada'}), 404
+
+    try:
+        if 'date' in data and data['date']:
+            if isinstance(data['date'], str):
+                entry.date = datetime.fromisoformat(data['date'].replace('Z', '+00:00')).date()
+        if 'amount' in data and data['amount'] is not None:
+            entry.amount = float(data['amount'])
+        if 'description' in data:
+            entry.description = str(data['description']).strip()
+        if 'category' in data:
+            entry.category = str(data['category']).strip() if data['category'] is not None else None
+        if 'cost_center' in data:
+            entry.cost_center = str(data['cost_center']).strip() if data['cost_center'] is not None else None
+        if 'department' in data:
+            entry.department = str(data['department']).strip() if data['department'] is not None else None
+        if 'project' in data:
+            entry.project = str(data['project']).strip() if data['project'] is not None else None
+        if 'transaction_type' in data and data['transaction_type'] in ['expense', 'income']:
+            entry.transaction_type = data['transaction_type']
+        if 'justificativa' in data:
+            entry.justificativa = str(data['justificativa']).strip() if data['justificativa'] else None
+
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Entrada financeira atualizada com sucesso',
+            'data': entry.to_dict()
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Erro ao atualizar entrada financeira: {str(e)}'}), 500
 
 @transactions_bp.route('/company-financial', methods=['GET'])
 def get_company_financial():
@@ -1312,4 +1402,3 @@ def analyze_xlsx():
                 os.rmdir(temp_dir)
         except Exception as cleanup_error:
             logger.warning(f"Error cleaning up temporary files: {str(cleanup_error)}")
-
