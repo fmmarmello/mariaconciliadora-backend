@@ -294,13 +294,29 @@ def get_transactions():
     
     # Aplica paginação
     transactions = query.offset(offset).limit(limit).all()
-    
+
+    # Enrich transactions with reconciliation and adjustment info
+    tx_ids = [t.id for t in transactions]
+    confirmed_ids = set()
+    if tx_ids:
+        confirmed_rows = db.session.query(ReconciliationRecord.bank_transaction_id).\
+            filter(ReconciliationRecord.bank_transaction_id.in_(tx_ids)).\
+            filter(ReconciliationRecord.status == 'confirmed').all()
+        confirmed_ids = {row[0] for row in confirmed_rows}
+
+    enriched = []
+    for t in transactions:
+        td = t.to_dict()
+        td['is_reconciled'] = t.id in confirmed_ids
+        td['was_adjusted'] = bool(getattr(t, 'justificativa', None) and str(t.justificativa).strip())
+        enriched.append(td)
+
     logger.info(f"Retrieved {len(transactions)} transactions (total: {total_count})")
-    
+
     return jsonify({
         'success': True,
         'data': {
-            'transactions': [t.to_dict() for t in transactions],
+            'transactions': enriched,
             'total_count': total_count,
             'page': pagination_params['page'],
             'per_page': pagination_params['per_page'],
@@ -955,11 +971,27 @@ def get_company_financial():
         # Aplica paginação
         entries = query.offset(offset).limit(limit).all()
         total_count = query.count()
-        
+
+        # Enrich with reconciliation and adjustment info
+        entry_ids = [e.id for e in entries]
+        confirmed_ids = set()
+        if entry_ids:
+            confirmed_rows = db.session.query(ReconciliationRecord.company_entry_id).\
+                filter(ReconciliationRecord.company_entry_id.in_(entry_ids)).\
+                filter(ReconciliationRecord.status == 'confirmed').all()
+            confirmed_ids = {row[0] for row in confirmed_rows}
+
+        enriched = []
+        for e in entries:
+            ed = e.to_dict()
+            ed['is_reconciled'] = e.id in confirmed_ids
+            ed['was_adjusted'] = bool(getattr(e, 'justificativa', None) and str(e.justificativa).strip())
+            enriched.append(ed)
+
         return jsonify({
             'success': True,
             'data': {
-                'entries': [e.to_dict() for e in entries],
+                'entries': enriched,
                 'total_count': total_count,
                 'limit': limit,
                 'offset': offset

@@ -155,7 +155,8 @@ def validate_input_fields(*field_names: str):
             try:
                 # Get request data
                 if request.is_json:
-                    data = request.get_json() or {}
+                    # Use silent=True to avoid raising on empty/invalid JSON when Content-Type is application/json
+                    data = request.get_json(silent=True) or {}
                 else:
                     data = request.form.to_dict()
                 
@@ -269,7 +270,8 @@ def validate_financial_data(data_type: str = 'transaction'):
             try:
                 # Get request data
                 if request.is_json:
-                    data = request.get_json() or {}
+                    # Tolerate empty body with JSON content type
+                    data = request.get_json(silent=True) or {}
                 else:
                     data = request.form.to_dict()
                 
