@@ -44,11 +44,30 @@ class ReconciliationRecord(db.Model):
     company_entry_id = db.Column(db.Integer, db.ForeignKey('company_financial.id'), nullable=False)
     match_score = db.Column(db.Float, nullable=False)  # Score de 0 a 1 indicando a qualidade do match
     status = db.Column(db.String(20), default='pending')  # 'pending', 'confirmed', 'rejected'
+    justification = db.Column(db.Text, nullable=True)  # Justification for manual matches or adjustments
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Anomaly Detection Fields
+    is_anomaly = db.Column(db.Boolean, default=False)  # Flagged as potential anomaly
+    anomaly_type = db.Column(db.String(50), nullable=True)  # Type of anomaly detected
+    anomaly_severity = db.Column(db.String(20), default='low')  # 'low', 'medium', 'high', 'critical'
+    anomaly_score = db.Column(db.Float, nullable=True)  # Anomaly confidence score (0-1)
+    anomaly_reason = db.Column(db.Text, nullable=True)  # Detailed explanation of anomaly
+    anomaly_detected_at = db.Column(db.DateTime, nullable=True)  # When anomaly was detected
+    anomaly_reviewed_by = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # User who reviewed
+    anomaly_reviewed_at = db.Column(db.DateTime, nullable=True)  # When anomaly was reviewed
+    anomaly_action = db.Column(db.String(20), nullable=True)  # 'confirmed', 'dismissed', 'escalated'
+    anomaly_justification = db.Column(db.Text, nullable=True)  # User justification for action
+    
+    # Enhanced matching fields
+    score_breakdown = db.Column(db.Text, nullable=True)  # JSON string with detailed score components
+    confidence_level = db.Column(db.String(20), default='medium')  # 'low', 'medium', 'high'
+    risk_factors = db.Column(db.Text, nullable=True)  # JSON string with identified risk factors
     
     # Relacionamentos
     bank_transaction = db.relationship('Transaction', foreign_keys=[bank_transaction_id])
     company_entry = db.relationship('CompanyFinancial', foreign_keys=[company_entry_id])
+    reviewer = db.relationship('User', foreign_keys=[anomaly_reviewed_by])
     
     def to_dict(self):
         return {
@@ -57,10 +76,77 @@ class ReconciliationRecord(db.Model):
             'company_entry_id': self.company_entry_id,
             'match_score': self.match_score,
             'status': self.status,
+            'justification': self.justification,
             'created_at': self.created_at.isoformat() if self.created_at else None,
+            
+            # Anomaly Detection Fields
+            'is_anomaly': self.is_anomaly,
+            'anomaly_type': self.anomaly_type,
+            'anomaly_severity': self.anomaly_severity,
+            'anomaly_score': self.anomaly_score,
+            'anomaly_reason': self.anomaly_reason,
+            'anomaly_detected_at': self.anomaly_detected_at.isoformat() if self.anomaly_detected_at else None,
+            'anomaly_reviewed_by': self.anomaly_reviewed_by,
+            'anomaly_reviewed_at': self.anomaly_reviewed_at.isoformat() if self.anomaly_reviewed_at else None,
+            'anomaly_action': self.anomaly_action,
+            'anomaly_justification': self.anomaly_justification,
+            
+            # Enhanced matching fields
+            'score_breakdown': self.get_score_breakdown(),
+            'confidence_level': self.confidence_level,
+            'risk_factors': self.get_risk_factors(),
+            
             'bank_transaction': self.bank_transaction.to_dict() if self.bank_transaction else None,
             'company_entry': self.company_entry.to_dict() if self.company_entry else None
         }
+    
+    def get_score_breakdown(self):
+        """Parse JSON score breakdown"""
+        try:
+            import json
+            return json.loads(self.score_breakdown) if self.score_breakdown else {}
+        except:
+            return {}
+    
+    def get_risk_factors(self):
+        """Parse JSON risk factors"""
+        try:
+            import json
+            return json.loads(self.risk_factors) if self.risk_factors else {}
+        except:
+            return {}
+    
+    def flag_anomaly(self, anomaly_type, severity, score, reason, user_id=None):
+        """Flag this reconciliation record as an anomaly"""
+        from datetime import datetime
+        import json
+        
+        self.is_anomaly = True
+        self.anomaly_type = anomaly_type
+        self.anomaly_severity = severity
+        self.anomaly_score = score
+        self.anomaly_reason = reason
+        self.anomaly_detected_at = datetime.utcnow()
+        self.anomaly_action = 'pending' if user_id else None
+        
+        if user_id:
+            self.anomaly_reviewed_by = user_id
+            self.anomaly_reviewed_at = datetime.utcnow()
+    
+    def resolve_anomaly(self, action, justification, user_id):
+        """Resolve an anomaly with user action"""
+        from datetime import datetime
+        
+        self.anomaly_action = action
+        self.anomaly_justification = justification
+        self.anomaly_reviewed_by = user_id
+        self.anomaly_reviewed_at = datetime.utcnow()
+        
+        # Update status based on action
+        if action == 'confirmed':
+            self.status = 'confirmed'
+        elif action == 'dismissed':
+            self.is_anomaly = False
 class UploadHistory(db.Model):
     __tablename__ = 'upload_history'
     

@@ -8,7 +8,8 @@ from src.models.company_financial import CompanyFinancial
 from src.services.ofx_processor import OFXProcessor
 from src.services.xlsx_processor import XLSXProcessor
 from src.services.ai_service import AIService
-from src.services.reconciliation_service import ReconciliationService
+from src.services.reconciliation_service import ReconciliationService, ReconciliationConfig
+from src.services.user_preference_service import UserPreferenceService
 from src.services.duplicate_detection_service import DuplicateDetectionService
 from src.utils.logging_config import get_logger, get_audit_logger
 from src.utils.error_handler import handle_errors, with_resource_check
@@ -524,6 +525,8 @@ def get_upload_history():
         return jsonify({'error': f'Erro ao buscar histórico: {str(e)}'}), 500
 
 @transactions_bp.route('/upload-xlsx', methods=['POST'])
+@handle_errors
+@with_resource_check(memory_limit=95)
 @rate_limit(max_requests=50, window_minutes=60)  # Limit file uploads
 @validate_file_upload(['xlsx'], max_size_mb=10)
 def upload_xlsx():
@@ -1366,6 +1369,455 @@ def get_reconciliation_report():
     except Exception as e:
         return jsonify({'error': f'Erro ao gerar relatório: {str(e)}'}), 500
 
+# Enhanced Reconciliation Endpoints
+
+@transactions_bp.route('/reconciliation/configure', methods=['POST'])
+@handle_errors
+@with_resource_check
+@rate_limit(max_requests=50, window_minutes=60)
+@validate_input_fields('config_data')
+def configure_reconciliation():
+    """
+    Endpoint to save user reconciliation configuration
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            raise ValidationError("Request body is required")
+        
+        user_id = data.get('user_id', 1)  # Default to user 1 if not specified
+        config_name = data.get('config_name', 'default')
+        config_data = data.get('config_data', {})
+        is_default = data.get('is_default', False)
+        
+        user_preference_service = UserPreferenceService()
+        
+        # Check if config exists and update, or create new
+        existing_config = user_preference_service.get_user_config(user_id, config_name)
+        
+        if existing_config:
+            user_config = user_preference_service.update_user_config(
+                user_id, config_name, config_data, is_default
+            )
+            message = 'Configuration updated successfully'
+        else:
+            user_config = user_preference_service.create_user_config(
+                user_id, config_name, config_data, is_default
+            )
+            message = 'Configuration created successfully'
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'data': user_config.to_dict()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error configuring reconciliation: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/configure/<int:user_id>', methods=['GET'])
+@handle_errors
+@rate_limit(max_requests=100, window_minutes=60)
+@sanitize_path_params('user_id')
+def get_user_configurations(user_id):
+    """
+    Endpoint to get user reconciliation configurations
+    """
+    try:
+        config_name = request.args.get('config_name')
+        user_preference_service = UserPreferenceService()
+        
+        if config_name:
+            user_config = user_preference_service.get_user_config(user_id, config_name)
+            if not user_config:
+                return jsonify({'error': 'Configuration not found'}), 404
+            
+            config_data = user_config.to_dict()
+        else:
+            # Get default config or all configs
+            if request.args.get('default_only') == 'true':
+                user_config = user_preference_service.get_user_config(user_id)
+                config_data = user_config.to_dict() if user_config else None
+            else:
+                user_configs = user_preference_service.get_all_user_configs(user_id)
+                config_data = [config.to_dict() for config in user_configs]
+        
+        return jsonify({
+            'success': True,
+            'data': config_data
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error getting user configurations: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/preview', methods=['POST'])
+@handle_errors
+@with_resource_check
+@rate_limit(max_requests=30, window_minutes=60)  # Lower limit for intensive operations
+@validate_input_fields('config_data')
+def preview_reconciliation():
+    """
+    Endpoint to preview reconciliation matches with custom configuration
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            raise ValidationError("Request body is required")
+        
+        # Get date range
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        config_data = data.get('config_data', {})
+        user_id = data.get('user_id', 1)
+        
+        # Validate date parameters
+        start_date_obj = None
+        end_date_obj = None
+        
+        if start_date:
+            try:
+                start_date_obj = datetime.fromisoformat(start_date)
+            except ValueError:
+                raise ValidationError("Invalid start_date format. Use ISO format (YYYY-MM-DD)")
+        
+        if end_date:
+            try:
+                end_date_obj = datetime.fromisoformat(end_date)
+            except ValueError:
+                raise ValidationError("Invalid end_date format. Use ISO format (YYYY-MM-DD)")
+        
+        # Build queries
+        bank_query = Transaction.query
+        company_query = CompanyFinancial.query
+        
+        if start_date_obj:
+            bank_query = bank_query.filter(Transaction.date >= start_date_obj.date())
+            company_query = company_query.filter(CompanyFinancial.date >= start_date_obj.date())
+        
+        if end_date_obj:
+            bank_query = bank_query.filter(Transaction.date <= end_date_obj.date())
+            company_query = company_query.filter(CompanyFinancial.date <= end_date_obj.date())
+        
+        # Get data
+        bank_transactions = bank_query.all()
+        company_entries = company_query.all()
+        
+        if not bank_transactions:
+            return jsonify({
+                'success': True,
+                'message': 'No bank transactions found for the specified criteria',
+                'data': {'matches': [], 'summary': {'total_transactions': 0, 'total_matches': 0}}
+            })
+        
+        if not company_entries:
+            return jsonify({
+                'success': True,
+                'message': 'No company entries found for the specified criteria',
+                'data': {'matches': [], 'summary': {'total_transactions': 0, 'total_matches': 0}}
+            })
+        
+        # Create config and run matching
+        config = ReconciliationConfig()
+        config.update_from_dict(config_data)
+        
+        # Get user-specific config if available
+        user_preference_service = UserPreferenceService()
+        user_config = user_preference_service.get_reconciliation_config_for_user(user_id)
+        if user_config:
+            config = user_config
+        
+        reconciliation_service = ReconciliationService(config)
+        matches = reconciliation_service.find_matches(bank_transactions, company_entries)
+        
+        # Format matches for response
+        formatted_matches = []
+        for match in matches:
+            formatted_match = {
+                'bank_transaction': match['bank_transaction'].to_dict(),
+                'company_entry': match['company_entry'].to_dict(),
+                'match_score': match['match_score'],
+                'match_rank': match.get('match_rank', 1),
+                'score_breakdown': match.get('score_breakdown', {})
+            }
+            formatted_matches.append(formatted_match)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Reconciliation preview completed successfully',
+            'data': {
+                'matches': formatted_matches,
+                'summary': {
+                    'total_transactions': len(bank_transactions),
+                    'total_entries': len(company_entries),
+                    'total_matches': len(matches),
+                    'config_used': config.to_dict()
+                }
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error previewing reconciliation: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/manual-match', methods=['POST'])
+@handle_errors
+@with_resource_check
+@rate_limit(max_requests=50, window_minutes=60)
+@validate_input_fields('bank_transaction_id', 'company_entry_id')
+def create_manual_match():
+    """
+    Endpoint to create a manual match between bank transaction and company entry
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            raise ValidationError("Request body is required")
+        
+        bank_transaction_id = data.get('bank_transaction_id')
+        company_entry_id = data.get('company_entry_id')
+        user_confidence = data.get('user_confidence', 1.0)
+        justification = data.get('justification')
+        user_id = data.get('user_id', 1)
+        
+        reconciliation_service = ReconciliationService()
+        manual_match = reconciliation_service.create_manual_match(
+            bank_transaction_id, company_entry_id, user_confidence, justification
+        )
+        
+        # Record user feedback
+        user_preference_service = UserPreferenceService()
+        user_preference_service.record_user_feedback(
+            user_id=user_id,
+            feedback_type='manual_match',
+            reconciliation_id=manual_match.id,
+            adjusted_score=user_confidence,
+            confidence_rating=data.get('confidence_rating', 5),
+            justification=justification,
+            feedback_data={'manual_match': True, 'user_confidence': user_confidence}
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': 'Manual match created successfully',
+            'data': manual_match.to_dict()
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error creating manual match: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/batch-confirm', methods=['POST'])
+@handle_errors
+@with_resource_check
+@rate_limit(max_requests=30, window_minutes=60)
+@validate_input_fields('reconciliation_ids')
+def batch_confirm_reconciliations():
+    """
+    Endpoint to confirm multiple reconciliation records in batch
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            raise ValidationError("Request body is required")
+        
+        reconciliation_ids = data.get('reconciliation_ids', [])
+        user_id = data.get('user_id', 1)
+        
+        if not reconciliation_ids:
+            raise ValidationError("At least one reconciliation ID is required")
+        
+        reconciliation_service = ReconciliationService()
+        result = reconciliation_service.batch_confirm_reconciliations(reconciliation_ids)
+        
+        # Record user feedback for batch operation
+        user_preference_service = UserPreferenceService()
+        user_preference_service.record_user_feedback(
+            user_id=user_id,
+            feedback_type='confirm',
+            feedback_data={'batch_operation': True, 'confirmed_count': result['confirmed_count']}
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': f'Batch confirmation completed. {result["confirmed_count"]} confirmed.',
+            'data': result
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error in batch confirmation: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/batch-reject', methods=['POST'])
+@handle_errors
+@with_resource_check
+@rate_limit(max_requests=30, window_minutes=60)
+@validate_input_fields('reconciliation_ids')
+def batch_reject_reconciliations():
+    """
+    Endpoint to reject multiple reconciliation records in batch
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            raise ValidationError("Request body is required")
+        
+        reconciliation_ids = data.get('reconciliation_ids', [])
+        user_id = data.get('user_id', 1)
+        
+        if not reconciliation_ids:
+            raise ValidationError("At least one reconciliation ID is required")
+        
+        reconciliation_service = ReconciliationService()
+        result = reconciliation_service.batch_reject_reconciliations(reconciliation_ids)
+        
+        # Record user feedback for batch operation
+        user_preference_service = UserPreferenceService()
+        user_preference_service.record_user_feedback(
+            user_id=user_id,
+            feedback_type='reject',
+            feedback_data={'batch_operation': True, 'rejected_count': result['rejected_count']}
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': f'Batch rejection completed. {result["rejected_count"]} rejected.',
+            'data': result
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error in batch rejection: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/<int:reconciliation_id>/adjust-score', methods=['POST'])
+@handle_errors
+@with_resource_check
+@rate_limit(max_requests=50, window_minutes=60)
+@sanitize_path_params('reconciliation_id')
+def adjust_match_score(reconciliation_id):
+    """
+    Endpoint to adjust the match score of a reconciliation record
+    """
+    try:
+        data = request.get_json()
+        if not data:
+            raise ValidationError("Request body is required")
+        
+        new_score = data.get('new_score')
+        justification = data.get('justification')
+        user_id = data.get('user_id', 1)
+        
+        if new_score is None:
+            raise ValidationError("New score is required")
+        
+        reconciliation_service = ReconciliationService()
+        success = reconciliation_service.adjust_match_score(reconciliation_id, new_score, justification)
+        
+        if success:
+            # Record user feedback
+            user_preference_service = UserPreferenceService()
+            user_preference_service.record_user_feedback(
+                user_id=user_id,
+                feedback_type='adjust',
+                reconciliation_id=reconciliation_id,
+                adjusted_score=new_score,
+                confidence_rating=data.get('confidence_rating', 3),
+                justification=justification,
+                feedback_data={'score_adjustment': True, 'new_score': new_score}
+            )
+            
+            return jsonify({
+                'success': True,
+                'message': 'Match score adjusted successfully',
+                'data': {'reconciliation_id': reconciliation_id, 'new_score': new_score}
+            })
+        else:
+            return jsonify({'error': 'Failed to adjust match score'}), 500
+        
+    except Exception as e:
+        return jsonify({'error': f'Error adjusting match score: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/<int:bank_transaction_id>/suggestions', methods=['GET'])
+@handle_errors
+@rate_limit(max_requests=100, window_minutes=60)
+@sanitize_path_params('bank_transaction_id')
+def get_reconciliation_suggestions(bank_transaction_id):
+    """
+    Endpoint to get AI-powered matching suggestions for a bank transaction
+    """
+    try:
+        limit = request.args.get('limit', 5, type=int)
+        user_id = request.args.get('user_id', 1, type=int)
+        
+        # Get user-specific config
+        user_preference_service = UserPreferenceService()
+        user_config = user_preference_service.get_reconciliation_config_for_user(user_id)
+        
+        reconciliation_service = ReconciliationService(user_config)
+        suggestions = reconciliation_service.get_reconciliation_suggestions(bank_transaction_id, limit)
+        
+        # Format suggestions for response
+        formatted_suggestions = []
+        for suggestion in suggestions:
+            formatted_suggestion = {
+                'company_entry': suggestion['company_entry'].to_dict(),
+                'match_score': suggestion['match_score'],
+                'score_breakdown': suggestion['score_breakdown'],
+                'suggestion_reason': suggestion['suggestion_reason']
+            }
+            formatted_suggestions.append(formatted_suggestion)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Found {len(formatted_suggestions)} suggestions',
+            'data': {
+                'bank_transaction_id': bank_transaction_id,
+                'suggestions': formatted_suggestions
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error getting reconciliation suggestions: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/feedback/<int:user_id>', methods=['GET'])
+@handle_errors
+@rate_limit(max_requests=50, window_minutes=60)
+@sanitize_path_params('user_id')
+def get_user_feedback_history(user_id):
+    """
+    Endpoint to get user's reconciliation feedback history
+    """
+    try:
+        limit = request.args.get('limit', 100, type=int)
+        
+        user_preference_service = UserPreferenceService()
+        feedback_history = user_preference_service.get_user_feedback_history(user_id, limit)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'feedback_history': [feedback.to_dict() for feedback in feedback_history]
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error getting user feedback history: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/learning/<int:user_id>', methods=['GET'])
+@handle_errors
+@rate_limit(max_requests=30, window_minutes=60)
+@sanitize_path_params('user_id')
+def get_user_learning_data(user_id):
+    """
+    Endpoint to get aggregated learning data from user feedback
+    """
+    try:
+        user_preference_service = UserPreferenceService()
+        learning_data = user_preference_service.get_user_learning_data(user_id)
+        
+        return jsonify({
+            'success': True,
+            'data': learning_data
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error getting user learning data: {str(e)}'}), 500
+
 @transactions_bp.route('/analyze-xlsx', methods=['POST'])
 @handle_errors
 @with_resource_check
@@ -1434,3 +1886,238 @@ def analyze_xlsx():
                 os.rmdir(temp_dir)
         except Exception as cleanup_error:
             logger.warning(f"Error cleaning up temporary files: {str(cleanup_error)}")
+
+# Anomaly Detection Endpoints
+
+@transactions_bp.route('/reconciliation/anomaly-detection', methods=['POST'])
+@handle_errors
+@with_resource_check
+@rate_limit(max_requests=10, window_minutes=60)  # Lower limit for intensive operations
+@validate_input_fields('start_date', 'end_date')
+def process_reconciliation_with_anomaly_detection():
+    """
+    Endpoint para processar reconciliação com detecção de anomalias e supervisão humana
+    """
+    try:
+        data = request.get_json() or {}
+        
+        # Get date range
+        start_date = data.get('start_date') or request.args.get('start_date')
+        end_date = data.get('end_date') or request.args.get('end_date')
+        user_id = data.get('user_id', 1)
+        
+        # Validate date parameters
+        start_date_obj = None
+        end_date_obj = None
+        
+        if start_date:
+            try:
+                start_date_obj = datetime.fromisoformat(start_date)
+            except ValueError:
+                raise ValidationError("Invalid start_date format. Use ISO format (YYYY-MM-DD)")
+        
+        if end_date:
+            try:
+                end_date_obj = datetime.fromisoformat(end_date)
+            except ValueError:
+                raise ValidationError("Invalid end_date format. Use ISO format (YYYY-MM-DD)")
+        
+        # Validate date range
+        if start_date_obj and end_date_obj and start_date_obj > end_date_obj:
+            raise ValidationError("start_date must be before end_date")
+        
+        # Build queries for bank and financial data
+        bank_query = Transaction.query
+        company_query = CompanyFinancial.query
+        
+        if start_date_obj:
+            bank_query = bank_query.filter(Transaction.date >= start_date_obj.date())
+            company_query = company_query.filter(CompanyFinancial.date >= start_date_obj.date())
+        
+        if end_date_obj:
+            bank_query = bank_query.filter(Transaction.date <= end_date_obj.date())
+            company_query = company_query.filter(CompanyFinancial.date <= end_date_obj.date())
+        
+        # Get the data
+        bank_transactions = bank_query.all()
+        company_entries = company_query.all()
+        
+        if not bank_transactions:
+            return jsonify({
+                'success': True,
+                'message': 'No bank transactions found for the specified criteria',
+                'data': {'total_matches': 0, 'anomalies_detected': 0}
+            })
+        
+        if not company_entries:
+            return jsonify({
+                'success': True,
+                'message': 'No company entries found for the specified criteria',
+                'data': {'total_matches': 0, 'anomalies_detected': 0}
+            })
+        
+        # Process reconciliation with anomaly detection
+        reconciliation_service = ReconciliationService()
+        result = reconciliation_service.process_reconciliation_with_anomaly_detection(
+            bank_transactions, company_entries, user_id
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': 'Reconciliation with anomaly detection completed successfully',
+            'data': result
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error processing reconciliation with anomaly detection: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/anomalies', methods=['GET'])
+@handle_errors
+@rate_limit(max_requests=100, window_minutes=60)
+def get_anomalous_reconciliations():
+    """
+    Endpoint para obter lista de reconciliações anômalas com paginação e filtros
+    """
+    try:
+        limit = request.args.get('limit', 50, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        severity_filter = request.args.get('severity')
+        status_filter = request.args.get('status')
+        
+        reconciliation_service = ReconciliationService()
+        result = reconciliation_service.get_anomalous_reconciliations(
+            limit, offset, severity_filter, status_filter
+        )
+        
+        return jsonify({
+            'success': True,
+            'data': result
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error getting anomalous reconciliations: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/anomaly/<int:reconciliation_id>/review', methods=['POST'])
+@handle_errors
+@rate_limit(max_requests=50, window_minutes=60)
+@sanitize_path_params('reconciliation_id')
+def review_anomaly(reconciliation_id):
+    """
+    Endpoint para revisar e resolver uma anomalia com supervisão humana
+    """
+    try:
+        data = request.get_json() or {}
+        
+        user_id = data.get('user_id', 1)
+        action = data.get('action')
+        justification = data.get('justification')
+        
+        reconciliation_service = ReconciliationService()
+        result = reconciliation_service.review_anomaly(reconciliation_id, user_id, action, justification)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Anomaly review completed successfully. Action: {action}',
+            'data': result
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error reviewing anomaly: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/anomaly/<int:reconciliation_id>/suggestions', methods=['GET'])
+@handle_errors
+@rate_limit(max_requests=100, window_minutes=60)
+@sanitize_path_params('reconciliation_id')
+def get_anomaly_workflow_suggestions(reconciliation_id):
+    """
+    Endpoint para obter sugestões de fluxo de trabalho com IA para resolução de anomalias
+    """
+    try:
+        reconciliation_service = ReconciliationService()
+        suggestions = reconciliation_service.get_anomaly_workflow_suggestions(reconciliation_id)
+        
+        return jsonify({
+            'success': True,
+            'data': suggestions
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error getting anomaly workflow suggestions: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/anomaly/<int:reconciliation_id>/escalate', methods=['POST'])
+@handle_errors
+@rate_limit(max_requests=20, window_minutes=60)
+@sanitize_path_params('reconciliation_id')
+def escalate_anomaly(reconciliation_id):
+    """
+    Endpoint para escalar uma anomalia para autoridade superior ou especialista
+    """
+    try:
+        data = request.get_json() or {}
+        
+        user_id = data.get('user_id', 1)
+        escalation_reason = data.get('escalation_reason')
+        target_user_id = data.get('target_user_id')
+        
+        reconciliation_service = ReconciliationService()
+        result = reconciliation_service.escalate_anomaly(
+            reconciliation_id, user_id, escalation_reason, target_user_id
+        )
+        
+        return jsonify({
+            'success': True,
+            'message': 'Anomaly escalated successfully',
+            'data': result
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error escalating anomaly: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/anomaly/batch-review', methods=['POST'])
+@handle_errors
+@rate_limit(max_requests=10, window_minutes=60)
+def bulk_anomaly_review():
+    """
+    Endpoint para revisar múltiplas anomalias em lote
+    """
+    try:
+        data = request.get_json() or {}
+        
+        reconciliation_ids = data.get('reconciliation_ids', [])
+        user_id = data.get('user_id', 1)
+        action = data.get('action')
+        justification = data.get('justification')
+        
+        if not reconciliation_ids:
+            raise ValidationError("At least one reconciliation ID is required")
+        
+        reconciliation_service = ReconciliationService()
+        result = reconciliation_service.bulk_anomaly_review(reconciliation_ids, user_id, action, justification)
+        
+        return jsonify({
+            'success': True,
+            'message': f'Bulk anomaly review completed. {result["processed_count"]} processed.',
+            'data': result
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error in bulk anomaly review: {str(e)}'}), 500
+
+@transactions_bp.route('/reconciliation/anomaly/statistics', methods=['GET'])
+@handle_errors
+@rate_limit(max_requests=50, window_minutes=60)
+def get_anomaly_statistics():
+    """
+    Endpoint para obter estatísticas abrangentes de anomalias
+    """
+    try:
+        reconciliation_service = ReconciliationService()
+        statistics = reconciliation_service.get_anomaly_statistics()
+        
+        return jsonify({
+            'success': True,
+            'data': statistics
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Error getting anomaly statistics: {str(e)}'}), 500

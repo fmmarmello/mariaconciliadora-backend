@@ -128,6 +128,20 @@ class RequiredFieldError(ValidationError):
         )
 
 
+class ConfigurationError(BaseApplicationError):
+    """Raised when there's a configuration error."""
+    
+    def __init__(self, message: str, **kwargs):
+        kwargs.setdefault('user_message', "Erro de configuração. Contacte o administrador.")
+        kwargs.setdefault('status_code', 500)
+        kwargs.setdefault('category', ErrorCategory.SYSTEM)
+        kwargs.setdefault('severity', ErrorSeverity.HIGH)
+        super().__init__(
+            message=message,
+            **kwargs
+        )
+
+
 class InvalidFormatError(ValidationError):
     """Raised when data format is invalid."""
     
