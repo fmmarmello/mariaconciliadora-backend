@@ -131,3 +131,15 @@ cython_debug/
 
 # dotenv environment variables
 .env.local
+
+# Database migration scripts (keep templates, ignore generated ones)
+src/database/migrate_*.py
+!src/database/migrate_justificativa.py
+!src/database/migrate_upload_history.py
+
+# Test coverage and reports
+.coverage
+htmlcov/
+.pytest_cache/
+*.pyc
+__pycache__/
