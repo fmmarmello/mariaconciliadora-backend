@@ -325,6 +325,52 @@ def get_transactions():
         }
     })
 
+@transactions_bp.route('/transactions/bulk', methods=['DELETE'])
+@handle_errors
+@rate_limit(max_requests=20, window_minutes=60)
+def bulk_delete_transactions():
+    """
+    Exclui múltiplas transações em lote.
+    Espera um JSON no corpo com o formato: { "ids": [1,2,3] }
+    Também remove registros de reconciliação associados às transações.
+    """
+    data = request.get_json() or {}
+    ids = data.get('ids', [])
+
+    if not isinstance(ids, list) or not ids:
+        raise ValidationError("A list of transaction IDs is required")
+
+    # Garantir que todos os IDs sejam inteiros
+    try:
+        ids = [int(x) for x in ids]
+    except Exception:
+        raise ValidationError("All transaction IDs must be integers")
+
+    # Remove registros dependentes primeiro (reconciliações)
+    reconciliations_deleted = db.session.query(ReconciliationRecord).\
+        filter(ReconciliationRecord.bank_transaction_id.in_(ids)).delete(synchronize_session=False)
+
+    # Remove as transações
+    deleted = db.session.query(Transaction).\
+        filter(Transaction.id.in_(ids)).delete(synchronize_session=False)
+
+    db.session.commit()
+
+    # Auditoria
+    try:
+        audit_logger.log_database_operation('delete', 'transactions', deleted, True)
+    except Exception:
+        pass
+
+    return jsonify({
+        'success': True,
+        'message': f'{deleted} transações excluídas com sucesso',
+        'data': {
+            'deleted_count': deleted,
+            'reconciliations_deleted': reconciliations_deleted
+        }
+    })
+
 @transactions_bp.route('/insights', methods=['GET'])
 @handle_errors
 def get_insights():
