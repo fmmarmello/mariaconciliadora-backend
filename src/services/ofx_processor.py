@@ -257,8 +257,10 @@ class OFXProcessor:
         # Remove espaços extras e caracteres especiais desnecessários
         description = re.sub(r'\s+', ' ', description.strip())
         
-        # Remove códigos de transação comuns no início
-        description = re.sub(r'^(TED|DOC|PIX|TRANSF|SAQUE|DEPOSITO|COMPRA)\s*-?\s*', '', description, flags=re.IGNORECASE)
+        # Remove códigos de transação comuns no início, somente quando forem tokens inteiros
+        # Evita remover prefixos parciais (ex.: não remover "TRANSF" dentro de "TRANSFERENCIA")
+        pattern = r'^(?:TED|DOC|PIX|TRANSF|SAQUE|DEPOSITO|DEPÓSITO|COMPRA)\b(?:\s*[-:–—]\s*)?'
+        description = re.sub(pattern, '', description, flags=re.IGNORECASE)
         
         return description
     

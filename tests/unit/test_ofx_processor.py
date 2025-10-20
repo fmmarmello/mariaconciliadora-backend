@@ -272,7 +272,9 @@ class TestOFXProcessor:
             ("  Multiple   Spaces  ", "Multiple Spaces"),
             ("TED - PAGAMENTO FORNECEDOR", "PAGAMENTO FORNECEDOR"),
             ("PIX - TRANSFERENCIA", "TRANSFERENCIA"),
-            ("DOC-PAGAMENTO", "PAGAMENTO")
+            ("DOC-PAGAMENTO", "PAGAMENTO"),
+            ("Transferencia Marcio", "Transferencia Marcio"),
+            ("TRANSF - Marcio", "Marcio")
         ]
         
         for input_desc, expected in test_cases:
