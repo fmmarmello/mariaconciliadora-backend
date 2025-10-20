@@ -62,6 +62,22 @@ with app.app_context():
         # Add justificativa columns if missing
         ensure_column('transactions', 'justificativa', 'TEXT')
         ensure_column('company_financial', 'justificativa', 'TEXT')
+
+        # Add reconciliation_records columns if missing
+        ensure_column('reconciliation_records', 'justification', 'TEXT')
+        ensure_column('reconciliation_records', 'is_anomaly', 'BOOLEAN DEFAULT 0')
+        ensure_column('reconciliation_records', 'anomaly_type', 'VARCHAR(50)')
+        ensure_column('reconciliation_records', 'anomaly_severity', "VARCHAR(20) DEFAULT 'low'")
+        ensure_column('reconciliation_records', 'anomaly_score', 'REAL')
+        ensure_column('reconciliation_records', 'anomaly_reason', 'TEXT')
+        ensure_column('reconciliation_records', 'anomaly_detected_at', 'DATETIME')
+        ensure_column('reconciliation_records', 'anomaly_reviewed_by', 'INTEGER')
+        ensure_column('reconciliation_records', 'anomaly_reviewed_at', 'DATETIME')
+        ensure_column('reconciliation_records', 'anomaly_action', 'VARCHAR(20)')
+        ensure_column('reconciliation_records', 'anomaly_justification', 'TEXT')
+        ensure_column('reconciliation_records', 'score_breakdown', 'TEXT')
+        ensure_column('reconciliation_records', 'confidence_level', "VARCHAR(20) DEFAULT 'medium'")
+        ensure_column('reconciliation_records', 'risk_factors', 'TEXT')
     except Exception as e:
         logger.warning(f"Auto-migration step failed: {e}")
 
