@@ -1074,6 +1074,53 @@ def get_company_financial():
     except Exception as e:
         return jsonify({'error': f'Erro ao buscar entradas financeiras: {str(e)}'}), 500
 
+@transactions_bp.route('/company-financial', methods=['POST'])
+@handle_errors
+@rate_limit(max_requests=100, window_minutes=60)
+@require_content_type('application/json')
+@validate_financial_data('company_financial')
+def create_company_financial():
+    """
+    Endpoint para criar uma nova entrada financeira da empresa manualmente
+    """
+    data = request.get_json(silent=True) or {}
+
+    try:
+        # Parse and normalize fields
+        date_val = data.get('date')
+        if isinstance(date_val, str) and date_val:
+            # Accept ISO date or datetime strings
+            date_obj = datetime.fromisoformat(date_val.replace('Z', '+00:00')).date()
+        elif isinstance(date_val, datetime):
+            date_obj = date_val.date()
+        else:
+            date_obj = date_val  # Assume already a date
+
+        entry = CompanyFinancial(
+            date=date_obj,
+            description=(data.get('description') or '').strip(),
+            amount=float(data.get('amount') or 0),
+            category=(data.get('category') or '').strip() or None,
+            cost_center=(data.get('cost_center') or '').strip() or None,
+            department=(data.get('department') or '').strip() or None,
+            project=(data.get('project') or '').strip() or None,
+            transaction_type=data.get('transaction_type') or 'expense',
+            justificativa=(data.get('justificativa') or '').strip() or None
+        )
+
+        db.session.add(entry)
+        db.session.commit()
+
+        return jsonify({
+            'success': True,
+            'message': 'Entrada financeira criada com sucesso',
+            'data': entry.to_dict()
+        }), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Erro ao criar entrada financeira: {str(e)}'}), 500
+
 @transactions_bp.route('/company-financial/summary', methods=['GET'])
 def get_company_financial_summary():
     """
