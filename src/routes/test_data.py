@@ -161,3 +161,20 @@ def delete_test_data():
             'success': False,
             'error': f'Error during test data deletion: {str(e)}'
         }), 500
+
+# Lightweight status check endpoint to inform the frontend if test data deletion is enabled
+@test_data_bp.route('/test-data/enabled', methods=['GET'])
+def test_data_deletion_enabled():
+    try:
+        enabled, _ = require_test_data_deletion_enabled()
+        has_access, _ = require_admin_access()
+        return jsonify({
+            'success': True,
+            'enabled': bool(enabled and has_access)
+        })
+    except Exception as e:
+        logger.error(f"Error checking test data deletion enabled: {str(e)}")
+        return jsonify({
+            'success': True,
+            'enabled': False
+        })
