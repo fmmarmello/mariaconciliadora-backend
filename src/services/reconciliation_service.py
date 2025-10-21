@@ -18,6 +18,8 @@ from src.services.reconciliation_anomaly_detector import ReconciliationAnomalyDe
 # Lazy import to avoid circular dependency
 import re
 from difflib import SequenceMatcher
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Initialize loggers
 logger = get_logger(__name__)
@@ -44,6 +46,15 @@ class ReconciliationConfig:
         self.enable_fuzzy_matching = True
         self.fuzzy_threshold = 0.85
         self.description_fuzzy_threshold = 0.7
+
+        # Semantic (TF-IDF) description similarity
+        self.enable_semantic_description = True
+        self.semantic_threshold = 0.7
+        self.semantic_use_max = True  # if True, use max(baseline, semantic) else average
+
+        # Optional reference/ID bonus
+        self.enable_reference_bonus = True
+        self.reference_bonus_weight = 0.05  # small bonus when references match strongly
         
         # Validation parameters
         self.validate_date_proximity = True
@@ -69,6 +80,11 @@ class ReconciliationConfig:
             'enable_fuzzy_matching': self.enable_fuzzy_matching,
             'fuzzy_threshold': self.fuzzy_threshold,
             'description_fuzzy_threshold': self.description_fuzzy_threshold,
+            'enable_semantic_description': self.enable_semantic_description,
+            'semantic_threshold': self.semantic_threshold,
+            'semantic_use_max': self.semantic_use_max,
+            'enable_reference_bonus': self.enable_reference_bonus,
+            'reference_bonus_weight': self.reference_bonus_weight,
             'validate_date_proximity': self.validate_date_proximity,
             'validate_amount_proximity': self.validate_amount_proximity,
             'enable_manual_override': self.enable_manual_override,
@@ -104,6 +120,16 @@ class ReconciliationService:
         # Initialize Phase 2 services with configuration
         self.normalizer = BrazilianDataNormalizer()
         self.context_matcher = ContextAwareMatcher()
+        # Initialize TF-IDF vectorizer for semantic similarity (PT-BR handled by normalizer)
+        try:
+            self._tfidf_vectorizer = TfidfVectorizer(
+                lowercase=True,
+                ngram_range=(1, 2),
+                max_features=2000,
+                stop_words=None  # rely on BrazilianDataNormalizer to clean/normalize
+            )
+        except Exception:
+            self._tfidf_vectorizer = None
         
         # Initialize anomaly detection services
         self.anomaly_detector = ReconciliationAnomalyDetector()
@@ -197,18 +223,21 @@ class ReconciliationService:
                         
                         # Validate match before adding
                         if self._validate_enhanced_match(match_data):
-                            # Perform anomaly detection on the match
-                            anomaly_analysis = self.anomaly_detector.analyze_reconciliation_match(
-                                bank_transaction, match['company_entry'], match['match_score']
-                            )
-                            
-                            # Add anomaly information to match data
-                            match_data['anomaly_analysis'] = anomaly_analysis
+                            # Perform anomaly detection on the match (non-blocking for preview)
+                            try:
+                                anomaly_analysis = self.anomaly_detector.analyze_reconciliation_match(
+                                    bank_transaction, match['company_entry'], match['match_score'], match['score_breakdown']
+                                )
+                                match_data['anomaly_analysis'] = anomaly_analysis
+                            except Exception as e:
+                                logger.debug(f"Anomaly detection failed (non-blocking): {str(e)}")
+                                match_data['anomaly_analysis'] = {'error': str(e)}
                             
                             # Update performance metrics
-                            if anomaly_analysis.get('is_anomaly', False):
+                            anomaly = match_data.get('anomaly_analysis', {})
+                            if isinstance(anomaly, dict) and anomaly.get('is_anomaly', False):
                                 self.performance_metrics['anomalies_detected'] += 1
-                                logger.warning(f"Anomaly detected in match for transaction {bank_transaction.id}: {anomaly_analysis.get('anomaly_type', 'unknown')}")
+                                logger.warning(f"Anomaly detected in match for transaction {bank_transaction.id}: {anomaly.get('anomaly_type', 'unknown')}")
                             
                             matches.append(match_data)
                             logger.debug(f"Match found for transaction {bank_transaction.id} with score {match['match_score']:.2f}")
@@ -366,8 +395,14 @@ class ReconciliationService:
             )
             
             # Calculate enhanced confidence score using Phase 2 features
+            # Support dataclass return by extracting numeric score
+            try:
+                ctx_score_numeric = getattr(contextual_result, 'score', contextual_result)
+            except Exception:
+                ctx_score_numeric = base_score
+
             confidence_score = self._calculate_enhanced_confidence_score(
-                bank_transaction, company_entry, contextual_result
+                bank_transaction, company_entry, ctx_score_numeric
             )
             
             # Update performance metrics
@@ -401,20 +436,111 @@ class ReconciliationService:
             elif date_diff <= 3:
                 score += self.config.date_close_weight
         
-        # Enhanced description matching using Phase 2 normalizer
+        # Enhanced description matching using Phase 2 normalizer + optional semantic (TF-IDF)
         description_similarity = self.normalizer.calculate_similarity(
-            bank_transaction.description, 
+            bank_transaction.description,
             company_entry.description
         )
-        score += description_similarity * self.config.description_weight
+
+        if self.config.enable_semantic_description:
+            try:
+                semantic_similarity = self._calculate_semantic_description_similarity(
+                    bank_transaction.description, company_entry.description
+                )
+            except Exception:
+                semantic_similarity = 0.0
+
+            # Combine similarities without altering global weights
+            if semantic_similarity >= self.config.semantic_threshold:
+                if self.config.semantic_use_max:
+                    final_desc_similarity = max(description_similarity, semantic_similarity)
+                else:
+                    # simple average if not using max
+                    final_desc_similarity = (description_similarity + semantic_similarity) / 2.0
+            else:
+                final_desc_similarity = description_similarity
+        else:
+            final_desc_similarity = description_similarity
+
+        score += final_desc_similarity * self.config.description_weight
         
         # Bonus for entity matching using Phase 2 entity extraction
         entity_bonus = self._calculate_entity_matching_bonus(
             bank_transaction.description, company_entry.description
         )
         score += entity_bonus * 0.1  # 10% bonus for entity matching
-        
+
+        # Optional reference/ID bonus (e.g., transaction_id vs an internal reference)
+        if self.config.enable_reference_bonus:
+            ref_bonus = self._calculate_reference_bonus(bank_transaction, company_entry)
+            score += ref_bonus
+
         return min(score, 1.0)
+
+    def _calculate_semantic_description_similarity(self, bank_description: str, company_description: str) -> float:
+        """
+        Calculate TF-IDF cosine similarity between normalized PT-BR descriptions.
+        Safe fallback to 0.0 on errors or empty inputs.
+        """
+        if not bank_description or not company_description:
+            return 0.0
+
+        if self._tfidf_vectorizer is None:
+            return 0.0
+
+        # Normalize using BrazilianDataNormalizer for PT-BR coherence
+        try:
+            norm_bank = self.normalizer.normalize_text(bank_description).normalized_text
+            norm_comp = self.normalizer.normalize_text(company_description).normalized_text
+        except Exception:
+            norm_bank = (bank_description or '').lower().strip()
+            norm_comp = (company_description or '').lower().strip()
+
+        if not norm_bank or not norm_comp:
+            return 0.0
+
+        if norm_bank == norm_comp:
+            return 1.0
+
+        try:
+            tfidf = self._tfidf_vectorizer.fit_transform([norm_bank, norm_comp])
+            sim = cosine_similarity(tfidf[0:1], tfidf[1:2])[0, 0]
+            return float(sim)
+        except Exception:
+            return 0.0
+
+    def _calculate_reference_bonus(self, bank_transaction: Transaction, company_entry: CompanyFinancial) -> float:
+        """
+        Small bonus when references/IDs strongly match. Uses transaction_id vs possible identifiers
+        in company_entry description. Conservative weight to avoid overpowering base weights.
+        """
+        try:
+            if not getattr(bank_transaction, 'transaction_id', None):
+                return 0.0
+
+            ref = str(bank_transaction.transaction_id).strip()
+            if not ref:
+                return 0.0
+
+            # Simple presence or strong fuzzy match in company description
+            company_desc = (company_entry.description or '').strip()
+            if not company_desc:
+                return 0.0
+
+            company_desc_lower = company_desc.lower()
+            if ref.lower() in company_desc_lower:
+                return self.config.reference_bonus_weight
+
+            # Fuzzy fallback
+            sim = SequenceMatcher(None, ref.lower(), company_desc_lower).ratio()
+            if sim >= 0.95:
+                return self.config.reference_bonus_weight
+            if sim >= 0.85:
+                return self.config.reference_bonus_weight * 0.5
+
+            return 0.0
+        except Exception:
+            return 0.0
     
     def _calculate_enhanced_confidence_score(self, bank_transaction: Transaction, company_entry: CompanyFinancial, 
                                            contextual_result) -> float:
@@ -448,7 +574,6 @@ class ReconciliationService:
         confidence_factors['final_confidence'] = weighted_confidence
         confidence_factors['base_score'] = contextual_result
         confidence_factors['final_score'] = final_score
-        confidence_factors['context_adjustment'] = context_info.get('total_bonus', 0)
         
         return final_score
     
@@ -486,13 +611,15 @@ class ReconciliationService:
     def _calculate_pattern_consistency_score(self, bank_transaction: Transaction, company_entry: CompanyFinancial) -> float:
         """Calculate pattern consistency score based on historical data"""
         try:
-            # Use context matcher to get pattern consistency
-            _, context_info = self.context_matcher.get_contextual_match_score(
+            # Use context matcher to get pattern consistency (robust to dataclass return)
+            _ctx_result = self.context_matcher.get_contextual_match_score(
                 bank_transaction, company_entry, 0.5
             )
-            
-            # Extract pattern consistency from context info
-            context_factors = context_info.get('context_factors', {})
+            context_factors = {}
+            try:
+                context_factors = getattr(_ctx_result, 'context_factors', {}) or {}
+            except Exception:
+                context_factors = {}
             
             # Calculate consistency based on pattern frequency
             consistency_bonus = 0.0
@@ -591,16 +718,37 @@ class ReconciliationService:
             elif date_diff <= 3:
                 date_score = self.config.date_close_weight
         
-        description_similarity = self.normalizer.calculate_description_similarity(
-            bank_transaction.description, 
+        # Recompute description similarities for explanation
+        baseline_desc_similarity = self.normalizer.calculate_similarity(
+            bank_transaction.description,
             company_entry.description
         )
-        description_score = description_similarity * self.config.description_weight
+        semantic_desc_similarity = 0.0
+        final_desc_similarity = baseline_desc_similarity
+        if self.config.enable_semantic_description:
+            semantic_desc_similarity = self._calculate_semantic_description_similarity(
+                bank_transaction.description, company_entry.description
+            )
+            if semantic_desc_similarity >= self.config.semantic_threshold:
+                final_desc_similarity = max(baseline_desc_similarity, semantic_desc_similarity) if self.config.semantic_use_max else (baseline_desc_similarity + semantic_desc_similarity) / 2.0
+        description_score = final_desc_similarity * self.config.description_weight
         
-        # Get context-aware information
-        contextual_score, context_info = self.context_matcher.get_contextual_match_score(
+        # Get context-aware information (robust to dataclass return)
+        _ctx_result = self.context_matcher.get_contextual_match_score(
             bank_transaction, company_entry, total_score
         )
+        try:
+            contextual_score = getattr(_ctx_result, 'score', _ctx_result)
+            context_info = {
+                'base_score': getattr(_ctx_result, 'base_score', None),
+                'context_factors': getattr(_ctx_result, 'context_factors', {}),
+                'total_bonus': getattr(_ctx_result, 'total_bonus', 0.0),
+                'explanation': getattr(_ctx_result, 'explanation', ''),
+                'patterns_used': getattr(_ctx_result, 'patterns_used', 0),
+            }
+        except Exception:
+            contextual_score = 0.0
+            context_info = {'context_factors': {}, 'total_bonus': 0.0, 'explanation': ''}
         
         # Calculate confidence factors
         confidence_factors = {
@@ -612,8 +760,8 @@ class ReconciliationService:
         
         # Generate explanations
         explanations = self._generate_score_explanations(
-            bank_transaction, company_entry, amount_diff, date_diff, 
-            description_similarity, confidence_factors, context_info
+            bank_transaction, company_entry, amount_diff, date_diff,
+            final_desc_similarity, confidence_factors, context_info
         )
         
         return {
@@ -626,7 +774,9 @@ class ReconciliationService:
                 'description_score': description_score,
                 'amount_difference': amount_diff,
                 'date_difference': date_diff,
-                'description_similarity': description_similarity
+                'description_similarity': baseline_desc_similarity,
+                'description_semantic_similarity': semantic_desc_similarity,
+                'description_similarity_used': final_desc_similarity
             },
             'confidence_factors': confidence_factors,
             'context_info': context_info,
