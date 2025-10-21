@@ -9,6 +9,7 @@ class Transaction(db.Model):
     bank_name = db.Column(db.String(50), nullable=False)
     account_id = db.Column(db.String(100), nullable=False)
     transaction_id = db.Column(db.String(100), nullable=True)
+    timestamp = db.Column(db.DateTime, nullable=True)  # Data/hora completa do lançamento
     date = db.Column(db.Date, nullable=False)
     amount = db.Column(db.Float, nullable=False)
     description = db.Column(db.Text, nullable=False)
@@ -25,6 +26,7 @@ class Transaction(db.Model):
             'bank_name': self.bank_name,
             'account_id': self.account_id,
             'transaction_id': self.transaction_id,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
             'date': self.date.isoformat() if self.date else None,
             'amount': self.amount,
             'description': self.description,

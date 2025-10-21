@@ -61,6 +61,8 @@ with app.app_context():
 
         # Add justificativa columns if missing
         ensure_column('transactions', 'justificativa', 'TEXT')
+        # Add timestamp column to transactions if missing
+        ensure_column('transactions', 'timestamp', 'DATETIME')
         ensure_column('company_financial', 'justificativa', 'TEXT')
 
         # Add reconciliation_records columns if missing

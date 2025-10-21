@@ -147,10 +147,21 @@ def upload_ofx():
             )
             
             if not is_duplicate:
+                # Parse timestamp if present (string -> datetime)
+                ts_val = transaction_data.get('timestamp')
+                ts_dt = None
+                try:
+                    if isinstance(ts_val, str):
+                        ts_dt = datetime.fromisoformat(ts_val)
+                    elif hasattr(ts_val, 'isoformat'):
+                        ts_dt = ts_val
+                except Exception:
+                    ts_dt = None
                 transaction = Transaction(
                     bank_name=ofx_data['bank_name'],
                     account_id=account_id,
                     transaction_id=transaction_data.get('transaction_id', ''),
+                    timestamp=ts_dt,
                     date=transaction_data['date'],
                     amount=transaction_data['amount'],
                     description=transaction_data['description'],
@@ -209,7 +220,20 @@ def upload_ofx():
                         'count': duplicate_count,
                         'details': duplicate_entries_details
                     }
-                }
+                },
+                # Opcional: prévia de 5 transações processadas (para auditoria/insights no frontend)
+                'transactions_preview': [
+                    {
+                        'date': t.get('date').isoformat() if hasattr(t.get('date'), 'isoformat') else t.get('date'),
+                        'timestamp': t.get('timestamp'),
+                        'amount': t.get('amount'),
+                        'description': t.get('description'),
+                        'category': t.get('category'),
+                        'is_anomaly': t.get('is_anomaly', False),
+                        'transaction_type': t.get('transaction_type')
+                    }
+                    for t in analyzed_transactions[:5]
+                ]
             }
         })
         

@@ -161,8 +161,32 @@ class AIService:
                 weekdays.append(0)
         features.append(weekdays)
         
-        # Hora do dia (assumindo distribuição normal para transações)
-        hours = [12] * len(transactions)  # Placeholder - seria melhor ter hora real
+        # Hora do dia baseada em 'timestamp' (quando existir) ou 'date'
+        hours = []
+        for t in transactions:
+            hour_val = 12  # fallback neutro
+            try:
+                # Preferir timestamp com hora completa
+                ts = t.get('timestamp')
+                if ts is not None:
+                    if isinstance(ts, str):
+                        ts_obj = datetime.fromisoformat(ts)
+                        hour_val = getattr(ts_obj, 'hour', 12)
+                    elif hasattr(ts, 'hour'):
+                        hour_val = ts.hour
+                else:
+                    # Fallback para 'date'
+                    d = t.get('date')
+                    if isinstance(d, str):
+                        d_obj = datetime.fromisoformat(d)
+                        hour_val = getattr(d_obj, 'hour', 0)
+                    elif hasattr(d, 'hour'):
+                        hour_val = d.hour
+                    else:
+                        hour_val = 0
+            except Exception:
+                hour_val = 12
+            hours.append(hour_val)
         features.append(hours)
         
         # Transpõe para formato correto
@@ -300,12 +324,105 @@ class AIService:
         if 'is_anomaly' not in df.columns:
             return {}
         
-        anomalies = df[df['is_anomaly'] == True]
-        
+        anomalies = df[df['is_anomaly'] == True].copy()
+
+        # Compute context stats for simple explanations
+        try:
+            abs_amounts = df['amount'].abs().astype(float)
+            amt_mean = float(abs_amounts.mean()) if len(abs_amounts) else 0.0
+            amt_std = float(abs_amounts.std(ddof=0)) if len(abs_amounts) else 0.0
+        except Exception:
+            amt_mean, amt_std = 0.0, 0.0
+
+        # Weekend ratio
+        weekend_ratio = 0.0
+        try:
+            def to_weekday(row):
+                d = row.get('date') if isinstance(row, dict) else row
+                if isinstance(d, str):
+                    try:
+                        return datetime.fromisoformat(d).weekday()
+                    except Exception:
+                        return None
+                return None
+            weekdays_series = df.apply(lambda r: to_weekday({'date': r.get('date') if hasattr(r, 'get') else r['date']}), axis=1) if hasattr(df, 'apply') else []
+            valid_weekdays = [w for w in weekdays_series if isinstance(w, int)] if len(df) else []
+            weekend_count = sum(1 for w in valid_weekdays if w >= 5)
+            weekend_ratio = (weekend_count / len(valid_weekdays)) if valid_weekdays else 0.0
+        except Exception:
+            weekend_ratio = 0.0
+
+        def derive_hour(row) -> int:
+            # Prefer timestamp, then try date
+            ts = row.get('timestamp') if isinstance(row, dict) else None
+            d = row.get('date') if isinstance(row, dict) else None
+            try:
+                if ts:
+                    if isinstance(ts, str):
+                        return datetime.fromisoformat(ts).hour
+                    if hasattr(ts, 'hour'):
+                        return int(ts.hour)
+                if d:
+                    if isinstance(d, str):
+                        return getattr(datetime.fromisoformat(d), 'hour', 0)
+                    if hasattr(d, 'hour'):
+                        return int(d.hour)
+            except Exception:
+                return 12
+            return 0
+
+        # Build reasons for each anomaly
+        records = []
+        for _, row in anomalies.iterrows():
+            reasons = []
+            try:
+                val = float(abs(row['amount'])) if 'amount' in row else 0.0
+            except Exception:
+                val = 0.0
+
+            # Amount-based reason
+            if amt_std and (val - amt_mean) > 2 * amt_std:
+                reasons.append('Valor muito acima do padrão histórico')
+            elif amt_std and (val - amt_mean) > 1.5 * amt_std:
+                reasons.append('Valor acima do normal')
+
+            # Time-based reason
+            hour = derive_hour(row if isinstance(row, dict) else row.to_dict())
+            if hour < 6 or hour > 22:
+                reasons.append('Horário incomum (madrugada/noite)')
+
+            # Weekend-based reason
+            try:
+                date_str = None
+                if isinstance(row.get('date'), str):
+                    date_str = row.get('date')
+                elif hasattr(row.get('date'), 'isoformat'):
+                    date_str = row.get('date').isoformat()
+                if date_str:
+                    wd = datetime.fromisoformat(date_str).weekday()
+                    if wd >= 5 and weekend_ratio < 0.2:
+                        reasons.append('Transação em fim de semana pouco comum')
+            except Exception:
+                pass
+
+            if not reasons:
+                reasons.append('Padrão incomum detectado pelo modelo')
+
+            rec = {
+                'date': row.get('date').isoformat() if hasattr(row.get('date'), 'isoformat') else row.get('date'),
+                'amount': float(row.get('amount')) if row.get('amount') is not None else None,
+                'description': row.get('description'),
+                'anomaly_reason': ' • '.join(reasons)
+            }
+            # Include timestamp if present
+            if 'timestamp' in df.columns:
+                rec['timestamp'] = row.get('timestamp')
+            records.append(rec)
+
         return {
             'total_anomalies': len(anomalies),
             'anomaly_percentage': round((len(anomalies) / len(df)) * 100, 1) if len(df) > 0 else 0,
-            'anomalous_transactions': anomalies[['date', 'amount', 'description']].to_dict('records')[:5]  # Top 5
+            'anomalous_transactions': records[:5]
         }
     
     def _generate_recommendations(self, insights: Dict[str, Any]) -> List[str]:

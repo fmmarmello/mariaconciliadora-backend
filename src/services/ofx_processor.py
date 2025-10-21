@@ -128,7 +128,9 @@ class OFXProcessor:
                     
                     transaction_data = {
                         'transaction_id': getattr(transaction, 'id', ''),
-                        'date': transaction.date.date() if hasattr(transaction, 'date') else None,
+                        # Preserve full datetime as 'timestamp' (ISO 8601) and keep 'date' for DB
+                        'timestamp': transaction.date.isoformat() if hasattr(transaction, 'date') and getattr(transaction, 'date') else None,
+                        'date': transaction.date.date() if hasattr(transaction, 'date') and getattr(transaction, 'date') else None,
                         'amount': amount,
                         'description': self._clean_description(getattr(transaction, 'memo', '') or getattr(transaction, 'payee', '')),
                         'transaction_type': transaction_type,
