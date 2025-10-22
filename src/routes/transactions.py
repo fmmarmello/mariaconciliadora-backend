@@ -1262,7 +1262,10 @@ def train_ai_model():
             return jsonify({
                 'success': True,
                 'message': 'Modelo treinado com sucesso',
-                'accuracy': result['accuracy']
+                'accuracy': result.get('accuracy'),
+                'training_data_count': result.get('training_data_count'),
+                'categories_count': result.get('categories_count'),
+                'metrics': result.get('metrics', {})
             })
         else:
             return jsonify({

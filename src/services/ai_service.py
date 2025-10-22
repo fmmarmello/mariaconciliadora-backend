@@ -1,8 +1,13 @@
 import os
+import json
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
+from sklearn.svm import LinearSVC
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+import joblib
 from sklearn.ensemble import IsolationForest
 from typing import List, Dict, Any, Optional
 import openai
@@ -10,6 +15,7 @@ from groq import Groq
 import re
 import time
 from datetime import datetime, timedelta
+import unicodedata
 from src.utils.logging_config import get_logger, get_audit_logger
 from src.utils.exceptions import (
     AIServiceError, AIServiceUnavailableError, AIServiceTimeoutError,
@@ -27,18 +33,39 @@ class AIService:
     """
     
     def __init__(self):
+        # Categorias base + expansões para rotina de PMEs brasileiras.
+        # Mantém categorias existentes e adiciona novas sem remover nenhuma.
         self.categories = {
-            'alimentacao': ['mercado', 'supermercado', 'padaria', 'restaurante', 'lanchonete', 'delivery', 'ifood', 'uber eats'],
-            'transporte': ['uber', 'taxi', 'combustivel', 'posto', 'onibus', 'metro', 'estacionamento'],
-            'saude': ['farmacia', 'hospital', 'clinica', 'medico', 'dentista', 'laboratorio'],
-            'educacao': ['escola', 'faculdade', 'curso', 'livro', 'material escolar'],
-            'lazer': ['cinema', 'teatro', 'show', 'viagem', 'hotel', 'netflix', 'spotify'],
-            'casa': ['aluguel', 'condominio', 'luz', 'agua', 'gas', 'internet', 'telefone'],
-            'vestuario': ['roupa', 'sapato', 'loja', 'shopping'],
-            'investimento': ['aplicacao', 'poupanca', 'cdb', 'tesouro', 'acao'],
-            'transferencia': ['ted', 'doc', 'pix', 'transferencia'],
-            'saque': ['saque', 'caixa eletronico'],
-            'salario': ['salario', 'ordenado', 'pagamento'],
+            # Existentes
+            'alimentacao': ['mercado', 'supermercado', 'padaria', 'restaurante', 'lanchonete', 'delivery', 'ifood', 'uber eats', 'rappi'],
+            'transporte': ['uber', '99', '99pop', 'taxi', 'combustivel', 'posto', 'onibus', 'metro', 'estacionamento', 'pedagio', 'pedágio'],
+            'saude': ['farmacia', 'hospital', 'clinica', 'clínica', 'medico', 'médico', 'dentista', 'laboratorio', 'laboratório', 'exame'],
+            'educacao': ['escola', 'faculdade', 'curso', 'livro', 'material escolar', 'ead', 'treinamento'],
+            'lazer': ['cinema', 'teatro', 'show', 'viagem', 'hotel', 'netflix', 'spotify', 'lazer'],
+            'casa': ['aluguel', 'condominio', 'luz', 'energia', 'agua', 'água', 'gas', 'gás', 'internet', 'telefone', 'claro', 'vivo', 'tim', 'oi'],
+            'vestuario': ['roupa', 'sapato', 'loja', 'shopping', 'uniforme'],
+            'investimento': ['aplicacao', 'aplicação', 'poupanca', 'poupança', 'cdb', 'tesouro', 'acao', 'ação'],
+            'transferencia': ['ted', 'doc', 'pix', 'transferencia', 'transferência', 'boleto'],
+            'saque': ['saque', 'caixa eletronico', 'caixa eletrônico'],
+            'salario': ['salario', 'salário', 'ordenado', 'pagamento'],
+
+            # Novas categorias orientadas a PMEs
+            'impostos': ['darf', 'das', 'simples', 'mei', 'iss', 'icms', 'irpj', 'csll', 'pis', 'cofins', 'gps', 'inss', 'sefaz', 'prefeitura', 'taxa', 'alvara', 'alvará', 'guia'],
+            'contabilidade': ['contabilidade', 'contador', 'escritorio contabil', 'escritório contábil', 'honorarios contabeis', 'honorários contábeis', 'balanco', 'balanço'],
+            'folha_pagamento': ['folha', 'pro labore', 'prolabore', 'pró-labore', 'fgts', 'vale refeicao', 'vale refeição', 'vr', 'vale alimentacao', 'vale alimentação', 'va', 'vale transporte', 'vt', '13o', '13º', 'ferias', 'férias'],
+            'fornecedores': ['fornecedor', 'fornecedores', 'compra de materiais', 'insumos', 'materiais', 'mercadoria', 'estoque', 'materia-prima', 'matéria-prima', 'compra', 'nfe', 'nf-e', 'nota fiscal de compra'],
+            'logistica': ['frete', 'transportadora', 'correios', 'sedex', 'pac', 'jadlog', 'loggi', 'envio', 'entrega', 'motoboy', 'coleta', 'despacho'],
+            'marketing': ['marketing', 'publicidade', 'anuncio', 'anúncio', 'ads', 'facebook ads', 'google ads', 'meta ads', 'instagram ads', 'linkedin ads', 'campanha', 'impulsionamento'],
+            'tarifas_bancarias': ['tarifa', 'cesta de servicos', 'cesta de serviços', 'manutencao de conta', 'manutenção de conta', 'taxa bancaria', 'taxa bancária', 'pix tarifa', 'ted tarifa', 'doc tarifa', 'boleto tarifa'],
+            'assinaturas_saas': ['assinatura', 'subscription', 'mensalidade', 'plano', 'licenca', 'licença', 'saas', 'software', 'ferramenta', 'google workspace', 'microsoft 365', 'office 365', 'notion', 'slack', 'zoom', 'github', 'gitlab'],
+            'juridico': ['juridico', 'jurídico', 'advogado', 'escritorio advocacia', 'escritório advocacia', 'honorarios', 'honorários'],
+            'manutencao': ['manutencao', 'manutenção', 'reparo', 'conserto', 'assistencia tecnica', 'assistência técnica', 'suporte tecnico', 'suporte técnico', 'calibracao', 'calibração'],
+            'ti': ['aws', 'amazon web services', 'azure', 'gcp', 'google cloud', 'cloudflare', 'hospedagem', 'dominio', 'domínio', 'registro br', 'digitalocean', 'linode', 'vultr', 'heroku', 'railway', 'servidor', 'dns'],
+            'seguros': ['seguro', 'apolice', 'apólice', 'premio', 'prêmio', 'seguradora', 'porto seguro', 'sulamerica', 'sulamérica', 'bradesco seguros'],
+            'equipamentos': ['equipamento', 'impressora', 'computador', 'laptop', 'notebook', 'teclado', 'mouse', 'monitor', 'hardware', 'periferico', 'periférico', 'celular', 'smartphone', 'tablet'],
+            'limpeza': ['limpeza', 'higiene', 'desinfetante', 'material de limpeza'],
+            'escritorio': ['papelaria', 'cartucho', 'toner', 'caneta', 'grampeador', 'pastas', 'envelope', 'impressoes', 'impressões', 'xerox', 'copias', 'cópias'],
+
             'outros': []
         }
         
@@ -61,20 +88,95 @@ class AIService:
         self.default_timeout = int(os.getenv('AI_SERVICE_TIMEOUT', '30'))
         self.max_retries = int(os.getenv('AI_SERVICE_MAX_RETRIES', '3'))
         self.rate_limit_delay = float(os.getenv('AI_SERVICE_RATE_LIMIT_DELAY', '1.0'))
+        
+        # Model persistence configuration
+        self.model_dir = os.getenv('MODEL_DIR', os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'models'))
+        try:
+            os.makedirs(self.model_dir, exist_ok=True)
+        except Exception:
+            pass
+        self._load_persisted_model()
+
+    def _model_paths(self):
+        vectorizer_path = os.path.join(self.model_dir, 'custom_vectorizer.joblib')
+        model_path = os.path.join(self.model_dir, 'custom_classifier.joblib')
+        meta_path = os.path.join(self.model_dir, 'custom_model_meta.json')
+        return vectorizer_path, model_path, meta_path
+
+    def _load_persisted_model(self):
+        try:
+            vectorizer_path, model_path, meta_path = self._model_paths()
+            if os.path.exists(vectorizer_path) and os.path.exists(model_path):
+                self.custom_vectorizer = joblib.load(vectorizer_path)
+                self.custom_classifier = joblib.load(model_path)
+                self.model_trained = True
+                # Load meta if available
+                if os.path.exists(meta_path):
+                    with open(meta_path, 'r', encoding='utf-8') as f:
+                        self.model_meta = json.load(f)
+                logger.info("Custom AI model loaded from disk")
+            else:
+                self.model_trained = False
+        except Exception as e:
+            logger.warning(f"Failed to load persisted model, falling back. Error: {e}")
+            self.model_trained = False
+
+    def _save_persisted_model(self, vectorizer, classifier, meta: Dict[str, Any]):
+        try:
+            vectorizer_path, model_path, meta_path = self._model_paths()
+            joblib.dump(vectorizer, vectorizer_path)
+            joblib.dump(classifier, model_path)
+            with open(meta_path, 'w', encoding='utf-8') as f:
+                json.dump(meta, f, ensure_ascii=False)
+            logger.info(f"Custom AI model saved to {self.model_dir}")
+        except Exception as e:
+            logger.warning(f"Failed to persist model to disk: {e}")
     
+    def _normalize_text(self, text: str) -> str:
+        try:
+            return unicodedata.normalize('NFKD', str(text)).encode('ASCII', 'ignore').decode('ASCII').lower()
+        except Exception:
+            return str(text).lower()
+
     def categorize_transaction(self, description: str) -> str:
         """
         Categoriza uma transação baseada na descrição
         """
-        description_lower = description.lower()
+        description_lower = self._normalize_text(description)
         
         # Busca por palavras-chave nas categorias
         for category, keywords in self.categories.items():
             for keyword in keywords:
-                if keyword in description_lower:
+                if self._normalize_text(keyword) in description_lower:
                     return category
         
         return 'outros'
+
+    def _rule_based_override(self, description: str) -> Optional[str]:
+        """Return a high-confidence rule-based category for override decisions.
+        Uses specific, non-generic keywords to avoid false positives (e.g., 'pagamento').
+        """
+        text = self._normalize_text(description)
+        checks = [
+            ('impostos', ['darf','das','simples','irpj','csll','pis','cofins','iss','icms','sefaz','prefeitura']),
+            ('tarifas_bancarias', ['tarifa','cesta de servicos','manutencao de conta','manutencao','cesta de servicos']),
+            ('assinaturas_saas', ['assinatura','subscription','google workspace','microsoft 365','office 365','notion','slack','zoom','github','gitlab']),
+            ('ti', ['aws','azure','gcp','google cloud','cloudflare','dominio','hospedagem','registro br','dns']),
+            ('fornecedores', ['fornecedor','insumos','materia-prima','mercadoria','estoque','nfe','nf-e']),
+            ('logistica', ['frete','transportadora','correios','sedex','pac','jadlog','loggi','motoboy']),
+            ('contabilidade', ['contabilidade','contador','honorarios contabeis']),
+            ('juridico', ['juridico','advogado','escritorio advocacia']),
+            ('manutencao', ['manutencao','reparo','conserto','assistencia tecnica','calibracao']),
+            ('seguros', ['seguro','apolice']),
+            ('escritorio', ['papelaria','toner','cartucho','caneta']),
+            ('equipamentos', ['impressora','computador','notebook','monitor','teclado','mouse']),
+            ('folha_pagamento', ['prolabore','fgts','13o','13']),
+        ]
+        for cat, kws in checks:
+            for kw in kws:
+                if kw in text:
+                    return cat
+        return None
     
     @handle_service_errors('ai_service')
     @with_timeout(120)  # 2 minute timeout for batch processing
@@ -645,46 +747,116 @@ class AIService:
             
             # Prepara os dados de treinamento
             training_texts = [entry['description'] for entry in valid_data]
-            training_labels = [entry.get('category', 'outros') for entry in valid_data]
-            
+            training_labels = [entry.get('category') or 'outros' for entry in valid_data]
+
             unique_categories = len(set(training_labels))
             logger.info(f"Training data prepared. Valid entries: {len(valid_data)}, Unique categories: {unique_categories}")
-            
-            if unique_categories < 2:
-                logger.warning("Insufficient category diversity for meaningful training")
-            
-            # Cria e treina o modelo
+
+            # Vetorização de texto
             vectorizer = TfidfVectorizer(
-                max_features=min(1000, len(valid_data) * 2),
+                max_features=min(5000, max(500, len(valid_data) * 5)),
                 min_df=1,
                 max_df=0.95,
-                stop_words=None  # Keep Portuguese stop words handling simple
+                stop_words=None
             )
-            
             X = vectorizer.fit_transform(training_texts)
-            
-            # Treina um classificador
-            n_clusters = min(10, unique_categories, len(valid_data) // 2)
-            classifier = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-            classifier.fit(X)
-            
+
+            # Escolhe abordagem: supervisionada (preferível) ou KMeans fallback
+            use_supervised = unique_categories >= 2 and len(valid_data) >= 10
+            metrics: Dict[str, Any] = {}
+            start_time = time.time()
+            if use_supervised:
+                classifier = LinearSVC()
+                # Split para validação
+                test_size = 0.2 if len(valid_data) >= 30 else 0.15
+                try:
+                    X_train, X_test, y_train, y_test = train_test_split(
+                        X, training_labels, test_size=test_size, random_state=42, stratify=training_labels if len(set(training_labels)) > 1 else None
+                    )
+                except ValueError:
+                    # Fallback sem estratificação
+                    X_train, X_test, y_train, y_test = train_test_split(
+                        X, training_labels, test_size=test_size, random_state=42
+                    )
+                classifier.fit(X_train, y_train)
+                y_pred = classifier.predict(X_test)
+                acc = float(accuracy_score(y_test, y_pred))
+                # Relatório por classe (pode falhar com poucas amostras)
+                try:
+                    report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
+                    category_accuracy = {cls: float(metrics_dict.get('precision', 0.0)) for cls, metrics_dict in report.items() if cls not in ('accuracy', 'macro avg', 'weighted avg')}
+                except Exception:
+                    category_accuracy = {}
+                metrics['validation_samples'] = len(y_test)
+                metrics['category_accuracy'] = category_accuracy
+            else:
+                # Fallback: KMeans como clusterizador (não supervisionado)
+                n_clusters = max(1, min(10, unique_categories if unique_categories > 0 else 1, max(1, len(valid_data) // 2)))
+                classifier = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+                classifier.fit(X)
+                # Mapeia clusters para categorias mais frequentes para uma métrica aproximada
+                try:
+                    labels = classifier.labels_
+                    cluster_to_label: Dict[int, str] = {}
+                    correct = 0
+                    total = len(training_labels)
+                    for cluster_id in set(labels):
+                        indices = [i for i, c in enumerate(labels) if c == cluster_id]
+                        cats = [training_labels[i] for i in indices]
+                        if cats:
+                            majority = max(set(cats), key=cats.count)
+                            cluster_to_label[cluster_id] = majority
+                    for i, cluster_id in enumerate(labels):
+                        mapped = cluster_to_label.get(cluster_id, 'outros')
+                        if mapped == training_labels[i]:
+                            correct += 1
+                    acc = float(correct / total) if total else 0.0
+                    # Per-category approximation
+                    cat_correct: Dict[str, int] = {}
+                    cat_total: Dict[str, int] = {}
+                    for i, true_cat in enumerate(training_labels):
+                        cat_total[true_cat] = cat_total.get(true_cat, 0) + 1
+                        cluster_id = labels[i]
+                        mapped = cluster_to_label.get(cluster_id, 'outros')
+                        if mapped == true_cat:
+                            cat_correct[true_cat] = cat_correct.get(true_cat, 0) + 1
+                    category_accuracy = {cat: float(cat_correct.get(cat, 0) / total_c) for cat, total_c in cat_total.items() if total_c > 0}
+                except Exception:
+                    acc = 0.0
+                    category_accuracy = {}
+                metrics['category_accuracy'] = category_accuracy
+
+            elapsed_ms = int((time.time() - start_time) * 1000)
+            metrics['training_time_ms'] = elapsed_ms
+
             # Salva o modelo e vetorizador
             self.custom_vectorizer = vectorizer
             self.custom_classifier = classifier
             self.model_trained = True
-            
-            # Calcula acurácia (simplificada)
-            self.model_accuracy = self._calculate_accuracy(valid_data, classifier, vectorizer)
-            
-            logger.info(f"Custom model training completed successfully. Accuracy: {self.model_accuracy:.2f}")
+            self.model_accuracy = acc
+
+            # Persistência em disco
+            meta = {
+                'accuracy': acc,
+                'training_data_count': len(valid_data),
+                'categories_count': unique_categories,
+                'trained_at': datetime.utcnow().isoformat(),
+                'algorithm': 'LinearSVC' if use_supervised else 'KMeans',
+                'metrics': metrics,
+                'labels': sorted(list(set(training_labels))),
+            }
+            self._save_persisted_model(vectorizer, classifier, meta)
+
+            logger.info(f"Custom model training completed successfully. Accuracy: {acc:.2f}")
             audit_logger.log_ai_operation('model_training', len(financial_data), True)
-            
+
             return {
                 'success': True,
                 'message': 'Modelo treinado com sucesso',
-                'accuracy': self.model_accuracy,
+                'accuracy': acc,
                 'training_data_count': len(valid_data),
-                'categories_count': unique_categories
+                'categories_count': unique_categories,
+                'metrics': metrics,
             }
             
         except Exception as e:
@@ -717,9 +889,18 @@ class AIService:
         return valid_data
     
     def _calculate_accuracy(self, data: List[Dict], classifier, vectorizer) -> float:
-        """Calcula a acurácia do modelo (simplificada)"""
-        # Implementação simplificada para exemplo
-        return 0.85  # Valor de exemplo
+        """Mantido por compatibilidade: calcula acurácia simples em holdout quando possível."""
+        try:
+            texts = [d['description'] for d in data]
+            labels = [d.get('category') or 'outros' for d in data]
+            X = vectorizer.transform(texts) if hasattr(vectorizer, 'vocabulary_') else vectorizer.fit_transform(texts)
+            if hasattr(classifier, 'predict'):
+                # No training done here; assume already trained
+                preds = classifier.predict(X)
+                return float(accuracy_score(labels, preds))
+        except Exception:
+            pass
+        return 0.0
     
     @handle_service_errors('ai_service')
     def categorize_with_custom_model(self, description: str) -> str:
@@ -730,8 +911,11 @@ class AIService:
             return 'outros'
         
         if not hasattr(self, 'model_trained') or not self.model_trained:
-            logger.debug("Custom model not trained, using fallback categorization")
-            return self.categorize_transaction(description)
+            # Tenta carregar do disco
+            self._load_persisted_model()
+            if not getattr(self, 'model_trained', False):
+                logger.debug("Custom model not trained, using fallback categorization")
+                return self.categorize_transaction(description)
         
         try:
             # Validate model components
@@ -747,9 +931,20 @@ class AIService:
             
             # Prediz a categoria
             prediction = self.custom_classifier.predict(X)
-            
-            # Map cluster to meaningful category (simplified approach)
-            category = self._map_cluster_to_category(prediction[0], clean_description)
+
+            # Se for KMeans, mapear cluster -> categoria; caso contrário, usar rótulo diretamente
+            if isinstance(self.custom_classifier, KMeans):
+                category = self._map_cluster_to_category(int(prediction[0]), clean_description)
+            else:
+                category = str(prediction[0])
+                # Optional override: prefer high-confidence rule-based category not seen in training labels
+                try:
+                    rule_based = self._rule_based_override(clean_description)
+                    labels = set(self.model_meta.get('labels', [])) if hasattr(self, 'model_meta') and isinstance(self.model_meta, dict) else set()
+                    if rule_based and rule_based not in labels:
+                        category = rule_based
+                except Exception:
+                    pass
             
             logger.debug(f"Custom model categorized '{clean_description}' as '{category}'")
             return category
@@ -761,30 +956,24 @@ class AIService:
     
     def _map_cluster_to_category(self, cluster_id: int, description: str) -> str:
         """Map cluster ID to meaningful category name."""
-        # This is a simplified mapping - in production you might want more sophisticated mapping
-        # based on the training data or cluster analysis
-        
-        # Try rule-based categorization first for better results
+        # Prefer rule-based categorization first for more stable results
         rule_based_category = self.categorize_transaction(description)
-        
         if rule_based_category != 'outros':
             return rule_based_category
-        
-        # Fallback to cluster-based category
-        cluster_categories = {
-            0: 'alimentacao',
-            1: 'transporte',
-            2: 'casa',
-            3: 'saude',
-            4: 'lazer',
-            5: 'vestuario',
-            6: 'educacao',
-            7: 'investimento',
-            8: 'transferencia',
-            9: 'outros'
-        }
-        
-        return cluster_categories.get(cluster_id % 10, 'outros')
+
+        # Fallback: deterministic mapping cycling through a richer set of SME categories
+        ordered = [
+            'impostos', 'fornecedores', 'contabilidade', 'marketing', 'logistica', 'ti',
+            'assinaturas_saas', 'tarifas_bancarias', 'manutencao', 'juridico', 'seguros',
+            'equipamentos', 'escritorio', 'limpeza', 'folha_pagamento',
+            # categorias base
+            'alimentacao', 'transporte', 'casa', 'saude', 'lazer', 'vestuario',
+            'educacao', 'investimento', 'transferencia', 'saque'
+        ]
+        if not ordered:
+            return 'outros'
+        idx = abs(int(cluster_id)) % len(ordered)
+        return ordered[idx]
     
     @handle_service_errors('ai_service')
     @with_timeout(60)  # 1 minute timeout for predictions
