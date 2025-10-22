@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, g
+﻿from flask import Blueprint, request, jsonify, g
 from werkzeug.utils import secure_filename
 import os
 import tempfile
@@ -22,6 +22,7 @@ from src.utils.validation_middleware import (
     validate_file_upload, validate_input_fields, validate_financial_data,
     rate_limit, require_content_type, sanitize_path_params
 )
+from collections import defaultdict
 
 # Initialize loggers
 logger = get_logger(__name__)
@@ -2274,3 +2275,4 @@ def get_anomaly_statistics():
         
     except Exception as e:
         return jsonify({'error': f'Error getting anomaly statistics: {str(e)}'}), 500
+

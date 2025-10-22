@@ -1,4 +1,4 @@
-import os
+﻿import os
 import json
 import pandas as pd
 import numpy as np
@@ -158,7 +158,7 @@ class AIService:
         """
         text = self._normalize_text(description)
         checks = [
-            ('impostos', ['darf','das','simples','irpj','csll','pis','cofins','iss','icms','sefaz','prefeitura']),
+            ('impostos', ['darf','das','simples','irpj','csll','pis','cofins','inss','iss','icms','sefaz','prefeitura']),
             ('tarifas_bancarias', ['tarifa','cesta de servicos','manutencao de conta','manutencao','cesta de servicos']),
             ('assinaturas_saas', ['assinatura','subscription','google workspace','microsoft 365','office 365','notion','slack','zoom','github','gitlab']),
             ('ti', ['aws','azure','gcp','google cloud','cloudflare','dominio','hospedagem','registro br','dns']),
@@ -192,6 +192,16 @@ class AIService:
         try:
             categorized_count = 0
             failed_count = 0
+            # Verifica se existe modelo customizado carregado
+            use_custom_model = False
+            try:
+                use_custom_model = getattr(self, 'model_trained', False)
+                if not use_custom_model:
+                    # Tenta carregar do disco caso ainda não tenha sido feito
+                    self._load_persisted_model()
+                    use_custom_model = getattr(self, 'model_trained', False)
+            except Exception:
+                use_custom_model = False
             
             for i, transaction in enumerate(transactions):
                 try:
@@ -200,7 +210,12 @@ class AIService:
                         transaction['category'] = 'outros'
                         logger.debug(f"Transaction {i+1}: Empty description, assigned 'outros' category")
                     else:
-                        transaction['category'] = self.categorize_transaction(description)
+                        if use_custom_model:
+                            # Usa o modelo treinado quando disponível, com fallback interno
+                            transaction['category'] = self.categorize_with_custom_model(description)
+                        else:
+                            # Fallback baseado em regras/keywords
+                            transaction['category'] = self.categorize_transaction(description)
                         categorized_count += 1
                         
                     # Add small delay to avoid overwhelming the system
@@ -1083,4 +1098,6 @@ class AIService:
         df = df.sort_values('date')
         
         return df
+
+
 
