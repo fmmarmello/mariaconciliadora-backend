@@ -1007,6 +1007,39 @@ def update_company_financial(entry_id):
         db.session.rollback()
         return jsonify({'error': f'Erro ao atualizar entrada financeira: {str(e)}'}), 500
 
+@transactions_bp.route('/company-financial/<int:entry_id>', methods=['DELETE'])
+@handle_errors
+@rate_limit(max_requests=100, window_minutes=60)
+@sanitize_path_params('entry_id')
+def delete_company_financial(entry_id):
+    """
+    Endpoint para excluir uma entrada financeira da empresa
+    """
+    entry = CompanyFinancial.query.get(entry_id)
+    if not entry:
+        return jsonify({'error': 'Entrada financeira não encontrada'}), 404
+
+    # Impede exclusão se houver registros de reconciliação associados
+    linked_count = db.session.query(ReconciliationRecord).\
+        filter(ReconciliationRecord.company_entry_id == entry_id).count()
+    if linked_count > 0:
+        return jsonify({
+            'error': 'Não é possível excluir: entrada vinculada à reconciliação',
+            'details': [f'{linked_count} registro(s) de reconciliação associados']
+        }), 400
+
+    try:
+        db.session.delete(entry)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Entrada financeira excluída com sucesso',
+            'data': {'id': entry_id}
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Erro ao excluir entrada financeira: {str(e)}'}), 500
+
 @transactions_bp.route('/company-financial', methods=['GET'])
 def get_company_financial():
     """
