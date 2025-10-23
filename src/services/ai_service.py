@@ -324,6 +324,93 @@ class AIService:
         logger.info(f"Anomaly detection completed. Found {anomaly_count} anomalies out of {len(transactions)} transactions")
         audit_logger.log_ai_operation('anomaly_detection', len(transactions), True)
         return transactions
+
+    @handle_service_errors('ai_service')
+    @with_timeout(60)  # 1 minute timeout for type inference
+    def infer_transaction_type_batch(self, entries: List[Dict]) -> List[Dict]:
+        """
+        Infere 'transaction_type' (income/expense) usando regras heurísticas baseadas
+        em descrição/categoria. Não substitui o tipo final (o sinal do valor prevalece),
+        apenas anexa campos auxiliares:
+          - transaction_type_ai
+          - transaction_type_confidence ('high' | 'medium' | 'low')
+          - transaction_type_reason (string breve)
+        """
+        if not entries:
+            raise InsufficientDataError('transaction type inference', 1, 0)
+
+        logger.info(f"Starting AI-like transaction type inference for {len(entries)} entries")
+
+        def norm_text(s: Any) -> str:
+            try:
+                t = str(s or '').lower().strip()
+                t = ''.join(ch for ch in unicodedata.normalize('NFD', t) if unicodedata.category(ch) != 'Mn')
+                return t
+            except Exception:
+                return ''
+
+        # Keyword sets
+        income_kws = {
+            'receita', 'venda', 'vendas', 'recebimento', 'recebido', 'deposito', 'depósito', 'aporte',
+            'salario', 'salário', 'pro labore', 'prolabore', 'reembolso recebido', 'cashback', 'juros recebidos'
+        }
+        expense_kws = {
+            'tarifa', 'tarifas', 'taxa', 'juros', 'multa', 'pagamento', 'compra', 'fatura', 'boleto', 'pix tarifa',
+            'mensalidade', 'assinatura', 'debito', 'débito', 'saque', 'cobranca', 'cobrança', 'transferencia enviada'
+        }
+        refund_kws = {'reembolso', 'estorno', 'chargeback', 'reversao', 'reversão'}
+
+        for i, e in enumerate(entries):
+            try:
+                desc = norm_text(e.get('description', ''))
+                cat = norm_text(e.get('category', ''))
+                tipo = norm_text(e.get('transaction_type', ''))  # existing parsed
+                text = f"{desc} {cat} {tipo}"
+
+                inferred = None
+                reason = []
+                confidence = 'low'
+
+                # Strong signals
+                if any(kw in text for kw in income_kws):
+                    inferred = 'income'
+                    reason.append('keywords_income')
+                if any(kw in text for kw in expense_kws):
+                    # If both appear, we'll reduce confidence
+                    inferred = 'expense' if inferred is None else inferred
+                    reason.append('keywords_expense')
+                if any(kw in text for kw in refund_kws):
+                    reason.append('refund_terms')
+
+                # Confidence
+                if 'keywords_income' in reason and 'keywords_expense' in reason:
+                    confidence = 'low'
+                elif reason:
+                    confidence = 'high'
+                else:
+                    # Use category buckets as medium signal
+                    cat_only = False
+                    if cat:
+                        if cat in ['salario', 'receitas', 'vendas', 'investimento', 'aporte']:
+                            inferred = inferred or 'income'
+                            cat_only = True
+                        elif cat in ['tarifas_bancarias', 'impostos', 'fornecedores', 'marketing', 'assinaturas_saas', 'contabilidade']:
+                            inferred = inferred or 'expense'
+                            cat_only = True
+                    confidence = 'medium' if cat_only else 'low'
+
+                e['transaction_type_ai'] = inferred
+                e['transaction_type_confidence'] = confidence
+                e['transaction_type_reason'] = ' '.join(reason) if reason else ''
+
+            except Exception as ex:
+                logger.debug(f"Type inference failed for entry {i+1}: {str(ex)}")
+                e['transaction_type_ai'] = None
+                e['transaction_type_confidence'] = 'low'
+                e['transaction_type_reason'] = ''
+
+        logger.info("Transaction type inference completed")
+        return entries
     
     def generate_insights(self, transactions: List[Dict]) -> Dict[str, Any]:
         """

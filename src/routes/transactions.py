@@ -676,6 +676,17 @@ def upload_xlsx():
         processor = XLSXProcessor()
         financial_data = processor.parse_xlsx_file(temp_path)
         logger.info(f"XLSX parsed successfully. Entries found: {len(financial_data)}")
+
+        # Enriquecimento por IA: categorização das entradas
+        try:
+            if financial_data:
+                ai_service = AIService()
+                logger.info("Starting AI categorization for XLSX entries")
+                financial_data = ai_service.categorize_transactions_batch(financial_data)
+                logger.info("AI categorization completed for XLSX entries")
+        except Exception as ai_err:
+            # Não interrompe o fluxo em caso de falha na IA; mantém categorias originais
+            logger.warning(f"AI categorization failed for XLSX entries: {str(ai_err)}")
         
         # Salva os dados no banco de dados
         saved_count = 0

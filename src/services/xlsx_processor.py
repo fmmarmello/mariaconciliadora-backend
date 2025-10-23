@@ -2,9 +2,11 @@ import pandas as pd
 from typing import List, Dict, Any
 from datetime import datetime
 import re
+import unicodedata
 import os
 from src.services.duplicate_detection_service import DuplicateDetectionService
 import hashlib
+from src.services.ai_service import AIService
 from src.utils.logging_config import get_logger
 from src.utils.exceptions import (
     FileProcessingError, FileNotFoundError, InvalidFileFormatError,
@@ -35,6 +37,19 @@ class XLSXProcessor:
             'monthly_report_value': ['valor para relat mensal', 'valor para relatório mensal', 'monthly report value']
         }
         self.duplicate_service = DuplicateDetectionService()
+        # Canonical targets expected downstream in row processing
+        self._canonical_targets = {
+            'date': 'data',
+            'description': 'description',
+            'amount': 'valor',
+            'transaction_type': 'tipo',
+            'category': 'category',
+            'cost_center': 'cost_center',
+            'department': 'department',
+            'project': 'project',
+            'observations': 'observations',
+            'monthly_report_value': 'monthly_report_value'
+        }
     
     @handle_service_errors('xlsx_processor')
     @with_timeout(120)  # 2 minute timeout for XLSX processing
@@ -55,9 +70,12 @@ class XLSXProcessor:
             raise InvalidFileFormatError(filename, ['xlsx'])
         
         try:
-            # Read XLSX file with error handling
-            df = self._read_xlsx_with_recovery(file_path)
-            logger.info(f"XLSX file loaded successfully. Rows: {len(df)}, Columns: {len(df.columns)}")
+            # Read ALL sheets with error handling and merge the valid ones
+            sheets = self._read_all_sheets_with_recovery(file_path)
+            logger.info(f"XLSX workbook loaded. Sheets: {list(sheets.keys())}")
+
+            df = self._select_and_merge_sheets(sheets, filename)
+            logger.info(f"Merged DataFrame. Rows: {len(df)}, Columns: {len(df.columns)}")
             
             # Validate file structure
             self._validate_xlsx_structure(df, filename)
@@ -82,6 +100,22 @@ class XLSXProcessor:
             
             # Process rows with validation
             financial_data = self._process_xlsx_rows(df)
+
+            # Optional: Use AI to infer transaction type as assist (sign still prevails)
+            try:
+                if financial_data:
+                    ai_service = AIService()
+                    financial_data = ai_service.infer_transaction_type_batch(financial_data)
+                    # Apply AI inference only for zero-amount lines (sign-first precedence)
+                    for entry in financial_data:
+                        try:
+                            amt = float(entry.get('amount') or 0)
+                        except Exception:
+                            amt = 0.0
+                        if amt == 0 and entry.get('transaction_type_ai'):
+                            entry['transaction_type'] = entry['transaction_type_ai']
+            except Exception as ai_err:
+                logger.warning(f"AI type inference skipped due to error: {str(ai_err)}")
             
             # Validate processed data
             self._validate_processed_data(financial_data, filename)
@@ -129,6 +163,109 @@ class XLSXProcessor:
                 raise FileCorruptedError(os.path.basename(file_path))
         
         return recovery_manager.fallback_on_error(primary_read, fallback_read)
+
+    def _read_all_sheets_with_recovery(self, file_path: str) -> Dict[str, pd.DataFrame]:
+        """Read all sheets from an XLSX workbook with recovery mechanisms."""
+        def primary_read_all():
+            return pd.read_excel(file_path, sheet_name=None)
+
+        def fallback_read_all():
+            logger.warning("Primary XLSX multi-sheet reading failed, attempting recovery")
+            engines = ['openpyxl', 'xlrd']
+            for engine in engines:
+                try:
+                    logger.debug(f"Trying to read all sheets with {engine} engine")
+                    return pd.read_excel(file_path, sheet_name=None, engine=engine)
+                except Exception as e:
+                    logger.debug(f"Failed with {engine}: {str(e)}")
+                    continue
+            # If all engines fail, escalate
+            raise FileCorruptedError(os.path.basename(file_path))
+
+        return recovery_manager.fallback_on_error(primary_read_all, fallback_read_all)
+
+    def _build_canonical_rename_map(self, df: pd.DataFrame) -> Dict[str, str]:
+        """Create a rename map from incoming columns to canonical names based on synonyms."""
+        rename_map: Dict[str, str] = {}
+        normalized_cols = {col: self._normalize_column_name(col) for col in df.columns}
+
+        for original, norm_col in normalized_cols.items():
+            mapped = None
+            # Try to match against each supported standard and its variations
+            for standard, variations in self.supported_columns.items():
+                variations_norm = [self._normalize_column_name(v) for v in variations]
+                target = self._canonical_targets.get(standard, standard)
+                # Also consider the canonical target as a variation
+                candidates = set(variations_norm + [self._normalize_column_name(target)])
+                if any(v in norm_col or norm_col in v for v in candidates):
+                    mapped = target
+                    break
+
+            # Fallback to normalized column name if not mapped
+            rename_map[original] = mapped if mapped else norm_col
+
+        # Resolve collisions by keeping first occurrence; suffix others
+        seen: Dict[str, int] = {}
+        final_map: Dict[str, str] = {}
+        for orig, target in rename_map.items():
+            if target in seen:
+                seen[target] += 1
+                final_map[orig] = f"{target}_{seen[target]}"
+            else:
+                seen[target] = 0
+                final_map[orig] = target
+
+        return final_map
+
+    def _select_and_merge_sheets(self, sheets: Dict[str, pd.DataFrame], filename: str) -> pd.DataFrame:
+        """Select sheets that contain expected columns and merge them into a single DataFrame."""
+        valid_frames: List[pd.DataFrame] = []
+        included_sheets: List[str] = []
+        skipped_sheets: List[str] = []
+
+        required_keys = ['data', 'valor', 'description']  # canonical expected
+
+        for sheet_name, df in sheets.items():
+            try:
+                if df is None or df.empty or len(df.columns) < 2:
+                    skipped_sheets.append(sheet_name)
+                    continue
+
+                # Rename columns to canonical using synonyms
+                rename_map = self._build_canonical_rename_map(df)
+                df_renamed = df.rename(columns=rename_map)
+                # Normalize canonical names (idempotent)
+                df_renamed.columns = [self._normalize_column_name(c) for c in df_renamed.columns]
+
+                # Determine if sheet contains required columns
+                cols = set(df_renamed.columns)
+                if all(key in cols for key in required_keys):
+                    valid_frames.append(df_renamed)
+                    included_sheets.append(sheet_name)
+                else:
+                    skipped_sheets.append(sheet_name)
+            except Exception as e:
+                logger.warning(f"Error processing sheet '{sheet_name}': {str(e)}")
+                skipped_sheets.append(sheet_name)
+
+        logger.info(f"Included sheets: {included_sheets}; Skipped sheets: {skipped_sheets}")
+
+        if valid_frames:
+            return pd.concat(valid_frames, ignore_index=True, sort=False)
+
+        # Fallback: use first non-empty sheet with normalized columns (maintains backward compatibility)
+        for sheet_name, df in sheets.items():
+            if df is not None and not df.empty:
+                rename_map = self._build_canonical_rename_map(df)
+                df_renamed = df.rename(columns=rename_map)
+                df_renamed.columns = [self._normalize_column_name(c) for c in df_renamed.columns]
+                logger.warning(
+                    f"No sheets matched required columns in {filename}. Falling back to first non-empty sheet: {sheet_name}"
+                )
+                return df_renamed
+
+        # If everything is empty
+        raise InsufficientDataError('XLSX parsing', 1, 0)
     
     def _validate_xlsx_structure(self, df: pd.DataFrame, filename: str):
         """Validate XLSX file structure."""
@@ -260,9 +397,17 @@ class XLSXProcessor:
     
     def _normalize_column_name(self, column_name: str) -> str:
         """Normaliza nomes de colunas para padrão consistente"""
+        # Lowercase
         column_name = str(column_name).strip().lower()
-        # Remove acentos e caracteres especiais
+        # Remove diacritics (accents)
+        column_name = ''.join(
+            ch for ch in unicodedata.normalize('NFD', column_name)
+            if unicodedata.category(ch) != 'Mn'
+        )
+        # Remove non-word characters except whitespace
         column_name = re.sub(r'[^\w\s]', '', column_name)
+        # Collapse inner whitespace
+        column_name = re.sub(r'\s+', ' ', column_name).strip()
         return column_name
     
     def _parse_date(self, date_value) -> datetime:
@@ -339,17 +484,26 @@ class XLSXProcessor:
             return 0.0
     
     def _determine_transaction_type(self, row) -> str:
-        """Determina se é despesa ou receita"""
-        transaction_type = row.get('tipo', '').lower()
-        #TODO adicionar IA para interpretar tipos
-        if transaction_type in ['despesa', 'expense', 'débito', 'debit', 'retirada sócio',  'impostos / tributos', 'tarifas bancárias', 'juros / multa', 'seguro', 'emprestimo']:
+        """Determina se é despesa ou receita, priorizando o sinal do valor."""
+        # 1) Ground truth pelo sinal do valor
+        amount = self._parse_amount(row.get('valor'))
+        try:
+            if amount < 0:
+                return 'expense'
+            if amount > 0:
+                return 'income'
+        except Exception:
+            pass
+
+        # 2) Fallback pelo conteúdo do campo 'tipo'
+        transaction_type = str(row.get('tipo', '')).strip().lower()
+        if transaction_type in ['despesa', 'expense', 'débito', 'debito', 'debit', 'retirada sócio', 'retirada socio', 'impostos / tributos', 'impostos', 'tributos', 'tarifas bancárias', 'tarifas bancarias', 'juros / multa', 'juros', 'multa', 'seguro', 'emprestimo', 'empréstimo']:
             return 'expense'
-        elif transaction_type in ['reembolso','receita', 'income', 'crédito', 'credit','credito']:
+        if transaction_type in ['reembolso', 'receita', 'income', 'crédito', 'credito', 'credit']:
             return 'income'
-        else:
-            # Determina pelo valor (negativo = despesa, positivo = receita)
-            amount = self._parse_amount(row.get('valor'))
-            return 'expense' if amount < 0 else 'income'
+
+        # 3) Fallback padrão
+        return 'expense'
     
     @handle_service_errors('xlsx_processor')
     def detect_duplicates(self, entries: List[Dict]) -> List[int]:
@@ -445,7 +599,10 @@ class XLSXProcessor:
     @with_timeout(60)  # 1 minute timeout for analysis
     def analyze_xlsx_file(self, file_path: str) -> Dict[str, Any]:
         """
-        Analyze XLSX file structure and content to determine type and provide detailed analysis
+        Analyze XLSX workbook structure and content to determine type and provide detailed analysis.
+        - Inspects all sheets
+        - Picks a primary sheet for top-level fields (structure/analysis/summary)
+        - Returns per-sheet details under 'sheets'
         """
         logger.info(f"Starting XLSX file analysis: {file_path}")
 
@@ -460,20 +617,72 @@ class XLSXProcessor:
             raise InvalidFileFormatError(filename, ['xlsx'])
 
         try:
-            # Read XLSX file
-            df = self._read_xlsx_with_recovery(file_path)
-            logger.info(f"XLSX file loaded successfully. Rows: {len(df)}, Columns: {len(df.columns)}")
+            # Read ALL sheets in the workbook
+            sheets = self._read_all_sheets_with_recovery(file_path)
+            logger.info(f"XLSX workbook loaded for analysis. Sheets: {list(sheets.keys())}")
 
-            # Analyze file structure
-            analysis_result = self._analyze_file_structure(df, filename)
+            # Build per-sheet analysis
+            per_sheet_details = []
+            required_keys = ['data', 'valor', 'description']
 
-            # Determine file type
-            file_type = self._determine_file_type(df, analysis_result)
+            def prepare_df_for_sheet(df):
+                rename_map = self._build_canonical_rename_map(df)
+                df2 = df.rename(columns=rename_map)
+                df2.columns = [self._normalize_column_name(c) for c in df2.columns]
+                return df2
 
-            # Generate detailed analysis
-            detailed_analysis = self._generate_detailed_analysis(df, analysis_result, file_type)
+            for sheet_name, raw_df in sheets.items():
+                if raw_df is None or raw_df.empty:
+                    per_sheet_details.append({
+                        'sheet_name': sheet_name,
+                        'rows': 0,
+                        'columns': 0,
+                        'skipped': True,
+                        'reason': 'empty'
+                    })
+                    continue
+                try:
+                    df_sheet = prepare_df_for_sheet(raw_df)
+                    structure = self._analyze_file_structure(df_sheet, filename)
+                    ftype = self._determine_file_type(df_sheet, structure)
+                    analysis = self._generate_detailed_analysis(df_sheet, structure, ftype)
+                    per_sheet_details.append({
+                        'sheet_name': sheet_name,
+                        'rows': int(len(df_sheet)),
+                        'columns': int(len(df_sheet.columns)),
+                        'file_type': ftype,
+                        'structure': structure,
+                        'analysis': analysis,
+                        'has_required_columns': all(k in set(df_sheet.columns) for k in required_keys)
+                    })
+                except Exception as e:
+                    logger.warning(f"Error analyzing sheet '{sheet_name}': {str(e)}")
+                    per_sheet_details.append({
+                        'sheet_name': sheet_name,
+                        'rows': int(len(raw_df)) if raw_df is not None else 0,
+                        'columns': int(len(raw_df.columns)) if raw_df is not None else 0,
+                        'error': str(e)
+                    })
 
-            logger.info(f"XLSX analysis completed successfully. Type: {file_type}")
+            # Choose primary sheet: prefer sheet with required columns and most rows; else largest sheet
+            primary = None
+            candidates = [s for s in per_sheet_details if s.get('has_required_columns')]
+            if candidates:
+                primary = max(candidates, key=lambda s: s['rows'])
+            else:
+                non_empty = [s for s in per_sheet_details if s.get('rows', 0) > 0]
+                if non_empty:
+                    primary = max(non_empty, key=lambda s: s['rows'])
+
+            if not primary:
+                raise InsufficientDataError('XLSX analysis', 1, 0)
+
+            # Top-level fields use the primary sheet for backward compatibility
+            file_type = primary.get('file_type', 'Unknown')
+            analysis_result = primary.get('structure', {})
+            detailed_analysis = primary.get('analysis', {})
+
+            logger.info(f"XLSX analysis completed. Primary sheet: {primary['sheet_name']} Type: {file_type}")
 
             # Convert pandas/numpy types to Python native types for JSON serialization
             def convert_to_native_types(obj):
@@ -481,24 +690,28 @@ class XLSXProcessor:
                     return {key: convert_to_native_types(value) for key, value in obj.items()}
                 elif isinstance(obj, list):
                     return [convert_to_native_types(item) for item in obj]
-                elif hasattr(obj, 'item'):  # numpy types
+                elif hasattr(obj, 'item'):
                     return obj.item()
-                elif hasattr(obj, 'isoformat'):  # datetime objects
+                elif hasattr(obj, 'isoformat'):
                     return obj.isoformat()
                 else:
                     return obj
 
-            return {
+            response = {
                 'file_type': file_type,
                 'analysis': convert_to_native_types(detailed_analysis),
                 'structure': convert_to_native_types(analysis_result),
                 'summary': {
-                    'total_rows': int(len(df)),
-                    'total_columns': int(len(df.columns)),
+                    'total_rows': int(primary.get('rows', 0)),
+                    'total_columns': int(primary.get('columns', 0)),
                     'filename': filename,
-                    'file_size': int(os.path.getsize(file_path))
-                }
+                    'file_size': int(os.path.getsize(file_path)),
+                    'primary_sheet': primary.get('sheet_name')
+                },
+                'sheets': convert_to_native_types(per_sheet_details)
             }
+
+            return response
 
         except Exception as e:
             if isinstance(e, (FileProcessingError, ValidationError)):
