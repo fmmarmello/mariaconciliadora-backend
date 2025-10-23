@@ -330,6 +330,14 @@ class XLSXProcessor:
     def _process_single_row(self, row: pd.Series, index: int) -> Dict[str, Any]:
         """Process a single XLSX row with validation."""
         try:
+            # Compute type diagnostics
+            raw_tipo = row.get('tipo', '')
+            mapped_label = self._map_label_to_type(raw_tipo)
+            amt_num = self._parse_amount(row.get('valor'))
+            sign_type = 'expense' if amt_num < 0 else ('income' if amt_num > 0 else '')
+            final_type = self._determine_transaction_type(row)
+            type_conflict = bool(sign_type and mapped_label and sign_type != mapped_label)
+
             entry = {
                 'date': self._parse_date(row.get('data')),
                 'description': self._parse_description(row.get('description', '')),
@@ -338,9 +346,13 @@ class XLSXProcessor:
                 'cost_center': str(row.get('cost_center', '')),
                 'department': str(row.get('department', '')),
                 'project': str(row.get('project', '')),
-                'transaction_type': self._determine_transaction_type(row),
+                'transaction_type': final_type,
                 'observations': str(row.get('observations', '')),
-                'monthly_report_value': self._parse_amount(row.get('monthly_report_value'))
+                'monthly_report_value': self._parse_amount(row.get('monthly_report_value')),
+                # Diagnostics for UI/reporting
+                'transaction_type_label': mapped_label if mapped_label else None,
+                'transaction_type_conflict': type_conflict,
+                'tipo_raw': str(raw_tipo) if raw_tipo is not None else ''
             }
             
             # Validate the entry using company financial validator
@@ -496,14 +508,31 @@ class XLSXProcessor:
             pass
 
         # 2) Fallback pelo conteúdo do campo 'tipo'
-        transaction_type = str(row.get('tipo', '')).strip().lower()
-        if transaction_type in ['despesa', 'expense', 'débito', 'debito', 'debit', 'retirada sócio', 'retirada socio', 'impostos / tributos', 'impostos', 'tributos', 'tarifas bancárias', 'tarifas bancarias', 'juros / multa', 'juros', 'multa', 'seguro', 'emprestimo', 'empréstimo']:
-            return 'expense'
-        if transaction_type in ['reembolso', 'receita', 'income', 'crédito', 'credito', 'credit']:
-            return 'income'
+        mapped = self._map_label_to_type(str(row.get('tipo', '')))
+        if mapped:
+            return mapped
 
         # 3) Fallback padrão
         return 'expense'
+
+    def _map_label_to_type(self, label: str) -> str:
+        """Mapeia o texto do campo 'tipo' para 'income'/'expense'. Retorna '' se indeterminado."""
+        lbl = str(label or '').strip().lower()
+        # Normaliza acentos
+        lbl = ''.join(ch for ch in unicodedata.normalize('NFD', lbl) if unicodedata.category(ch) != 'Mn')
+        expense_terms = {
+            'despesa', 'expense', 'debito', 'retirada socio', 'impostos / tributos', 'impostos', 'tributos',
+            'tarifas bancarias', 'juros / multa', 'juros', 'multa', 'seguro', 'emprestimo', 'pagamento', 'compra',
+            'fatura', 'taxa', 'tarifa', 'saque'
+        }
+        income_terms = {
+            'reembolso', 'receita', 'income', 'credito', 'deposito', 'aporte', 'venda', 'vendas', 'recebimento', 'salario'
+        }
+        if lbl in expense_terms:
+            return 'expense'
+        if lbl in income_terms:
+            return 'income'
+        return ''
     
     @handle_service_errors('xlsx_processor')
     def detect_duplicates(self, entries: List[Dict]) -> List[int]:

@@ -694,6 +694,8 @@ def upload_xlsx():
         errors = []
         duplicate_entries_details = []
         duplicate_count = 0
+        type_conflict_details = []
+        type_conflict_count = 0
         total_entries_processed = len(financial_data)
         
         for i, entry_data in enumerate(financial_data):
@@ -742,6 +744,21 @@ def upload_xlsx():
                     incomplete_entries.append(entry_data)
                     continue
                 
+                # Registrar conflito de tipo (apenas informativo)
+                try:
+                    if entry_data.get('transaction_type_conflict'):
+                        type_conflict_count += 1
+                        type_conflict_details.append({
+                            'row_number': i + 1,
+                            'date': entry_data['date'].isoformat() if entry_data['date'] else None,
+                            'amount': entry_data.get('amount'),
+                            'description': entry_data.get('description'),
+                            'label': entry_data.get('tipo_raw') or entry_data.get('transaction_type_label'),
+                            'final_type': entry_data.get('transaction_type')
+                        })
+                except Exception:
+                    pass
+
                 # Se chegou até aqui, a entrada é válida e não é duplicata
                 financial_entry = CompanyFinancial(
                     date=entry_data['date'],
@@ -817,6 +834,10 @@ def upload_xlsx():
                         'count': duplicate_count,
                         'details': duplicate_entries_details
                     }
+                },
+                'type_conflicts': {
+                    'count': type_conflict_count,
+                    'details': type_conflict_details[:20]
                 }
             }
         }
