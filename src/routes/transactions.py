@@ -5,6 +5,7 @@ import tempfile
 from datetime import datetime, timedelta
 from src.models.transaction import Transaction, UploadHistory, ReconciliationRecord, db
 from src.models.company_financial import CompanyFinancial
+from src.constants.financial import normalize_company_financial_category
 from src.services.ofx_processor import OFXProcessor
 from src.services.xlsx_processor import XLSXProcessor
 from src.services.ai_service import AIService
@@ -764,7 +765,7 @@ def upload_xlsx():
                     date=entry_data['date'],
                     description=entry_data['description'],
                     amount=entry_data['amount'],
-                    category=entry_data['category'],
+                    category=normalize_company_financial_category(entry_data.get('category')),
                     cost_center=entry_data['cost_center'],
                     department=entry_data['department'],
                     project=entry_data['project'],
@@ -901,7 +902,7 @@ def upload_xlsx_corrected():
                     date=entry_data['date'],
                     description=entry_data['description'],
                     amount=float(entry_data.get('amount', 0)),
-                    category=entry_data.get('category', ''),
+                    category=normalize_company_financial_category(entry_data.get('category')),
                     cost_center=entry_data.get('cost_center', ''),
                     department=entry_data.get('department', ''),
                     project=entry_data.get('project', ''),
@@ -1017,7 +1018,7 @@ def update_company_financial(entry_id):
         if 'description' in data:
             entry.description = str(data['description']).strip()
         if 'category' in data:
-            entry.category = str(data['category']).strip() if data['category'] is not None else None
+            entry.category = normalize_company_financial_category(data['category'])
         if 'cost_center' in data:
             entry.cost_center = str(data['cost_center']).strip() if data['cost_center'] is not None else None
         if 'department' in data:
@@ -1166,7 +1167,7 @@ def create_company_financial():
             date=date_obj,
             description=(data.get('description') or '').strip(),
             amount=float(data.get('amount') or 0),
-            category=(data.get('category') or '').strip() or None,
+            category=normalize_company_financial_category(data.get('category')),
             cost_center=(data.get('cost_center') or '').strip() or None,
             department=(data.get('department') or '').strip() or None,
             project=(data.get('project') or '').strip() or None,
@@ -1219,10 +1220,11 @@ def get_company_financial_summary():
         # Entradas por categoria
         category_stats = {}
         for entry in filtered_entries:
-            if entry.category not in category_stats:
-                category_stats[entry.category] = {'count': 0, 'total': 0}
-            category_stats[entry.category]['count'] += 1
-            category_stats[entry.category]['total'] += entry.amount
+            category_key = normalize_company_financial_category(entry.category)
+            if category_key not in category_stats:
+                category_stats[category_key] = {'count': 0, 'total': 0}
+            category_stats[category_key]['count'] += 1
+            category_stats[category_key]['total'] += entry.amount
         
         # Últimas entradas
         recent_entries = sorted(filtered_entries, key=lambda x: x.date, reverse=True)[:5]

@@ -1,5 +1,9 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from src.constants.financial import (
+    DEFAULT_COMPANY_FINANCIAL_CATEGORY,
+    normalize_company_financial_category
+)
 from src.models.user import db
 
 class CompanyFinancial(db.Model):
@@ -9,7 +13,7 @@ class CompanyFinancial(db.Model):
     date = db.Column(db.Date, nullable=False)
     description = db.Column(db.Text, nullable=False)
     amount = db.Column(db.Float, nullable=False)
-    category = db.Column(db.String(50))
+    category = db.Column(db.String(50), default=DEFAULT_COMPANY_FINANCIAL_CATEGORY)
     cost_center = db.Column(db.String(50))
     department = db.Column(db.String(50))
     project = db.Column(db.String(50))
@@ -24,7 +28,7 @@ class CompanyFinancial(db.Model):
             'date': self.date.isoformat() if self.date else None,
             'description': self.description,
             'amount': self.amount,
-            'category': self.category,
+            'category': normalize_company_financial_category(self.category),
             'cost_center': self.cost_center,
             'department': self.department,
             'project': self.project,

@@ -14,6 +14,7 @@ from src.utils.exceptions import (
 )
 from src.utils.error_handler import handle_service_errors, with_timeout, recovery_manager
 from src.utils.validators import validate_file_upload, company_financial_validator
+from src.constants.financial import normalize_company_financial_category
 
 # Initialize logger
 logger = get_logger(__name__)
@@ -342,7 +343,7 @@ class XLSXProcessor:
                 'date': self._parse_date(row.get('data')),
                 'description': self._parse_description(row.get('description', '')),
                 'amount': self._parse_amount(row.get('valor')),
-                'category': str(row.get('tipo', '')),
+                'category': normalize_company_financial_category(row.get('tipo', '')),
                 'cost_center': str(row.get('cost_center', '')),
                 'department': str(row.get('department', '')),
                 'project': str(row.get('project', '')),

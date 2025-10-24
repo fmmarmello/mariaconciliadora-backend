@@ -327,7 +327,7 @@ class CompanyFinancialValidator:
         self.amount_validator = NumberValidator('amount', decimal_places=2)
         self.date_validator = DateValidator('date', min_date=date(1900, 1, 1))
         self.description_validator = StringValidator('description', min_length=1, max_length=500)
-        self.category_validator = StringValidator('category', max_length=100)
+        self.category_validator = StringValidator('category', min_length=1, max_length=100)
         self.transaction_type_validator = StringValidator('transaction_type', allowed_values=['income', 'expense'])
     
     def validate_entry(self, entry_data: Dict[str, Any]) -> ValidationResult:
@@ -335,7 +335,7 @@ class CompanyFinancialValidator:
         result = ValidationResult()
         
         # Validate required fields
-        required_fields = ['amount', 'date', 'description', 'transaction_type']
+        required_fields = ['amount', 'date', 'description', 'transaction_type', 'category']
         for field in required_fields:
             if field not in entry_data or entry_data[field] is None:
                 result.add_error(f"Required field '{field}' is missing")
@@ -360,12 +360,16 @@ class CompanyFinancialValidator:
                     result.add_error(f"{field_name.title()}: {e.user_message}")
         
         # Optional field validation
-        if 'category' in entry_data and entry_data['category']:
-            try:
-                cat_result = self.category_validator.validate(entry_data['category'])
-                result.merge(cat_result)
-            except ValidationError as e:
-                result.add_error(f"Category: {e.user_message}")
+        category_value = entry_data.get('category')
+        if isinstance(category_value, str):
+            category_value = category_value.strip()
+            entry_data['category'] = category_value
+
+        try:
+            cat_result = self.category_validator.validate(category_value)
+            result.merge(cat_result)
+        except ValidationError as e:
+            result.add_error(f"Category: {e.user_message}")
         
         # Business rule validations
         if entry_data.get('transaction_type') == 'expense' and entry_data.get('amount', 0) > 0:
