@@ -266,10 +266,12 @@ class FileValidator:
             if pd is not None:
                 pd.read_excel(file_path, nrows=1)
         elif file_ext in ['.ofx', '.qfx']:
-            # Try to read OFX file
-            with open(file_path, 'r', encoding='utf-8') as f:
-                content = f.read(100)  # Read first 100 characters
-                if '<OFX>' not in content.upper() and 'OFXHEADER' not in content.upper():
+            # Try to read OFX file using binary sniff to avoid encoding issues (e.g., CP1252)
+            # Read a reasonable header window and look for OFX markers without decoding
+            with open(file_path, 'rb') as f:
+                head = f.read(2048)
+                head_upper = head.upper()
+                if b'<OFX>' not in head_upper and b'OFXHEADER' not in head_upper:
                     raise ValueError("Invalid OFX format")
 
 

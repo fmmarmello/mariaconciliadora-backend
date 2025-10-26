@@ -1,0 +1,4028 @@
+OFXHEADER:100
+DATA:OFXSGML
+VERSION:103
+SECURITY:NONE
+ENCODING:USASCII
+CHARSET:1252
+COMPRESSION:NONE
+OLDFILEUID:NONE
+NEWFILEUID:NONE
+
+<OFX>
+  <SIGNONMSGSRSV1>
+    <SONRS>
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+      </STATUS>
+      <DTSERVER>20211230120000[-3:BRST]
+      <LANGUAGE>POR
+      <FI>
+        <ORG>BancoTeste
+        <FID>0001
+      </FI>
+    </SONRS>
+  </SIGNONMSGSRSV1>
+  <BANKMSGSRSV1>
+    <STMTTRNRS>
+      <TRNUID>1
+      <STATUS>
+        <CODE>0
+        <SEVERITY>INFO
+      </STATUS>
+      <STMTRS>
+        <CURDEF>BRL
+        <BANKACCTFROM>
+          <BANKID>00000000
+          <ACCTID>123456-7
+          <ACCTTYPE>CHECKING
+        </BANKACCTFROM>
+        <BANKTRANLIST>
+          <DTSTART>20210104120000[-3:BRST]
+          <DTEND>20211230120000[-3:BRST]
+          
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210104120000[-3:BRST]
+      <TRNAMT>-9.89
+      <FITID>2021010400000989000000
+      <NAME>IOF
+      <MEMO>IOF
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210104120000[-3:BRST]
+      <TRNAMT>-0.45
+      <FITID>2021010400000045000001
+      <NAME>Juros 
+      <MEMO>Juros 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210104120000[-3:BRST]
+      <TRNAMT>-94.88
+      <FITID>2021010400009488000002
+      <NAME>Lis/Juros
+      <MEMO>Lis/Juros
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210104120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021010400010000000003
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210104120000[-3:BRST]
+      <TRNAMT>-800.00
+      <FITID>2021010400080000000004
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210105120000[-3:BRST]
+      <TRNAMT>3000.00
+      <FITID>2021010500300000000005
+      <NAME>Aporte Corretora
+      <MEMO>Aporte Corretora
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210105120000[-3:BRST]
+      <TRNAMT>-2570.88
+      <FITID>2021010500257088000006
+      <NAME>Fatura Facil 133203
+      <MEMO>Fatura Facil 133203
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210105120000[-3:BRST]
+      <TRNAMT>-95.12
+      <FITID>2021010500009512000007
+      <NAME>Fatura Fácil 127624
+      <MEMO>Fatura Fácil 127624
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210105120000[-3:BRST]
+      <TRNAMT>-250.00
+      <FITID>2021010500025000000008
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210108120000[-3:BRST]
+      <TRNAMT>-180.00
+      <FITID>2021010800018000000009
+      <NAME>Fatura Claro
+      <MEMO>Fatura Claro
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210108120000[-3:BRST]
+      <TRNAMT>547.45
+      <FITID>2021010800054745000010
+      <NAME>Sispag Facil Assistencia
+      <MEMO>Sispag Facil Assistencia
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210108120000[-3:BRST]
+      <TRNAMT>-94.00
+      <FITID>2021010800009400000011
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210108120000[-3:BRST]
+      <TRNAMT>-10.18
+      <FITID>2021010800001018000012
+      <NAME>Tar Conta Certa Exced
+      <MEMO>Tar Conta Certa Exced
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210111120000[-3:BRST]
+      <TRNAMT>-60.00
+      <FITID>2021011100006000000013
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210111120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021011100020000000014
+      <NAME>Transferencia Novara Interiores
+      <MEMO>Transferencia Novara Interiores
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210121120000[-3:BRST]
+      <TRNAMT>1160.00
+      <FITID>2021012100116000000015
+      <NAME>Depósito em Dinheiro
+      <MEMO>Depósito em Dinheiro
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210121120000[-3:BRST]
+      <TRNAMT>-6.89
+      <FITID>2021012100000689000016
+      <NAME>Tar/Custas
+      <MEMO>Tar/Custas
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210121120000[-3:BRST]
+      <TRNAMT>1210.00
+      <FITID>2021012100121000000017
+      <NAME>Transferencia Carlos 
+      <MEMO>Transferencia Carlos 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210121120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021012100020000000018
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210121120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021012100050000000019
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210121120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021012100050000000020
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210122120000[-3:BRST]
+      <TRNAMT>-69.16
+      <FITID>2021012200006916000021
+      <NAME>Fatura Oi 2516-0966
+      <MEMO>Fatura Oi 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210122120000[-3:BRST]
+      <TRNAMT>-77.91
+      <FITID>2021012200007791000022
+      <NAME>Fatura Oi 3288-7001
+      <MEMO>Fatura Oi 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210122120000[-3:BRST]
+      <TRNAMT>-69.16
+      <FITID>2021012200006916000023
+      <NAME>Fatura Oi 3288-7005
+      <MEMO>Fatura Oi 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210122120000[-3:BRST]
+      <TRNAMT>-143.42
+      <FITID>2021012200014342000024
+      <NAME>Fatura Oi 3288-7066
+      <MEMO>Fatura Oi 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210122120000[-3:BRST]
+      <TRNAMT>-156.96
+      <FITID>2021012200015696000025
+      <NAME>Fatura Oi 3288-7067
+      <MEMO>Fatura Oi 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210122120000[-3:BRST]
+      <TRNAMT>-2624.39
+      <FITID>2021012200262439000026
+      <NAME>ISS 12/2020
+      <MEMO>ISS 12/2020
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210122120000[-3:BRST]
+      <TRNAMT>5476.41
+      <FITID>2021012200547641000027
+      <NAME>Sispag Facil Assistencia
+      <MEMO>Sispag Facil Assistencia
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210122120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021012200050000000028
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210125120000[-3:BRST]
+      <TRNAMT>-4966.11
+      <FITID>2021012500496611000029
+      <NAME>Boleto Parcela Lis
+      <MEMO>Boleto Parcela Lis
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210125120000[-3:BRST]
+      <TRNAMT>-84.00
+      <FITID>2021012500008400000030
+      <NAME>Fatura Fácil 133375
+      <MEMO>Fatura Fácil 133375
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210125120000[-3:BRST]
+      <TRNAMT>-99.04
+      <FITID>2021012500009904000031
+      <NAME>Fatura Fácil 133382
+      <MEMO>Fatura Fácil 133382
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210125120000[-3:BRST]
+      <TRNAMT>-325.68
+      <FITID>2021012500032568000032
+      <NAME>Fatura Fácil 2620
+      <MEMO>Fatura Fácil 2620
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210125120000[-3:BRST]
+      <TRNAMT>-279.35
+      <FITID>2021012500027935000033
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210125120000[-3:BRST]
+      <TRNAMT>4305.72
+      <FITID>2021012500430572000034
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210125120000[-3:BRST]
+      <TRNAMT>-11.99
+      <FITID>2021012500001199000035
+      <NAME>Tar Neg
+      <MEMO>Tar Neg
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210125120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021012500010000000036
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210126120000[-3:BRST]
+      <TRNAMT>770.94
+      <FITID>2021012600077094000037
+      <NAME>Sispag Facil Assistencia
+      <MEMO>Sispag Facil Assistencia
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210126120000[-3:BRST]
+      <TRNAMT>-250.00
+      <FITID>2021012600025000000038
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210127120000[-3:BRST]
+      <TRNAMT>352.31
+      <FITID>2021012700035231000039
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210127120000[-3:BRST]
+      <TRNAMT>200.00
+      <FITID>2021012700020000000040
+      <NAME>Sispag PFE Moveis
+      <MEMO>Sispag PFE Moveis
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210127120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021012700050000000041
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210127120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021012700020000000042
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210128120000[-3:BRST]
+      <TRNAMT>-967.91
+      <FITID>2021012800096791000043
+      <NAME>Parcelamento Simples Nacional 13
+      <MEMO>Parcelamento Simples Nacional 13/60
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210128120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021012800017748000044
+      <NAME>Seguro Bradesco
+      <MEMO>Seguro Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210128120000[-3:BRST]
+      <TRNAMT>3649.97
+      <FITID>2021012800364997000045
+      <NAME>Sispag Facil Assistencia
+      <MEMO>Sispag Facil Assistencia
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210128120000[-3:BRST]
+      <TRNAMT>-3300.00
+      <FITID>2021012800330000000046
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210129120000[-3:BRST]
+      <TRNAMT>1500.00
+      <FITID>2021012900150000000047
+      <NAME>Aporte Corretora
+      <MEMO>Aporte Corretora
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210129120000[-3:BRST]
+      <TRNAMT>1500.02
+      <FITID>2021012900150002000048
+      <NAME>Aporte Corretora DUP VAR
+      <MEMO>Aporte Corretora (DUP VAR)
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210129120000[-3:BRST]
+      <TRNAMT>-2386.64
+      <FITID>2021012900238664000049
+      <NAME>Fatura Fácil 135259
+      <MEMO>Fatura Fácil 135259
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210129120000[-3:BRST]
+      <TRNAMT>-130.00
+      <FITID>2021012900013000000050
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210131120000[-3:BRST]
+      <TRNAMT>-12.34
+      <FITID>2021013100001234000051
+      <NAME>TARIFA MENSALIDADE CONTA - AJUST
+      <MEMO>TARIFA MENSALIDADE CONTA - AJUSTE TESTE
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210201120000[-3:BRST]
+      <TRNAMT>-9.35
+      <FITID>2021020100000935000052
+      <NAME>IOF
+      <MEMO>IOF
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210201120000[-3:BRST]
+      <TRNAMT>-0.72
+      <FITID>2021020100000072000053
+      <NAME>Juros Ad Mora
+      <MEMO>Juros Ad Mora
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210201120000[-3:BRST]
+      <TRNAMT>-96.00
+      <FITID>2021020100009600000054
+      <NAME>Lis / Juros
+      <MEMO>Lis / Juros
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210201120000[-3:BRST]
+      <TRNAMT>48.28
+      <FITID>2021020100004828000055
+      <NAME>Ted Isabela
+      <MEMO>Ted Isabela
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210201120000[-3:BRST]
+      <TRNAMT>-50.00
+      <FITID>2021020100005000000056
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210202120000[-3:BRST]
+      <TRNAMT>-1500.00
+      <FITID>2021020200150000000057
+      <NAME>Aporte Corretora
+      <MEMO>Aporte Corretora
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210202120000[-3:BRST]
+      <TRNAMT>3957.10
+      <FITID>2021020200395710000058
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210202120000[-3:BRST]
+      <TRNAMT>-94.00
+      <FITID>2021020200009400000059
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210202120000[-3:BRST]
+      <TRNAMT>-800.00
+      <FITID>2021020200080000000060
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210202120000[-3:BRST]
+      <TRNAMT>-50.00
+      <FITID>2021020200005000000061
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210204120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021020400010000000062
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210204120000[-3:BRST]
+      <TRNAMT>-300.00
+      <FITID>2021020400030000000063
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210205120000[-3:BRST]
+      <TRNAMT>4356.79
+      <FITID>2021020500435679000064
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210205120000[-3:BRST]
+      <TRNAMT>-1180.83
+      <FITID>2021020500118083000065
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210205120000[-3:BRST]
+      <TRNAMT>-300.00
+      <FITID>2021020500030000000066
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210208120000[-3:BRST]
+      <TRNAMT>-180.00
+      <FITID>2021020800018000000067
+      <NAME>Fatura Claro
+      <MEMO>Fatura Claro
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210208120000[-3:BRST]
+      <TRNAMT>-300.00
+      <FITID>2021020800030000000068
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210208120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021020800050000000069
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210208120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021020800020000000070
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210209120000[-3:BRST]
+      <TRNAMT>-130.00
+      <FITID>2021020900013000000071
+      <NAME>Pix Kene de Mendonça
+      <MEMO>Pix Kene de Mendonça
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210209120000[-3:BRST]
+      <TRNAMT>-600.00
+      <FITID>2021020900060000000072
+      <NAME>Pix para Paulo Sergio Correia de
+      <MEMO>Pix para Paulo Sergio Correia de Lima
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210209120000[-3:BRST]
+      <TRNAMT>-720.00
+      <FITID>2021020900072000000073
+      <NAME>Pix para Paulo Sergio Correia de
+      <MEMO>Pix para Paulo Sergio Correia de Lima
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210211120000[-3:BRST]
+      <TRNAMT>-85.00
+      <FITID>2021021100008500000074
+      <NAME>Transferencia Bruno Geraldo
+      <MEMO>Transferencia Bruno Geraldo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210212120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021021200015000000075
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210217120000[-3:BRST]
+      <TRNAMT>-22.00
+      <FITID>2021021700002200000076
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210219120000[-3:BRST]
+      <TRNAMT>500.00
+      <FITID>2021021900050000000077
+      <NAME>Aporte Corretora
+      <MEMO>Aporte Corretora
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210222120000[-3:BRST]
+      <TRNAMT>-286.00
+      <FITID>2021022200028600000078
+      <NAME>INSS 01/2021
+      <MEMO>INSS 01/2021
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210222120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021022200020000000079
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>-111.32
+      <FITID>2021022300011132000080
+      <NAME>Fatura Oi 2516-0966
+      <MEMO>Fatura Oi 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>-155.61
+      <FITID>2021022300015561000081
+      <NAME>Fatura Oi 3288-7001
+      <MEMO>Fatura Oi 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>-111.32
+      <FITID>2021022300011132000082
+      <NAME>Fatura Oi 3288-7005
+      <MEMO>Fatura Oi 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>-122.99
+      <FITID>2021022300012299000083
+      <NAME>Fatura Oi 3288-7066
+      <MEMO>Fatura Oi 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>-145.53
+      <FITID>2021022300014553000084
+      <NAME>Fatura Oi 3288-7067
+      <MEMO>Fatura Oi 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>801.39
+      <FITID>2021022300080139000085
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>-174.84
+      <FITID>2021022300017484000086
+      <NAME>Oi Móvel
+      <MEMO>Oi Móvel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>3377.50
+      <FITID>2021022300337750000087
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>5563.34
+      <FITID>2021022300556334000088
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>-6.89
+      <FITID>2021022300000689000089
+      <NAME>Tar/Custas
+      <MEMO>Tar/Custas
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210223120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021022300050000000090
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210225120000[-3:BRST]
+      <TRNAMT>-3976.22
+      <FITID>2021022500397622000091
+      <NAME>Fatura Fácil
+      <MEMO>Fatura Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210225120000[-3:BRST]
+      <TRNAMT>-505.55
+      <FITID>2021022500050555000092
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210225120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021022500020000000093
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210226120000[-3:BRST]
+      <TRNAMT>-42.00
+      <FITID>2021022600004200000094
+      <NAME>Fatura Facil
+      <MEMO>Fatura Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210226120000[-3:BRST]
+      <TRNAMT>-1050.00
+      <FITID>2021022600105000000095
+      <NAME>Fatura Facil
+      <MEMO>Fatura Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210226120000[-3:BRST]
+      <TRNAMT>-89.69
+      <FITID>2021022600008969000096
+      <NAME>Fatura Facil
+      <MEMO>Fatura Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210226120000[-3:BRST]
+      <TRNAMT>351.85
+      <FITID>2021022600035185000097
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210226120000[-3:BRST]
+      <TRNAMT>-969.31
+      <FITID>2021022600096931000098
+      <NAME>Parcelamento Simples Nacional 14
+      <MEMO>Parcelamento Simples Nacional 14/60
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210226120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021022600017748000099
+      <NAME>Seguro Bradesco
+      <MEMO>Seguro Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210226120000[-3:BRST]
+      <TRNAMT>-1700.00
+      <FITID>2021022600170000000100
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210301120000[-3:BRST]
+      <TRNAMT>-0.44
+      <FITID>2021030100000044000101
+      <NAME>IOF
+      <MEMO>IOF
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210301120000[-3:BRST]
+      <TRNAMT>-5.48
+      <FITID>2021030100000548000102
+      <NAME>Juros
+      <MEMO>Juros
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210301120000[-3:BRST]
+      <TRNAMT>4039.34
+      <FITID>2021030100403934000103
+      <NAME>Lis Parcelamento Parcial
+      <MEMO>Lis Parcelamento Parcial
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210301120000[-3:BRST]
+      <TRNAMT>3920.99
+      <FITID>2021030100392099000104
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210301120000[-3:BRST]
+      <TRNAMT>48.28
+      <FITID>2021030100004828000105
+      <NAME>Ted Isabela
+      <MEMO>Ted Isabela
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210305120000[-3:BRST]
+      <TRNAMT>-2919.09
+      <FITID>2021030500291909000106
+      <NAME>ISS 01/2021 Recalculado
+      <MEMO>ISS 01/2021 Recalculado
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210305120000[-3:BRST]
+      <TRNAMT>4069.53
+      <FITID>2021030500406953000107
+      <NAME>Mov Tit Cobrança
+      <MEMO>Mov Tit Cobrança
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210305120000[-3:BRST]
+      <TRNAMT>-940.00
+      <FITID>2021030500094000000108
+      <NAME>Transferencia Fleet Corretora
+      <MEMO>Transferencia Fleet Corretora
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210305120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021030500020000000109
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210309120000[-3:BRST]
+      <TRNAMT>-1.55
+      <FITID>2021030900000155000110
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210309120000[-3:BRST]
+      <TRNAMT>-924.56
+      <FITID>2021030900092456000111
+      <NAME>Lis Parcelamento Parcial
+      <MEMO>Lis Parcelamento Parcial
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210309120000[-3:BRST]
+      <TRNAMT>-18.49
+      <FITID>2021030900001849000112
+      <NAME>Multa Parcelamento
+      <MEMO>Multa Parcelamento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210309120000[-3:BRST]
+      <TRNAMT>940.08
+      <FITID>2021030900094008000113
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210310120000[-3:BRST]
+      <TRNAMT>-0.02
+      <FITID>2021031000000002000114
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210310120000[-3:BRST]
+      <TRNAMT>-14.31
+      <FITID>2021031000001431000115
+      <NAME>Lis Parcelamento Parcial
+      <MEMO>Lis Parcelamento Parcial
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210319120000[-3:BRST]
+      <TRNAMT>-91.38
+      <FITID>2021031900009138000116
+      <NAME>Fatura Facil NF 148422
+      <MEMO>Fatura Facil NF 148422
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210319120000[-3:BRST]
+      <TRNAMT>-286.00
+      <FITID>2021031900028600000117
+      <NAME>INSS 02/2021
+      <MEMO>INSS 02/2021
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210319120000[-3:BRST]
+      <TRNAMT>1103.86
+      <FITID>2021031900110386000118
+      <NAME>Mov Tit Cobrança
+      <MEMO>Mov Tit Cobrança
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210319120000[-3:BRST]
+      <TRNAMT>3916.62
+      <FITID>2021031900391662000119
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210319120000[-3:BRST]
+      <TRNAMT>4076.49
+      <FITID>2021031900407649000120
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210319120000[-3:BRST]
+      <TRNAMT>-94.00
+      <FITID>2021031900009400000121
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210319120000[-3:BRST]
+      <TRNAMT>-10.18
+      <FITID>2021031900001018000122
+      <NAME>Tar Conta Certa Exced
+      <MEMO>Tar Conta Certa Exced
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210319120000[-3:BRST]
+      <TRNAMT>-1500.00
+      <FITID>2021031900150000000123
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210322120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021032200010000000124
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210322120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021032200015000000125
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-42.32
+      <FITID>2021032300004232000126
+      <NAME>Fatura Oi - 2516-0966
+      <MEMO>Fatura Oi - 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-33.51
+      <FITID>2021032300003351000127
+      <NAME>Fatura Oi - 3288-7001
+      <MEMO>Fatura Oi - 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-42.32
+      <FITID>2021032300004232000128
+      <NAME>Fatura Oi - 3288-7005
+      <MEMO>Fatura Oi - 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-104.45
+      <FITID>2021032300010445000129
+      <NAME>Fatura Oi - 3288-7066
+      <MEMO>Fatura Oi - 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-80.55
+      <FITID>2021032300008055000130
+      <NAME>Fatura Oi - 3288-7067
+      <MEMO>Fatura Oi - 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-3367.62
+      <FITID>2021032300336762000131
+      <NAME>ISS 02/2021 Recalculado
+      <MEMO>ISS 02/2021 Recalculado
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-174.84
+      <FITID>2021032300017484000132
+      <NAME>OI Movel
+      <MEMO>OI Movel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>0.01
+      <FITID>2021032300000001000133
+      <NAME>Rend Aplicação
+      <MEMO>Rend Aplicação
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021032300020000000134
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210323120000[-3:BRST]
+      <TRNAMT>-1000.00
+      <FITID>2021032300100000000135
+      <NAME>Transferencia William
+      <MEMO>Transferencia William
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210324120000[-3:BRST]
+      <TRNAMT>-15.92
+      <FITID>2021032400001592000136
+      <NAME>Mercado Pago
+      <MEMO>Mercado Pago
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210324120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021032400010000000137
+      <NAME>Transferencia Fleet Corretora
+      <MEMO>Transferencia Fleet Corretora
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210324120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021032400010000000138
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210324120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021032400010000000139
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210325120000[-3:BRST]
+      <TRNAMT>-501.89
+      <FITID>2021032500050189000140
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210325120000[-3:BRST]
+      <TRNAMT>500.00
+      <FITID>2021032500050000000141
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210325120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021032500015000000142
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210326120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021032600020000000143
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210326120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021032600050000000144
+      <NAME>Transferencia William
+      <MEMO>Transferencia William
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210329120000[-3:BRST]
+      <TRNAMT>-387.67
+      <FITID>2021032900038767000145
+      <NAME>Lis Parcelamento Parcial
+      <MEMO>Lis Parcelamento Parcial
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210329120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021032900015000000146
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210329120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021032900010000000147
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210330120000[-3:BRST]
+      <TRNAMT>3220.28
+      <FITID>2021033000322028000148
+      <NAME>Sispag Fácil
+      <MEMO>Sispag Fácil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210330120000[-3:BRST]
+      <TRNAMT>48.28
+      <FITID>2021033000004828000149
+      <NAME>Ted Isabela
+      <MEMO>Ted Isabela
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210330120000[-3:BRST]
+      <TRNAMT>-3220.00
+      <FITID>2021033000322000000150
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210331120000[-3:BRST]
+      <TRNAMT>-45.00
+      <FITID>2021033100004500000151
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210401120000[-3:BRST]
+      <TRNAMT>-0.07
+      <FITID>2021040100000007000152
+      <NAME>IOF
+      <MEMO>IOF
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210401120000[-3:BRST]
+      <TRNAMT>-1.04
+      <FITID>2021040100000104000153
+      <NAME>Juros
+      <MEMO>Juros
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210409120000[-3:BRST]
+      <TRNAMT>-0.11
+      <FITID>2021040900000011000154
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210409120000[-3:BRST]
+      <TRNAMT>-63.09
+      <FITID>2021040900006309000155
+      <NAME>Lis Parcelamento Parcial
+      <MEMO>Lis Parcelamento Parcial
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210409120000[-3:BRST]
+      <TRNAMT>62.01
+      <FITID>2021040900006201000156
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210409120000[-3:BRST]
+      <TRNAMT>-1.26
+      <FITID>2021040900000126000157
+      <NAME>Multa Parcelamento
+      <MEMO>Multa Parcelamento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210409120000[-3:BRST]
+      <TRNAMT>0.00
+      <FITID>2021040900000000000158
+      <NAME>Saldo
+      <MEMO>Saldo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210422120000[-3:BRST]
+      <TRNAMT>15.92
+      <FITID>2021042200001592000159
+      <NAME>Dev Pix Mercado Pago
+      <MEMO>Dev Pix Mercado Pago
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210422120000[-3:BRST]
+      <TRNAMT>-0.95
+      <FITID>2021042200000095000160
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210422120000[-3:BRST]
+      <TRNAMT>-568.60
+      <FITID>2021042200056860000161
+      <NAME>Lis Parcelamento Parcial
+      <MEMO>Lis Parcelamento Parcial
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210422120000[-3:BRST]
+      <TRNAMT>-11.37
+      <FITID>2021042200001137000162
+      <NAME>Multa Parcelamento
+      <MEMO>Multa Parcelamento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210422120000[-3:BRST]
+      <TRNAMT>0.00
+      <FITID>2021042200000000000163
+      <NAME>Saldo
+      <MEMO>Saldo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210422120000[-3:BRST]
+      <TRNAMT>565.00
+      <FITID>2021042200056500000164
+      <NAME>Sispag Rede Brasileira
+      <MEMO>Sispag Rede Brasileira
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210426120000[-3:BRST]
+      <TRNAMT>63.29
+      <FITID>2021042600006329000165
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210426120000[-3:BRST]
+      <TRNAMT>52.35
+      <FITID>2021042600005235000166
+      <NAME>Saldo
+      <MEMO>Saldo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210426120000[-3:BRST]
+      <TRNAMT>-10.94
+      <FITID>2021042600001094000167
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>-495.53
+      <FITID>2021042700049553000168
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>-174.84
+      <FITID>2021042700017484000169
+      <NAME>Oi Móvel
+      <MEMO>Oi Móvel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>-43.52
+      <FITID>2021042700004352000170
+      <NAME>Oi fixo - 2516-0966
+      <MEMO>Oi fixo - 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>-43.52
+      <FITID>2021042700004352000171
+      <NAME>Oi fixo - 3288-7005
+      <MEMO>Oi fixo - 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>-103.83
+      <FITID>2021042700010383000172
+      <NAME>Oi fixo - 3288-7066
+      <MEMO>Oi fixo - 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>-84.45
+      <FITID>2021042700008445000173
+      <NAME>Oi fixo - 3288-7067
+      <MEMO>Oi fixo - 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>4095.75
+      <FITID>2021042700409575000174
+      <NAME>Saldo
+      <MEMO>Saldo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>1450.20
+      <FITID>2021042700145020000175
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>3182.91
+      <FITID>2021042700318291000176
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>2799.98
+      <FITID>2021042700279998000177
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>-94.00
+      <FITID>2021042700009400000178
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210427120000[-3:BRST]
+      <TRNAMT>-2350.00
+      <FITID>2021042700235000000179
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210428120000[-3:BRST]
+      <TRNAMT>-4060.66
+      <FITID>2021042800406066000180
+      <NAME>Lis Parcelamento Boleto
+      <MEMO>Lis Parcelamento Boleto
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210428120000[-3:BRST]
+      <TRNAMT>44.42
+      <FITID>2021042800004442000181
+      <NAME>Saldo
+      <MEMO>Saldo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210428120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021042800017748000182
+      <NAME>Seguro de Vida Bradesco
+      <MEMO>Seguro de Vida Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210428120000[-3:BRST]
+      <TRNAMT>186.81
+      <FITID>2021042800018681000183
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210429120000[-3:BRST]
+      <TRNAMT>0.42
+      <FITID>2021042900000042000184
+      <NAME>Saldo
+      <MEMO>Saldo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210429120000[-3:BRST]
+      <TRNAMT>-44.00
+      <FITID>2021042900004400000185
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210430120000[-3:BRST]
+      <TRNAMT>0.70
+      <FITID>2021043000000070000186
+      <NAME>Saldo
+      <MEMO>Saldo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210430120000[-3:BRST]
+      <TRNAMT>48.28
+      <FITID>2021043000004828000187
+      <NAME>TED Isabela
+      <MEMO>TED Isabela
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210430120000[-3:BRST]
+      <TRNAMT>-48.00
+      <FITID>2021043000004800000188
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210504120000[-3:BRST]
+      <TRNAMT>-6.95
+      <FITID>2021050400000695000189
+      <NAME>Enc Morat 05/24
+      <MEMO>Enc Morat 05/24
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210504120000[-3:BRST]
+      <TRNAMT>-83.39
+      <FITID>2021050400008339000190
+      <NAME>Multa Parcelamento
+      <MEMO>Multa Parcelamento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210504120000[-3:BRST]
+      <TRNAMT>-4169.30
+      <FITID>2021050400416930000191
+      <NAME>Parcial Parcelamento 05/24
+      <MEMO>Parcial Parcelamento 05/24
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210504120000[-3:BRST]
+      <TRNAMT>4258.94
+      <FITID>2021050400425894000192
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210514120000[-3:BRST]
+      <TRNAMT>427.80
+      <FITID>2021051400042780000193
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210514120000[-3:BRST]
+      <TRNAMT>-94.00
+      <FITID>2021051400009400000194
+      <NAME>Tar Conta Certa 
+      <MEMO>Tar Conta Certa 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210517120000[-3:BRST]
+      <TRNAMT>-94.67
+      <FITID>2021051700009467000195
+      <NAME>Fatura Facil NF 162195
+      <MEMO>Fatura Facil NF 162195
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210517120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021051700015000000196
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210518120000[-3:BRST]
+      <TRNAMT>-60.00
+      <FITID>2021051800006000000197
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-88.66
+      <FITID>2021052000008866000198
+      <NAME>Fatura Facil
+      <MEMO>Fatura Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-2201.40
+      <FITID>2021052000220140000199
+      <NAME>Fatura Fácil NF 156248
+      <MEMO>Fatura Fácil NF 156248
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-286.00
+      <FITID>2021052000028600000200
+      <NAME>INSS 04/2021
+      <MEMO>INSS 04/2021
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-41.48
+      <FITID>2021052000004148000201
+      <NAME>Oi  Fixo  2516-0966 *ajuste*
+      <MEMO>Oi  Fixo  2516-0966 *ajuste*
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-41.48
+      <FITID>2021052000004148000202
+      <NAME>Oi Fixo 3288-7005
+      <MEMO>Oi Fixo 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-103.23
+      <FITID>2021052000010323000203
+      <NAME>Oi Fixo 3288-7066
+      <MEMO>Oi Fixo 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>5809.65
+      <FITID>2021052000580965000204
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-25.00
+      <FITID>2021052000002500000205
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-250.00
+      <FITID>2021052000025000000206
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210520120000[-3:BRST]
+      <TRNAMT>-2800.00
+      <FITID>2021052000280000000207
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210521120000[-3:BRST]
+      <TRNAMT>-1231.30
+      <FITID>2021052100123130000208
+      <NAME>Fatura Facil NF 152101
+      <MEMO>Fatura Facil NF 152101
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210521120000[-3:BRST]
+      <TRNAMT>3121.50
+      <FITID>2021052100312150000209
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210521120000[-3:BRST]
+      <TRNAMT>-600.00
+      <FITID>2021052100060000000210
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210521120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021052100050000000211
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210524120000[-3:BRST]
+      <TRNAMT>35.16
+      <FITID>2021052400003516000212
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210524120000[-3:BRST]
+      <TRNAMT>-300.00
+      <FITID>2021052400030000000213
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210524120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021052400020000000214
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210524120000[-3:BRST]
+      <TRNAMT>-120.00
+      <FITID>2021052400012000000215
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210524120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021052400020000000216
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210525120000[-3:BRST]
+      <TRNAMT>2713.74
+      <FITID>2021052500271374000217
+      <NAME>Sispag Care Assist
+      <MEMO>Sispag Care Assist
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210525120000[-3:BRST]
+      <TRNAMT>-9.99
+      <FITID>2021052500000999000218
+      <NAME>Tar Negat
+      <MEMO>Tar Negat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210525120000[-3:BRST]
+      <TRNAMT>-1000.00
+      <FITID>2021052500100000000219
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210526120000[-3:BRST]
+      <TRNAMT>-40.80
+      <FITID>2021052600004080000220
+      <NAME>Oi Fixo 3288-7001
+      <MEMO>Oi Fixo 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210526120000[-3:BRST]
+      <TRNAMT>-82.46
+      <FITID>2021052600008246000221
+      <NAME>Oi Fixo 3288-7067
+      <MEMO>Oi Fixo 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210526120000[-3:BRST]
+      <TRNAMT>-2510.97
+      <FITID>2021052600251097000222
+      <NAME>Renegociação Lis Itaú
+      <MEMO>Renegociação Lis Itaú
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210526120000[-3:BRST]
+      <TRNAMT>1048.36
+      <FITID>2021052600104836000223
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210526120000[-3:BRST]
+      <TRNAMT>-120.00
+      <FITID>2021052600012000000224
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210531120000[-3:BRST]
+      <TRNAMT>48.28
+      <FITID>2021053100004828000225
+      <NAME>Ted Isabela
+      <MEMO>Ted Isabela
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210531120000[-3:BRST]
+      <TRNAMT>-53.00
+      <FITID>2021053100005300000226
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210607120000[-3:BRST]
+      <TRNAMT>513.47
+      <FITID>2021060700051347000227
+      <NAME>Mov Titulo Cobrança
+      <MEMO>Mov Titulo Cobrança
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210607120000[-3:BRST]
+      <TRNAMT>-94.00
+      <FITID>2021060700009400000228
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210607120000[-3:BRST]
+      <TRNAMT>-6.15
+      <FITID>2021060700000615000229
+      <NAME>Tar Conta Certa Exced
+      <MEMO>Tar Conta Certa Exced
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210607120000[-3:BRST]
+      <TRNAMT>-9.99
+      <FITID>2021060700000999000230
+      <NAME>Tar Negat 
+      <MEMO>Tar Negat 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210608120000[-3:BRST]
+      <TRNAMT>-189.78
+      <FITID>2021060800018978000231
+      <NAME>Fatura Claro
+      <MEMO>Fatura Claro
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210608120000[-3:BRST]
+      <TRNAMT>-180.00
+      <FITID>2021060800018000000232
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210610120000[-3:BRST]
+      <TRNAMT>-30.00
+      <FITID>2021061000003000000233
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210616120000[-3:BRST]
+      <TRNAMT>-42.08
+      <FITID>2021061600004208000234
+      <NAME>Facil Assist NF 169466
+      <MEMO>Facil Assist NF 169466
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210616120000[-3:BRST]
+      <TRNAMT>-89.62
+      <FITID>2021061600008962000235
+      <NAME>Facil Assist NF 169490
+      <MEMO>Facil Assist NF 169490
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210616120000[-3:BRST]
+      <TRNAMT>1161.83
+      <FITID>2021061600116183000236
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210616120000[-3:BRST]
+      <TRNAMT>-970.00
+      <FITID>2021061600097000000237
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210618120000[-3:BRST]
+      <TRNAMT>-286.00
+      <FITID>2021061800028600000238
+      <NAME>INSS 05/21
+      <MEMO>INSS 05/21
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210618120000[-3:BRST]
+      <TRNAMT>542.62
+      <FITID>2021061800054262000239
+      <NAME>Mov Titulo Cobrança
+      <MEMO>Mov Titulo Cobrança
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210618120000[-3:BRST]
+      <TRNAMT>-320.00
+      <FITID>2021061800032000000240
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>3336.17
+      <FITID>2021062200333617000241
+      <NAME>Mov Titulo Cobrança
+      <MEMO>Mov Titulo Cobrança
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>-41.50
+      <FITID>2021062200004150000242
+      <NAME>Oi Fixo 2516-0966
+      <MEMO>Oi Fixo 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>-41.10
+      <FITID>2021062200004110000243
+      <NAME>Oi Fixo 3288-7001
+      <MEMO>Oi Fixo 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>-41.50
+      <FITID>2021062200004150000244
+      <NAME>Oi Fixo 3288-7005
+      <MEMO>Oi Fixo 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>-103.21
+      <FITID>2021062200010321000245
+      <NAME>Oi Fixo 3288-7066
+      <MEMO>Oi Fixo 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>-82.59
+      <FITID>2021062200008259000246
+      <NAME>Oi Fixo 3288-7067
+      <MEMO>Oi Fixo 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021062200020000000247
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>-1500.00
+      <FITID>2021062200150000000248
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210622120000[-3:BRST]
+      <TRNAMT>-250.00
+      <FITID>2021062200025000000249
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210623120000[-3:BRST]
+      <TRNAMT>-500.97
+      <FITID>2021062300050097000250
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210623120000[-3:BRST]
+      <TRNAMT>351.62
+      <FITID>2021062300035162000251
+      <NAME>Mov Titulo Cobrança
+      <MEMO>Mov Titulo Cobrança
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210623120000[-3:BRST]
+      <TRNAMT>-178.37
+      <FITID>2021062300017837000252
+      <NAME>Oi Movel
+      <MEMO>Oi Movel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210623120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021062300010000000253
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210624120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021062400020000000254
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210624120000[-3:BRST]
+      <TRNAMT>-130.00
+      <FITID>2021062400013000000255
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210624120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021062400015000000256
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210625120000[-3:BRST]
+      <TRNAMT>3312.96
+      <FITID>2021062500331296000257
+      <NAME>Sispag Care Ass
+      <MEMO>Sispag Care Ass
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210625120000[-3:BRST]
+      <TRNAMT>-1231.30
+      <FITID>2021062500123130000258
+      <NAME>Transferencia Facil Assist
+      <MEMO>Transferencia Facil Assist
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210625120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021062500010000000259
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210625120000[-3:BRST]
+      <TRNAMT>-2000.00
+      <FITID>2021062500200000000260
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210628120000[-3:BRST]
+      <TRNAMT>-70.00
+      <FITID>2021062800007000000261
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210629120000[-3:BRST]
+      <TRNAMT>-814.20
+      <FITID>2021062900081420000262
+      <NAME>Fatura Facil ND 2704
+      <MEMO>Fatura Facil ND 2704
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210629120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021062900017748000263
+      <NAME>Seguro Bradesco
+      <MEMO>Seguro Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210629120000[-3:BRST]
+      <TRNAMT>3586.57
+      <FITID>2021062900358657000264
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210629120000[-3:BRST]
+      <TRNAMT>885.24
+      <FITID>2021062900088524000265
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210629120000[-3:BRST]
+      <TRNAMT>-350.00
+      <FITID>2021062900035000000266
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210630120000[-3:BRST]
+      <TRNAMT>48.28
+      <FITID>2021063000004828000267
+      <NAME>Ted isabela
+      <MEMO>Ted isabela
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210630120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021063000015000000268
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210701120000[-3:BRST]
+      <TRNAMT>-187.11
+      <FITID>2021070100018711000269
+      <NAME>Fatura Claro
+      <MEMO>Fatura Claro
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210701120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021070100010000000270
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210701120000[-3:BRST]
+      <TRNAMT>-400.00
+      <FITID>2021070100040000000271
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210702120000[-3:BRST]
+      <TRNAMT>1161.83
+      <FITID>2021070200116183000272
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210702120000[-3:BRST]
+      <TRNAMT>1465.45
+      <FITID>2021070200146545000273
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210702120000[-3:BRST]
+      <TRNAMT>-94.00
+      <FITID>2021070200009400000274
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210702120000[-3:BRST]
+      <TRNAMT>-12.30
+      <FITID>2021070200001230000275
+      <NAME>Tar Conta Certa Exced
+      <MEMO>Tar Conta Certa Exced
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210702120000[-3:BRST]
+      <TRNAMT>-271.56
+      <FITID>2021070200027156000276
+      <NAME>Transferencia Facil Assisst 1764
+      <MEMO>Transferencia Facil Assisst 176490
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210705120000[-3:BRST]
+      <TRNAMT>-2883.30
+      <FITID>2021070500288330000277
+      <NAME>Transferencia Facil Assisst 1764
+      <MEMO>Transferencia Facil Assisst 176490
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210705120000[-3:BRST]
+      <TRNAMT>-350.00
+      <FITID>2021070500035000000278
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210705120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021070500015000000279
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210705120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021070500010000000280
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210707120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021070700020000000281
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210709120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021070900020000000282
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210709120000[-3:BRST]
+      <TRNAMT>-140.00
+      <FITID>2021070900014000000283
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210712120000[-3:BRST]
+      <TRNAMT>-50.00
+      <FITID>2021071200005000000284
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210714120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021071400010000000285
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210715120000[-3:BRST]
+      <TRNAMT>-89.95
+      <FITID>2021071500008995000286
+      <NAME>Fatura Facil NF 182978
+      <MEMO>Fatura Facil NF 182978
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210715120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021071500020000000287
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210716120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021071600010000000288
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210719120000[-3:BRST]
+      <TRNAMT>-108.03
+      <FITID>2021071900010803000289
+      <NAME>Parcelamento Lis 02/36 Parcial
+      <MEMO>Parcelamento Lis 02/36 Parcial
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210722120000[-3:BRST]
+      <TRNAMT>-6.37
+      <FITID>2021072200000637000290
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210722120000[-3:BRST]
+      <TRNAMT>34.45
+      <FITID>2021072200003445000291
+      <NAME>Mov Tit Cobr
+      <MEMO>Mov Tit Cobr
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210722120000[-3:BRST]
+      <TRNAMT>-19.98
+      <FITID>2021072200001998000292
+      <NAME>Multa 
+      <MEMO>Multa 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210722120000[-3:BRST]
+      <TRNAMT>-28.08
+      <FITID>2021072200002808000293
+      <NAME>Multa 
+      <MEMO>Multa 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210722120000[-3:BRST]
+      <TRNAMT>-2402.94
+      <FITID>2021072200240294000294
+      <NAME>Parcelamento Lis 02/36 Parcial
+      <MEMO>Parcelamento Lis 02/36 Parcial
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210722120000[-3:BRST]
+      <TRNAMT>4589.18
+      <FITID>2021072200458918000295
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210722120000[-3:BRST]
+      <TRNAMT>-550.00
+      <FITID>2021072200055000000296
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-804.91
+      <FITID>2021072300080491000297
+      <NAME>Fatura Facil NF 176616
+      <MEMO>Fatura Facil NF 176616
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>1056.39
+      <FITID>2021072300105639000298
+      <NAME>Mov Tit Cobr
+      <MEMO>Mov Tit Cobr
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-40.25
+      <FITID>2021072300004025000299
+      <NAME>Oi Fixo 2516-0966
+      <MEMO>Oi Fixo 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-41.04
+      <FITID>2021072300004104000300
+      <NAME>Oi Fixo 3288-7001
+      <MEMO>Oi Fixo 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-40.25
+      <FITID>2021072300004025000301
+      <NAME>Oi Fixo 3288-7005
+      <MEMO>Oi Fixo 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-100.16
+      <FITID>2021072300010016000302
+      <NAME>Oi Fixo 3288-7066
+      <MEMO>Oi Fixo 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-82.55
+      <FITID>2021072300008255000303
+      <NAME>Oi Fixo 3288-7067
+      <MEMO>Oi Fixo 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-800.00
+      <FITID>2021072300080000000304
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-300.00
+      <FITID>2021072300030000000305
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210723120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021072300010000000306
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>-512.66
+      <FITID>2021072600051266000307
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>-291.66
+      <FITID>2021072600029166000308
+      <NAME>INSS 06/2021
+      <MEMO>INSS 06/2021
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>-1960.00
+      <FITID>2021072600196000000309
+      <NAME>ISS 06/2021
+      <MEMO>ISS 06/2021
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>-178.95
+      <FITID>2021072600017895000310
+      <NAME>Oi Movel
+      <MEMO>Oi Movel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>3842.80
+      <FITID>2021072600384280000311
+      <NAME>Sispag Care
+      <MEMO>Sispag Care
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>3178.43
+      <FITID>2021072600317843000312
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>899.16
+      <FITID>2021072600089916000313
+      <NAME>Sispag Facil
+      <MEMO>Sispag Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>-2955.25
+      <FITID>2021072600295525000314
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>-1400.00
+      <FITID>2021072600140000000315
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021072600020000000316
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210726120000[-3:BRST]
+      <TRNAMT>-60.00
+      <FITID>2021072600006000000317
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210727120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021072700017748000318
+      <NAME>Seguro Bradesco
+      <MEMO>Seguro Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210727120000[-3:BRST]
+      <TRNAMT>-80.00
+      <FITID>2021072700008000000319
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210728120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021072800010000000320
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210729120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021072900020000000321
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210730120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021073000015000000322
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210805120000[-3:BRST]
+      <TRNAMT>808.36
+      <FITID>2021080500080836000323
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210805120000[-3:BRST]
+      <TRNAMT>-105.00
+      <FITID>2021080500010500000324
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210805120000[-3:BRST]
+      <TRNAMT>-700.00
+      <FITID>2021080500070000000325
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210812120000[-3:BRST]
+      <TRNAMT>-20.00
+      <FITID>2021081200002000000326
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210824120000[-3:BRST]
+      <TRNAMT>-1.12
+      <FITID>2021082400000112000327
+      <NAME>Enc Morat 03/36
+      <MEMO>Enc Morat 03/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210824120000[-3:BRST]
+      <TRNAMT>248.04
+      <FITID>2021082400024804000328
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210824120000[-3:BRST]
+      <TRNAMT>-25.16
+      <FITID>2021082400002516000329
+      <NAME>Multa Parcelamento 03/36
+      <MEMO>Multa Parcelamento 03/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210824120000[-3:BRST]
+      <TRNAMT>-223.00
+      <FITID>2021082400022300000330
+      <NAME>Parcial Parcelamento 03/36
+      <MEMO>Parcial Parcelamento 03/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210824120000[-3:BRST]
+      <TRNAMT>-1035.00
+      <FITID>2021082400103500000331
+      <NAME>Parcial Parcelamento 03/36
+      <MEMO>Parcial Parcelamento 03/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210824120000[-3:BRST]
+      <TRNAMT>1035.00
+      <FITID>2021082400103500000332
+      <NAME>Pix Locabem
+      <MEMO>Pix Locabem
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-2462.60
+      <FITID>2021082500246260000333
+      <NAME>Acordo Facil NF 176490
+      <MEMO>Acordo Facil NF 176490
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-185.68
+      <FITID>2021082500018568000334
+      <NAME>Fatura Claro
+      <MEMO>Fatura Claro
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-89.88
+      <FITID>2021082500008988000335
+      <NAME>Fatura Facil NF 175985
+      <MEMO>Fatura Facil NF 175985
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-811.01
+      <FITID>2021082500081101000336
+      <NAME>Fatura Facil NF 188623
+      <MEMO>Fatura Facil NF 188623
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-41.47
+      <FITID>2021082500004147000337
+      <NAME>Fatura Oi 2516-0966
+      <MEMO>Fatura Oi 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-41.05
+      <FITID>2021082500004105000338
+      <NAME>Fatura Oi 3288-7001
+      <MEMO>Fatura Oi 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-41.47
+      <FITID>2021082500004147000339
+      <NAME>Fatura Oi 3288-7005
+      <MEMO>Fatura Oi 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-103.21
+      <FITID>2021082500010321000340
+      <NAME>Fatura Oi 3288-7066
+      <MEMO>Fatura Oi 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-82.55
+      <FITID>2021082500008255000341
+      <NAME>Fatura Oi 3288-7067
+      <MEMO>Fatura Oi 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-174.84
+      <FITID>2021082500017484000342
+      <NAME>Fatura Oi Movel
+      <MEMO>Fatura Oi Movel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>2864.46
+      <FITID>2021082500286446000343
+      <NAME>Sispag Care Assist
+      <MEMO>Sispag Care Assist
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>545.83
+      <FITID>2021082500054583000344
+      <NAME>Sispag Care Assist
+      <MEMO>Sispag Care Assist
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>4360.10
+      <FITID>2021082500436010000345
+      <NAME>Sispag Care Assist
+      <MEMO>Sispag Care Assist
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-1800.00
+      <FITID>2021082500180000000346
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210825120000[-3:BRST]
+      <TRNAMT>-1200.00
+      <FITID>2021082500120000000347
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-2.28
+      <FITID>2021082600000228000348
+      <NAME>Enc Morat 03/36
+      <MEMO>Enc Morat 03/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-89.95
+      <FITID>2021082600008995000349
+      <NAME>Fatura Facil NF 190662
+      <MEMO>Fatura Facil NF 190662
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-500.97
+      <FITID>2021082600050097000350
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-289.77
+      <FITID>2021082600028977000351
+      <NAME>INSS 07/21
+      <MEMO>INSS 07/21
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-1346.73
+      <FITID>2021082600134673000352
+      <NAME>ISS Março 1 Quota
+      <MEMO>ISS Março 1° Quota
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-555.81
+      <FITID>2021082600055581000353
+      <NAME>Parcial Parcelamento 03/36
+      <MEMO>Parcial Parcelamento 03/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-736.63
+      <FITID>2021082600073663000354
+      <NAME>Parcial Parcelamento 03/36
+      <MEMO>Parcial Parcelamento 03/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021082600017748000355
+      <NAME>Seguro Bradesco
+      <MEMO>Seguro Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>4620.38
+      <FITID>2021082600462038000356
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210826120000[-3:BRST]
+      <TRNAMT>-1300.00
+      <FITID>2021082600130000000357
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210827120000[-3:BRST]
+      <TRNAMT>-250.00
+      <FITID>2021082700025000000358
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210831120000[-3:BRST]
+      <TRNAMT>1080.84
+      <FITID>2021083100108084000359
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210831120000[-3:BRST]
+      <TRNAMT>-350.00
+      <FITID>2021083100035000000360
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210901120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021090100020000000361
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210902120000[-3:BRST]
+      <TRNAMT>-105.00
+      <FITID>2021090200010500000362
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210902120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021090200015000000363
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210903120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021090300020000000364
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210906120000[-3:BRST]
+      <TRNAMT>-180.00
+      <FITID>2021090600018000000365
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210921120000[-3:BRST]
+      <TRNAMT>-1.53
+      <FITID>2021092100000153000366
+      <NAME>Enc Morat 04/36
+      <MEMO>Enc Morat 04/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210921120000[-3:BRST]
+      <TRNAMT>1759.50
+      <FITID>2021092100175950000367
+      <NAME>Mov Tit Cobrança
+      <MEMO>Mov Tit Cobrança
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210921120000[-3:BRST]
+      <TRNAMT>-34.53
+      <FITID>2021092100003453000368
+      <NAME>Multa Parcelamento 04/36
+      <MEMO>Multa Parcelamento 04/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210921120000[-3:BRST]
+      <TRNAMT>-1726.67
+      <FITID>2021092100172667000369
+      <NAME>Parcial Parcelamento 04/36
+      <MEMO>Parcial Parcelamento 04/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-4.99
+      <FITID>2021092800000499000370
+      <NAME>Enc Morat 04/36
+      <MEMO>Enc Morat 04/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-513.35
+      <FITID>2021092800051335000371
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-47.54
+      <FITID>2021092800004754000372
+      <NAME>Oi Fixo 2516-0966
+      <MEMO>Oi Fixo 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-48.21
+      <FITID>2021092800004821000373
+      <NAME>Oi Fixo 3288-7001
+      <MEMO>Oi Fixo 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-47.54
+      <FITID>2021092800004754000374
+      <NAME>Oi Fixo 3288-7005
+      <MEMO>Oi Fixo 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-109.25
+      <FITID>2021092800010925000375
+      <NAME>Oi Fixo 3288-7066
+      <MEMO>Oi Fixo 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-88.64
+      <FITID>2021092800008864000376
+      <NAME>Oi Fixo 3288-7067
+      <MEMO>Oi Fixo 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-192.94
+      <FITID>2021092800019294000377
+      <NAME>Oi Móvel
+      <MEMO>Oi Móvel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-807.33
+      <FITID>2021092800080733000378
+      <NAME>Parcelameto 04/36
+      <MEMO>Parcelameto 04/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021092800017748000379
+      <NAME>Seguro Bradesco
+      <MEMO>Seguro Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>3786.74
+      <FITID>2021092800378674000380
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210928120000[-3:BRST]
+      <TRNAMT>-1200.00
+      <FITID>2021092800120000000381
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210929120000[-3:BRST]
+      <TRNAMT>4316.00
+      <FITID>2021092900431600000382
+      <NAME>Sispag Care Ass
+      <MEMO>Sispag Care Ass
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210929120000[-3:BRST]
+      <TRNAMT>3867.28
+      <FITID>2021092900386728000383
+      <NAME>Sispag Care Ass
+      <MEMO>Sispag Care Ass
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20210929120000[-3:BRST]
+      <TRNAMT>545.83
+      <FITID>2021092900054583000384
+      <NAME>Sispag Care Ass
+      <MEMO>Sispag Care Ass
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210929120000[-3:BRST]
+      <TRNAMT>-486.03
+      <FITID>2021092900048603000385
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210929120000[-3:BRST]
+      <TRNAMT>-61.97
+      <FITID>2021092900006197000386
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210930120000[-3:BRST]
+      <TRNAMT>-325.68
+      <FITID>2021093000032568000387
+      <NAME>Fatura Facil ND 2750
+      <MEMO>Fatura Facil ND 2750
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210930120000[-3:BRST]
+      <TRNAMT>-1000.08
+      <FITID>2021093000100008000388
+      <NAME>Fatura Fácil NF 176490 Parc
+      <MEMO>Fatura Fácil NF 176490 Parc
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210930120000[-3:BRST]
+      <TRNAMT>-42.00
+      <FITID>2021093000004200000389
+      <NAME>Fatura Fácil NF 190928
+      <MEMO>Fatura Fácil NF 190928
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210930120000[-3:BRST]
+      <TRNAMT>-633.32
+      <FITID>2021093000063332000390
+      <NAME>Fatura Fácil NF 200120
+      <MEMO>Fatura Fácil NF 200120
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210930120000[-3:BRST]
+      <TRNAMT>-90.72
+      <FITID>2021093000009072000391
+      <NAME>Fatura Fácil NF 201802
+      <MEMO>Fatura Fácil NF 201802
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210930120000[-3:BRST]
+      <TRNAMT>-286.00
+      <FITID>2021093000028600000392
+      <NAME>INSS 08/2021
+      <MEMO>INSS 08/2021
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210930120000[-3:BRST]
+      <TRNAMT>-2000.00
+      <FITID>2021093000200000000393
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20210930120000[-3:BRST]
+      <TRNAMT>-250.00
+      <FITID>2021093000025000000394
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211001120000[-3:BRST]
+      <TRNAMT>-1000.00
+      <FITID>2021100100100000000395
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211004120000[-3:BRST]
+      <TRNAMT>-105.00
+      <FITID>2021100400010500000396
+      <NAME>Tar Conta Certa 
+      <MEMO>Tar Conta Certa 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211004120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021100400050000000397
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211004120000[-3:BRST]
+      <TRNAMT>-300.00
+      <FITID>2021100400030000000398
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211005120000[-3:BRST]
+      <TRNAMT>0.01
+      <FITID>2021100500000001000399
+      <NAME>Rend Pago Aplicação
+      <MEMO>Rend Pago Aplicação
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211005120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021100500015000000400
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211005120000[-3:BRST]
+      <TRNAMT>-1570.75
+      <FITID>2021100500157075000401
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211005120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021100500020000000402
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211006120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021100600010000000403
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211008120000[-3:BRST]
+      <TRNAMT>-170.00
+      <FITID>2021100800017000000404
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211014120000[-3:BRST]
+      <TRNAMT>1238.28
+      <FITID>2021101400123828000405
+      <NAME>Sispag Facil Assist
+      <MEMO>Sispag Facil Assist
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211015120000[-3:BRST]
+      <TRNAMT>-12.00
+      <FITID>2021101500001200000406
+      <NAME>Facil ND 2773
+      <MEMO>Facil ND 2773
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211015120000[-3:BRST]
+      <TRNAMT>-90.47
+      <FITID>2021101500009047000407
+      <NAME>Facil NF 212281
+      <MEMO>Facil NF 212281
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211015120000[-3:BRST]
+      <TRNAMT>-1140.00
+      <FITID>2021101500114000000408
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211018120000[-3:BRST]
+      <TRNAMT>511.92
+      <FITID>2021101800051192000409
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211018120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021101800050000000410
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>-17.74
+      <FITID>2021102500001774000411
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>-2436.49
+      <FITID>2021102500243649000412
+      <NAME>Facil NF 212888
+      <MEMO>Facil NF 212888
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>-1000.00
+      <FITID>2021102500100000000413
+      <NAME>Facil Transferencia Parcelamento
+      <MEMO>Facil Transferencia Parcelamento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>-50.22
+      <FITID>2021102500005022000414
+      <NAME>Multa Parcelamento
+      <MEMO>Multa Parcelamento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>-2510.97
+      <FITID>2021102500251097000415
+      <NAME>Parcelamento Lis 5/36
+      <MEMO>Parcelamento Lis 5/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>3766.39
+      <FITID>2021102500376639000416
+      <NAME>Sispag Care
+      <MEMO>Sispag Care
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>4681.65
+      <FITID>2021102500468165000417
+      <NAME>Sispag Care
+      <MEMO>Sispag Care
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>1201.96
+      <FITID>2021102500120196000418
+      <NAME>Sispag Care
+      <MEMO>Sispag Care
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>-1200.00
+      <FITID>2021102500120000000419
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211025120000[-3:BRST]
+      <TRNAMT>-800.00
+      <FITID>2021102500080000000420
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-47.56
+      <FITID>2021102600004756000421
+      <NAME>Fatura Oi Fixo 2516-0966
+      <MEMO>Fatura Oi Fixo 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-48.21
+      <FITID>2021102600004821000422
+      <NAME>Fatura Oi Fixo 3288-7001
+      <MEMO>Fatura Oi Fixo 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-47.56
+      <FITID>2021102600004756000423
+      <NAME>Fatura Oi Fixo 3288-7005
+      <MEMO>Fatura Oi Fixo 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-117.09
+      <FITID>2021102600011709000424
+      <NAME>Fatura Oi Fixo 3288-7066
+      <MEMO>Fatura Oi Fixo 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-93.82
+      <FITID>2021102600009382000425
+      <NAME>Fatura Oi Fixo 3288-7067
+      <MEMO>Fatura Oi Fixo 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-196.47
+      <FITID>2021102600019647000426
+      <NAME>Fatura Oi Movel
+      <MEMO>Fatura Oi Movel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-545.19
+      <FITID>2021102600054519000427
+      <NAME>Fatura Vivo
+      <MEMO>Fatura Vivo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021102600017748000428
+      <NAME>Seguro Bradesco
+      <MEMO>Seguro Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211026120000[-3:BRST]
+      <TRNAMT>-300.00
+      <FITID>2021102600030000000429
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211027120000[-3:BRST]
+      <TRNAMT>-50.00
+      <FITID>2021102700005000000430
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211028120000[-3:BRST]
+      <TRNAMT>-20.00
+      <FITID>2021102800002000000431
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211029120000[-3:BRST]
+      <TRNAMT>2863.20
+      <FITID>2021102900286320000432
+      <NAME>Sispag Facil Assist
+      <MEMO>Sispag Facil Assist
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211029120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021102900020000000433
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211029120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021102900015000000434
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211101120000[-3:BRST]
+      <TRNAMT>424.93
+      <FITID>2021110100042493000435
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211101120000[-3:BRST]
+      <TRNAMT>-1700.00
+      <FITID>2021110100170000000436
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211101120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021110100020000000437
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211103120000[-3:BRST]
+      <TRNAMT>-105.00
+      <FITID>2021110300010500000438
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211103120000[-3:BRST]
+      <TRNAMT>-500.00
+      <FITID>2021110300050000000439
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211103120000[-3:BRST]
+      <TRNAMT>-250.00
+      <FITID>2021110300025000000440
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211103120000[-3:BRST]
+      <TRNAMT>-50.00
+      <FITID>2021110300005000000441
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211104120000[-3:BRST]
+      <TRNAMT>690.00
+      <FITID>2021110400069000000442
+      <NAME>Pix Gomes
+      <MEMO>Pix Gomes
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211105120000[-3:BRST]
+      <TRNAMT>-310.56
+      <FITID>2021110500031056000443
+      <NAME>INSS 09/2021
+      <MEMO>INSS 09/2021
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211108120000[-3:BRST]
+      <TRNAMT>-250.00
+      <FITID>2021110800025000000444
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211108120000[-3:BRST]
+      <TRNAMT>-150.00
+      <FITID>2021110800015000000445
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211108120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021110800010000000446
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211108120000[-3:BRST]
+      <TRNAMT>-15.00
+      <FITID>2021110800001500000447
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211125120000[-3:BRST]
+      <TRNAMT>-17.74
+      <FITID>2021112500001774000448
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211125120000[-3:BRST]
+      <TRNAMT>-50.22
+      <FITID>2021112500005022000449
+      <NAME>Multa Parcelamento
+      <MEMO>Multa Parcelamento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211125120000[-3:BRST]
+      <TRNAMT>-2510.97
+      <FITID>2021112500251097000450
+      <NAME>Parcelamento Lis 06/36
+      <MEMO>Parcelamento Lis 06/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211125120000[-3:BRST]
+      <TRNAMT>5064.78
+      <FITID>2021112500506478000451
+      <NAME>Sispag Care
+      <MEMO>Sispag Care
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211125120000[-3:BRST]
+      <TRNAMT>-1700.00
+      <FITID>2021112500170000000452
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211129120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021112900017748000453
+      <NAME>Seguro Bradesco
+      <MEMO>Seguro Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211129120000[-3:BRST]
+      <TRNAMT>-300.00
+      <FITID>2021112900030000000454
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211130120000[-3:BRST]
+      <TRNAMT>-100.00
+      <FITID>2021113000010000000455
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211201120000[-3:BRST]
+      <TRNAMT>-950.00
+      <FITID>2021120100095000000456
+      <NAME>Fatura Facil ND2795
+      <MEMO>Fatura Facil ND2795
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211201120000[-3:BRST]
+      <TRNAMT>-42.00
+      <FITID>2021120100004200000457
+      <NAME>Fatura Facil NF212270
+      <MEMO>Fatura Facil NF212270
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211201120000[-3:BRST]
+      <TRNAMT>-987.31
+      <FITID>2021120100098731000458
+      <NAME>Fatura Facil NF217322
+      <MEMO>Fatura Facil NF217322
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211201120000[-3:BRST]
+      <TRNAMT>-89.44
+      <FITID>2021120100008944000459
+      <NAME>Fatura Facil NF220309
+      <MEMO>Fatura Facil NF220309
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211201120000[-3:BRST]
+      <TRNAMT>3583.32
+      <FITID>2021120100358332000460
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211201120000[-3:BRST]
+      <TRNAMT>-230.00
+      <FITID>2021120100023000000461
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211202120000[-3:BRST]
+      <TRNAMT>-47.74
+      <FITID>2021120200004774000462
+      <NAME>Fatura Oi Fixo 2516-0966
+      <MEMO>Fatura Oi Fixo 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211202120000[-3:BRST]
+      <TRNAMT>-48.42
+      <FITID>2021120200004842000463
+      <NAME>Fatura Oi Fixo 3288-7001
+      <MEMO>Fatura Oi Fixo 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211202120000[-3:BRST]
+      <TRNAMT>-47.74
+      <FITID>2021120200004774000464
+      <NAME>Fatura Oi Fixo 3288-7005
+      <MEMO>Fatura Oi Fixo 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211202120000[-3:BRST]
+      <TRNAMT>-117.27
+      <FITID>2021120200011727000465
+      <NAME>Fatura Oi Fixo 3288-7066
+      <MEMO>Fatura Oi Fixo 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211202120000[-3:BRST]
+      <TRNAMT>-94.01
+      <FITID>2021120200009401000466
+      <NAME>Fatura Oi Fixo 3288-7067
+      <MEMO>Fatura Oi Fixo 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211202120000[-3:BRST]
+      <TRNAMT>-545.50
+      <FITID>2021120200054550000467
+      <NAME>Fatura Vivo 
+      <MEMO>Fatura Vivo 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211202120000[-3:BRST]
+      <TRNAMT>-105.00
+      <FITID>2021120200010500000468
+      <NAME>Tar Conta Certa
+      <MEMO>Tar Conta Certa
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211206120000[-3:BRST]
+      <TRNAMT>-200.00
+      <FITID>2021120600020000000469
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211210120000[-3:BRST]
+      <TRNAMT>-306.79
+      <FITID>2021121000030679000470
+      <NAME>INSS 10/2021
+      <MEMO>INSS 10/2021
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211210120000[-3:BRST]
+      <TRNAMT>0.01
+      <FITID>2021121000000001000471
+      <NAME>Rend Aplic
+      <MEMO>Rend Aplic
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211210120000[-3:BRST]
+      <TRNAMT>20.00
+      <FITID>2021121000002000000472
+      <NAME>TBI 
+      <MEMO>TBI 
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211216120000[-3:BRST]
+      <TRNAMT>404.26
+      <FITID>2021121600040426000473
+      <NAME>Pix Alcindo
+      <MEMO>Pix Alcindo
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211216120000[-3:BRST]
+      <TRNAMT>-400.00
+      <FITID>2021121600040000000474
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211223120000[-3:BRST]
+      <TRNAMT>-0.03
+      <FITID>2021122300000003000475
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211223120000[-3:BRST]
+      <TRNAMT>21.09
+      <FITID>2021122300002109000476
+      <NAME>Mov Tit Cob
+      <MEMO>Mov Tit Cob
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211223120000[-3:BRST]
+      <TRNAMT>-0.58
+      <FITID>2021122300000058000477
+      <NAME>Multa Parcelmento
+      <MEMO>Multa Parcelmento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211223120000[-3:BRST]
+      <TRNAMT>-28.76
+      <FITID>2021122300002876000478
+      <NAME>Parcelamento Parcial 07/36
+      <MEMO>Parcelamento Parcial 07/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211224120000[-3:BRST]
+      <TRNAMT>587.37
+      <FITID>2021122400058737000479
+      <NAME>Sispag
+      <MEMO>Sispag
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211227120000[-3:BRST]
+      <TRNAMT>-0.51
+      <FITID>2021122700000051000480
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211227120000[-3:BRST]
+      <TRNAMT>-11.51
+      <FITID>2021122700001151000481
+      <NAME>Multa Parcelmento
+      <MEMO>Multa Parcelmento
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211227120000[-3:BRST]
+      <TRNAMT>-575.35
+      <FITID>2021122700057535000482
+      <NAME>Parcelamento Parcial 07/36
+      <MEMO>Parcelamento Parcial 07/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211229120000[-3:BRST]
+      <TRNAMT>-3.47
+      <FITID>2021122900000347000483
+      <NAME>Enc Morat
+      <MEMO>Enc Morat
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211229120000[-3:BRST]
+      <TRNAMT>-177.48
+      <FITID>2021122900017748000484
+      <NAME>Fatura Bradesco
+      <MEMO>Fatura Bradesco
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211229120000[-3:BRST]
+      <TRNAMT>-1966.63
+      <FITID>2021122900196663000485
+      <NAME>Parcelamento Parcial 07/36
+      <MEMO>Parcelamento Parcial 07/36
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211229120000[-3:BRST]
+      <TRNAMT>5610.52
+      <FITID>2021122900561052000486
+      <NAME>sispag Care
+      <MEMO>sispag Care
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-90.25
+      <FITID>2021123000009025000487
+      <NAME>Facil Assist NFe231597
+      <MEMO>Facil Assist NFe231597
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-1150.29
+      <FITID>2021123000115029000488
+      <NAME>Fatura Facil NF 221198
+      <MEMO>Fatura Facil NF 221198
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-47.74
+      <FITID>2021123000004774000489
+      <NAME>Fatura Oi Fixo 2516-0966
+      <MEMO>Fatura Oi Fixo 2516-0966
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-48.42
+      <FITID>2021123000004842000490
+      <NAME>Fatura Oi Fixo 3288-7001
+      <MEMO>Fatura Oi Fixo 3288-7001
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-47.74
+      <FITID>2021123000004774000491
+      <NAME>Fatura Oi Fixo 3288-7005
+      <MEMO>Fatura Oi Fixo 3288-7005
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-117.51
+      <FITID>2021123000011751000492
+      <NAME>Fatura Oi Fixo 3288-7066
+      <MEMO>Fatura Oi Fixo 3288-7066
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-94.16
+      <FITID>2021123000009416000493
+      <NAME>Fatura Oi Fixo 3288-7067
+      <MEMO>Fatura Oi Fixo 3288-7067
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-196.83
+      <FITID>2021123000019683000494
+      <NAME>Oi Móvel
+      <MEMO>Oi Móvel
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>CREDIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>2958.47
+      <FITID>2021123000295847000495
+      <NAME>Sispago Facil
+      <MEMO>Sispago Facil
+    </STMTTRN>
+    <STMTTRN>
+      <TRNTYPE>DEBIT
+      <DTPOSTED>20211230120000[-3:BRST]
+      <TRNAMT>-1200.00
+      <FITID>2021123000120000000496
+      <NAME>Transferencia Marcio
+      <MEMO>Transferencia Marcio
+    </STMTTRN>
+        </BANKTRANLIST>
+        <LEDGERBAL>
+          <BALAMT>0.00
+          <DTASOF>20211230120000[-3:BRST]
+        </LEDGERBAL>
+      </STMTRS>
+    </STMTTRNRS>
+  </BANKMSGSRSV1>
+</OFX>

@@ -175,11 +175,14 @@ def upload_ofx():
                 db.session.add(transaction)
                 saved_count += 1
             else:
-                # Adiciona detalhes da duplicata para o response
+                # Adiciona detalhes da duplicata para o response (garantindo tipos serializáveis em JSON)
+                dup_date = transaction_data.get('date')
+                if hasattr(dup_date, 'isoformat'):
+                    dup_date = dup_date.isoformat()
                 duplicate_entries_details.append({
-                    'date': transaction_data['date'],
-                    'amount': transaction_data['amount'],
-                    'description': transaction_data['description']
+                    'date': dup_date,
+                    'amount': float(transaction_data.get('amount', 0)),
+                    'description': transaction_data.get('description')
                 })
         
         # Salva o histórico de upload
@@ -226,12 +229,13 @@ def upload_ofx():
                 # Opcional: prévia de 5 transações processadas (para auditoria/insights no frontend)
                 'transactions_preview': [
                     {
-                        'date': t.get('date').isoformat() if hasattr(t.get('date'), 'isoformat') else t.get('date'),
+                        'date': (t.get('date').isoformat() if hasattr(t.get('date'), 'isoformat') else t.get('date')),
                         'timestamp': t.get('timestamp'),
-                        'amount': t.get('amount'),
+                        'amount': float(t.get('amount', 0)),
                         'description': t.get('description'),
                         'category': t.get('category'),
-                        'is_anomaly': t.get('is_anomaly', False),
+                        # Cast to native Python bool to avoid numpy.bool_ serialization issues
+                        'is_anomaly': bool(t.get('is_anomaly', False)),
                         'transaction_type': t.get('transaction_type')
                     }
                     for t in analyzed_transactions[:5]

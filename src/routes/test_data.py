@@ -74,6 +74,28 @@ def delete_test_data():
         mode = data.get('mode')
         days_old = data.get('days_old', 30)
         force = str(data.get('force', 'false')).lower() == 'true'
+        include_recent = str(data.get('include_recent', 'false')).lower() == 'true'
+        clear_users = str(data.get('clear_users', include_recent)).lower() == 'true'
+        preserve_user_ids = data.get('preserve_user_ids', [1])
+        preserve_org_ids = data.get('preserve_org_ids', [1])
+        
+        def _normalize_ids(raw):
+            if raw is None:
+                return []
+            if isinstance(raw, (int, float)):
+                return [int(raw)]
+            if isinstance(raw, str):
+                if not raw:
+                    return []
+                return [int(x) for x in raw.split(',')]
+            if isinstance(raw, list):
+                return [int(x) for x in raw if x is not None]
+            return []
+        
+        preserve_user_ids = _normalize_ids(preserve_user_ids) or [1]
+        preserve_org_ids = _normalize_ids(preserve_org_ids)
+        if preserve_org_ids == []:
+            preserve_org_ids = [1]
         
         # Validate mode parameter
         if not mode or mode not in ['preview', 'confirmation', 'execution']:
@@ -88,7 +110,13 @@ def delete_test_data():
         # Handle the triple check mechanism based on mode
         if mode == 'preview':
             # First call: Return a list of data that would be deleted (preview)
-            test_data_summary = test_data_deletion_service.identify_test_data(days_old)
+            test_data_summary = test_data_deletion_service.identify_test_data(
+                days_old,
+                include_recent=include_recent,
+                preserve_user_ids=preserve_user_ids,
+                preserve_org_ids=preserve_org_ids,
+                clear_users=clear_users
+            )
             total_count = test_data_summary.get('total_count', 0)
             
             if total_count == 0:
@@ -108,7 +136,13 @@ def delete_test_data():
             
         elif mode == 'confirmation':
             # Second call: Confirm the deletion with a warning (confirmation)
-            test_data_details = test_data_deletion_service.get_test_data_details(days_old)
+            test_data_details = test_data_deletion_service.get_test_data_details(
+                days_old,
+                include_recent=include_recent,
+                preserve_user_ids=preserve_user_ids,
+                preserve_org_ids=preserve_org_ids,
+                clear_users=clear_users
+            )
             total_count = test_data_details.get('total_count', 0)
             
             if total_count == 0:
@@ -140,7 +174,13 @@ def delete_test_data():
             logger.info(f"Execution mode: Starting deletion of test data older than {days_old} days")
             
             # Perform the actual deletion
-            result = test_data_deletion_service._delete_test_data(days_old)
+            result = test_data_deletion_service._delete_test_data(
+                days_old,
+                include_recent=include_recent,
+                preserve_user_ids=preserve_user_ids,
+                preserve_org_ids=preserve_org_ids,
+                clear_users=clear_users
+            )
             
             if result:
                 logger.info("Test data deletion completed successfully")
