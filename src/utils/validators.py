@@ -886,7 +886,7 @@ def sanitize_path(path: str) -> str:
     return InputSanitizer.sanitize_path(path)
 
 
-def validate_pagination_params(page: Any, per_page: Any) -> Dict[str, int]:
+def validate_pagination_params(page: Any, per_page: Any, max_per_page: int = 100) -> Dict[str, int]:
     """
     Validate and normalize pagination parameters.
     
@@ -906,8 +906,10 @@ def validate_pagination_params(page: Any, per_page: Any) -> Dict[str, int]:
     if page < 1:
         raise ValidationError("Page must be greater than 0")
     
-    if per_page < 1 or per_page > 100:
-        raise ValidationError("Per page must be between 1 and 100")
+    if max_per_page is None:
+        max_per_page = 100
+    if per_page < 1 or per_page > max_per_page:
+        raise ValidationError(f"Per page must be between 1 and {max_per_page}")
     
     return {'page': page, 'per_page': per_page}
 

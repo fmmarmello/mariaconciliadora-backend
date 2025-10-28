@@ -1,10 +1,11 @@
-﻿from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, request, jsonify, g
 from werkzeug.utils import secure_filename
 import os
 import tempfile
 from datetime import datetime, timedelta
 from src.models.transaction import Transaction, UploadHistory, ReconciliationRecord, db
 from src.models.company_financial import CompanyFinancial
+from sqlalchemy import func, or_
 from src.constants.financial import normalize_company_financial_category
 from src.services.ofx_processor import OFXProcessor
 from src.services.xlsx_processor import XLSXProcessor
@@ -31,7 +32,7 @@ audit_logger = get_audit_logger()
 
 transactions_bp = Blueprint('transactions', __name__)
 
-# Configurações de upload
+# Configuracoes de upload
 ALLOWED_EXTENSIONS = {'ofx', 'qfx'}
 ALLOWED_XLSX_EXTENSIONS = {'xlsx'}
 MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
@@ -260,71 +261,120 @@ def upload_ofx():
 def get_transactions():
     """
     Endpoint para listar transações com filtros
+
+    Parâmetros aceitos (query string):
+    - page: número da página (default: 1)
+    - per_page: itens por página (default: 100)
+    - limit: alias para per_page (para compatibilidade). Use "all" para retornar tudo
+    - bank: filtra por nome do banco (igualdade)
+    - category: filtra por categoria (igualdade)
+    - type: 'credit' ou 'debit'
+    - start_date: ISO date (YYYY-MM-DD)
+    - end_date: ISO date (YYYY-MM-DD)
+    - q: termo de busca textual na descrição (case-insensitive)
+    - category_q: termo de busca textual na categoria (case-insensitive)
     """
     # Validate pagination parameters
-    page = request.args.get('page', 1)
-    per_page = request.args.get('per_page', 100)
-    pagination_params = validate_pagination_params(page, per_page)
-    
-    # Calculate offset from page
-    offset = (pagination_params['page'] - 1) * pagination_params['per_page']
-    limit = pagination_params['per_page']
-    
+    page_arg = request.args.get('page', 1)
+    per_page_arg_raw = request.args.get('per_page', None)
+    limit_arg = request.args.get('limit', None)
+    per_page_arg = per_page_arg_raw or limit_arg
+
+    fetch_all = isinstance(per_page_arg, str) and per_page_arg.lower() == 'all'
+
     # Parâmetros de filtro
     bank_name = request.args.get('bank')
     category = request.args.get('category')
     transaction_type = request.args.get('type')
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
-    
+    q = request.args.get('q')
+    category_q = request.args.get('category_q')
+
+    # Valida paginação com limite maior quando em modo busca (q/category_q)
+    is_search = bool((q and q.strip()) or (category_q and category_q.strip()))
+    max_per_page = 1000 if is_search else 100
+
+    if fetch_all:
+        pagination_params = {'page': 1, 'per_page': None}
+    else:
+        requested_per_page = per_page_arg or 100
+        pagination_params = validate_pagination_params(page_arg, requested_per_page, max_per_page=max_per_page)
+
     # Validate date parameters
     start_date_obj = None
     end_date_obj = None
-    
+
     if start_date:
         try:
             start_date_obj = datetime.fromisoformat(start_date)
         except ValueError:
             raise ValidationError("Invalid start_date format. Use ISO format (YYYY-MM-DD)")
-    
+
     if end_date:
         try:
             end_date_obj = datetime.fromisoformat(end_date)
         except ValueError:
             raise ValidationError("Invalid end_date format. Use ISO format (YYYY-MM-DD)")
-    
+
     # Validate date range
     if start_date_obj and end_date_obj and start_date_obj > end_date_obj:
         raise ValidationError("start_date must be before end_date")
-    
+
     # Constrói a query
     query = Transaction.query
-    
+
     if bank_name:
         query = query.filter(Transaction.bank_name == bank_name)
-    
+
     if category:
         query = query.filter(Transaction.category == category)
-    
+
     if transaction_type:
         if transaction_type not in ['credit', 'debit']:
             raise ValidationError("transaction_type must be 'credit' or 'debit'")
         query = query.filter(Transaction.transaction_type == transaction_type)
-    
+
     if start_date_obj:
         query = query.filter(Transaction.date >= start_date_obj.date())
-    
+
     if end_date_obj:
         query = query.filter(Transaction.date <= end_date_obj.date())
-    
+
+    # Filtros textuais (descrição e categoria) - usar OR quando ambos presentes
+    q_norm = q.strip().lower() if q else None
+    cq_norm = category_q.strip().lower() if category_q else None
+
+    text_conditions = []
+    if q_norm:
+        text_conditions.append(func.lower(Transaction.description).like(f"%{q_norm}%"))
+    if cq_norm:
+        text_conditions.append(func.lower(Transaction.category).like(f"%{cq_norm}%"))
+
+    if len(text_conditions) == 1:
+        query = query.filter(text_conditions[0])
+    elif len(text_conditions) > 1:
+        query = query.filter(or_(*text_conditions))
+
     # Ordena por data (mais recente primeiro)
     query = query.order_by(Transaction.date.desc())
-    
+
     # Get total count before applying pagination
     total_count = query.count()
-    
-    # Aplica paginação
-    transactions = query.offset(offset).limit(limit).all()
+
+    # Aplica paginação (ou retorna tudo quando limit=all)
+    if fetch_all:
+        transactions = query.all()
+        current_page = 1
+        per_page_value = total_count
+        total_pages = 1 if total_count > 0 else 0
+    else:
+        offset = (pagination_params['page'] - 1) * pagination_params['per_page']
+        limit = pagination_params['per_page']
+        transactions = query.offset(offset).limit(limit).all()
+        current_page = pagination_params['page']
+        per_page_value = pagination_params['per_page']
+        total_pages = (total_count + per_page_value - 1) // per_page_value if per_page_value else 0
 
     # Enrich transactions with reconciliation and adjustment info
     tx_ids = [t.id for t in transactions]
@@ -342,16 +392,22 @@ def get_transactions():
         td['was_adjusted'] = bool(getattr(t, 'justificativa', None) and str(t.justificativa).strip())
         enriched.append(td)
 
-    logger.info(f"Retrieved {len(transactions)} transactions (total: {total_count})")
+    if q or category_q:
+        logger.info(
+            f"Retrieved {len(transactions)} transactions (total: {total_count}) with search "
+            f"q='{q}' category_q='{category_q}'"
+        )
+    else:
+        logger.info(f"Retrieved {len(transactions)} transactions (total: {total_count})")
 
     return jsonify({
         'success': True,
         'data': {
             'transactions': enriched,
             'total_count': total_count,
-            'page': pagination_params['page'],
-            'per_page': pagination_params['per_page'],
-            'total_pages': (total_count + pagination_params['per_page'] - 1) // pagination_params['per_page']
+            'page': current_page,
+            'per_page': 'all' if fetch_all else per_page_value,
+            'total_pages': total_pages
         }
     })
 
@@ -1372,7 +1428,7 @@ def get_financial_predictions():
             return jsonify({
                 'success': True,
                 'data': {
-                    'message': 'Nenhum dado encontrado para predição'
+                        'message': 'Nenhum dado encontrado para predição'
                 }
             })
         
@@ -2313,4 +2369,3 @@ def get_anomaly_statistics():
         
     except Exception as e:
         return jsonify({'error': f'Error getting anomaly statistics: {str(e)}'}), 500
-
