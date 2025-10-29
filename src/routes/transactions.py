@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from src.models.transaction import Transaction, UploadHistory, ReconciliationRecord, db
 from src.models.company_financial import CompanyFinancial
 from sqlalchemy import func, or_
-from src.constants.financial import normalize_company_financial_category
+from src.constants.financial import normalize_company_financial_category, get_friendly_category_label
 from src.services.ofx_processor import OFXProcessor
 from src.services.xlsx_processor import XLSXProcessor
 from src.services.ai_service import AIService
@@ -626,7 +626,8 @@ def get_summary():
                 'banks': [{'name': bank.bank_name, 'count': bank.count} for bank in banks],
                 'categories': [
                     {
-                        'name': cat.category,
+                        'name': get_friendly_category_label(cat.category),
+                        'raw_name': cat.category,
                         'count': cat.count,
                         'total': round(cat.total or 0, 2)
                     } for cat in categories
