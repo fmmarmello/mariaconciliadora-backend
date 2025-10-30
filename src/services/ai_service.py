@@ -1,4 +1,6 @@
-﻿import os
+# -*- coding: utf-8 -*-
+# NOTE: Preserve UTF-8 encoding; this module includes Portuguese text.
+import os
 import json
 import pandas as pd
 import numpy as np
@@ -42,9 +44,10 @@ class AIService:
             'saude': ['farmacia', 'hospital', 'clinica', 'clínica', 'medico', 'médico', 'dentista', 'laboratorio', 'laboratório', 'exame'],
             'educacao': ['escola', 'faculdade', 'curso', 'livro', 'material escolar', 'ead', 'treinamento'],
             'lazer': ['cinema', 'teatro', 'show', 'viagem', 'hotel', 'netflix', 'spotify', 'lazer'],
-            'casa': ['aluguel', 'condominio', 'luz', 'energia', 'agua', 'água', 'gas', 'gás', 'internet', 'telefone', 'claro', 'vivo', 'tim', 'oi'],
+            'servicos': ['aluguel', 'condominio', 'luz', 'energia', 'agua', 'água', 'gas', 'gás', 'internet', 'telefone', 'claro', 'vivo', 'tim', 'oi'],
             'vestuario': ['roupa', 'sapato', 'loja', 'shopping', 'uniforme'],
             'investimento': ['aplicacao', 'aplicação', 'poupanca', 'poupança', 'cdb', 'tesouro', 'acao', 'ação'],
+            'multa': ['multa parcelamento', 'parcelamento multa', 'multa', 'multas', 'juros de mora', 'juros mora', 'encargo por atraso', 'encargos de atraso', 'encargo mora'],
             'transferencia': ['ted', 'doc', 'pix', 'transferencia', 'transferência', 'boleto'],
             'saque': ['saque', 'caixa eletronico', 'caixa eletrônico'],
             'salario': ['salario', 'salário', 'ordenado', 'pagamento'],
@@ -64,11 +67,29 @@ class AIService:
             'seguros': ['seguro', 'apolice', 'apólice', 'premio', 'prêmio', 'seguradora', 'porto seguro', 'sulamerica', 'sulamérica', 'bradesco seguros'],
             'equipamentos': ['equipamento', 'impressora', 'computador', 'laptop', 'notebook', 'teclado', 'mouse', 'monitor', 'hardware', 'periferico', 'periférico', 'celular', 'smartphone', 'tablet'],
             'limpeza': ['limpeza', 'higiene', 'desinfetante', 'material de limpeza'],
-            'escritorio': ['papelaria', 'cartucho', 'toner', 'caneta', 'grampeador', 'pastas', 'envelope', 'impressoes', 'impressões', 'xerox', 'copias', 'cópias'],
+            'escritorio': ['papelaria', 'cartucho', 'toner', 'caneta', 'grampeador', 'pastas', 'envelope', 'impressoes', 'impressoes', 'xerox', 'copias', 'cópias'],
 
             'outros': []
         }
-        
+
+        # Normalized buckets to reconcile category with credit/debit polarity
+        normalize = self._normalize_text
+        self._income_category_aliases = {
+            normalize(name) for name in (
+                'receita', 'receitas', 'salario', 'salário', 'aporte',
+                'pro labore', 'prolabore', 'recebimento', 'entrada', 'cashback', 'reembolso recebido'
+            )
+        }
+        self._expense_category_aliases = {
+            normalize(name) for name in (
+                'tarifas bancarias', 'impostos', 'fornecedores', 'marketing', 'assinaturas saas',
+                'contabilidade', 'juridico', 'manutencao', 'manutenção', 'ti', 'folha_pagamento',
+                'folha pagamento', 'lazer', 'servicos', 'saude', 'transporte', 'multa',
+                'educacao', 'vestuario', 'logistica', 'seguros', 'equipamentos', 'limpeza',
+                'escritorio', 'alimentacao'
+            )
+        }
+
         # Configuração dos clientes de IA
         self.openai_client = None
         self.groq_client = None
@@ -170,6 +191,7 @@ class AIService:
             ('seguros', ['seguro','apolice']),
             ('escritorio', ['papelaria','toner','cartucho','caneta']),
             ('equipamentos', ['impressora','computador','notebook','monitor','teclado','mouse']),
+            ('multa', ['multa parcelamento','multa','multas','juros de mora','juros mora','encargo por atraso','encargos por atraso']),
             ('folha_pagamento', ['prolabore','fgts','13o','13']),
         ]
         for cat, kws in checks:
@@ -177,6 +199,38 @@ class AIService:
                 if kw in text:
                     return cat
         return None
+
+    def _adjust_category_by_amount(self, transaction: Dict[str, Any]) -> None:
+        """
+        Ensure category coherence with the transaction amount sign.
+        Converts custom-model income labels to expense categories when the amount is negative
+        and vice-versa, falling back to rule-based classification when needed.
+        """
+        amount = transaction.get('amount')
+        category = transaction.get('category')
+        if amount is None or category is None:
+            return
+
+        try:
+            amount_value = float(amount)
+        except (TypeError, ValueError):
+            return
+
+        normalized_category = self._normalize_text(category)
+
+        if amount_value < 0 and normalized_category in self._income_category_aliases:
+            description = transaction.get('description', '')
+            fallback = self._rule_based_override(description) or self.categorize_transaction(description)
+            fallback_norm = self._normalize_text(fallback)
+            if fallback_norm in self._income_category_aliases:
+                fallback = 'outros'
+            transaction['category'] = fallback
+        elif amount_value > 0 and normalized_category in self._expense_category_aliases:
+            description = transaction.get('description', '')
+            fallback = self._rule_based_override(description) or self.categorize_transaction(description)
+            if self._normalize_text(fallback) in self._expense_category_aliases:
+                fallback = 'receitas'
+            transaction['category'] = fallback
     
     @handle_service_errors('ai_service')
     @with_timeout(120)  # 2 minute timeout for batch processing
@@ -208,6 +262,7 @@ class AIService:
                     description = transaction.get('description', '')
                     if not description or description.strip() == '':
                         transaction['category'] = 'outros'
+                        self._adjust_category_by_amount(transaction)
                         logger.debug(f"Transaction {i+1}: Empty description, assigned 'outros' category")
                     else:
                         if use_custom_model:
@@ -216,6 +271,7 @@ class AIService:
                         else:
                             # Fallback baseado em regras/keywords
                             transaction['category'] = self.categorize_transaction(description)
+                        self._adjust_category_by_amount(transaction)
                         categorized_count += 1
                         
                     # Add small delay to avoid overwhelming the system
@@ -813,9 +869,9 @@ class AIService:
         return f"""
         Análise básica dos dados financeiros:
         
-        📊 Resumo: {transaction_count} transações processadas
+        Resumo: {transaction_count} transações processadas
         
-        ⚠️ Serviço de IA temporariamente indisponível
+        Aviso: Serviço de IA temporariamente indisponível
         
         Recomendações gerais:
         • Revise regularmente suas transações
@@ -1069,7 +1125,7 @@ class AIService:
             'assinaturas_saas', 'tarifas_bancarias', 'manutencao', 'juridico', 'seguros',
             'equipamentos', 'escritorio', 'limpeza', 'folha_pagamento',
             # categorias base
-            'alimentacao', 'transporte', 'casa', 'saude', 'lazer', 'vestuario',
+            'alimentacao', 'transporte', 'servicos', 'saude', 'lazer', 'vestuario',
             'educacao', 'investimento', 'transferencia', 'saque'
         ]
         if not ordered:
@@ -1185,6 +1241,8 @@ class AIService:
         df = df.sort_values('date')
         
         return df
+
+
 
 
 

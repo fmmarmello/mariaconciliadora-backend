@@ -1,4 +1,4 @@
-"""
+﻿"""
 Pytest configuration and fixtures for Maria Conciliadora tests.
 
 This module provides:
@@ -153,7 +153,7 @@ def sample_company_financial_data():
         'date': fake.date_between(start_date='-1y', end_date='today'),
         'description': fake.sentence(nb_words=4),
         'amount': round(fake.pyfloat(left_digits=4, right_digits=2), 2),
-        'category': fake.random_element(['alimentacao', 'transporte', 'casa', 'saude']),
+        'category': fake.random_element(['alimentacao', 'transporte', 'servicos', 'multa', 'saude']),
         'cost_center': fake.random_element(['TI', 'RH', 'Vendas', 'Marketing']),
         'department': fake.random_element(['Administrativo', 'Operacional', 'Comercial']),
         'project': fake.random_element(['Projeto A', 'Projeto B', 'Projeto C']),
@@ -230,7 +230,7 @@ def sample_xlsx_data():
             'description': fake.sentence(nb_words=4),
             'valor': round(fake.pyfloat(left_digits=4, right_digits=2), 2),
             'tipo': fake.random_element(['despesa', 'receita']),
-            'categoria': fake.random_element(['alimentacao', 'transporte', 'casa']),
+            'categoria': fake.random_element(['alimentacao', 'transporte', 'servicos']),
             'cost_center': fake.random_element(['TI', 'RH', 'Vendas']),
             'department': fake.random_element(['Admin', 'Ops', 'Sales']),
             'project': fake.random_element(['Projeto A', 'Projeto B'])
@@ -385,7 +385,7 @@ def large_transaction_dataset():
             'amount': round(fake.pyfloat(left_digits=4, right_digits=2), 2),
             'description': fake.sentence(nb_words=6),
             'transaction_type': fake.random_element(['credit', 'debit']),
-            'category': fake.random_element(['alimentacao', 'transporte', 'casa', 'saude', 'lazer'])
+            'category': fake.random_element(['alimentacao', 'transporte', 'servicos', 'multa', 'saude', 'lazer'])
         })
     return transactions
 
@@ -400,7 +400,7 @@ def large_xlsx_dataset():
             'description': fake.sentence(nb_words=5),
             'valor': round(fake.pyfloat(left_digits=4, right_digits=2), 2),
             'tipo': fake.random_element(['despesa', 'receita']),
-            'categoria': fake.random_element(['alimentacao', 'transporte', 'casa', 'saude'])
+            'categoria': fake.random_element(['alimentacao', 'transporte', 'servicos', 'saude'])
         })
     return pd.DataFrame(data)
 
@@ -429,7 +429,7 @@ def create_test_transactions():
                 amount=round(fake.pyfloat(left_digits=4, right_digits=2), 2),
                 description=fake.sentence(nb_words=4),
                 transaction_type=fake.random_element(['credit', 'debit']),
-                category=fake.random_element(['alimentacao', 'transporte', 'casa'])
+                category=fake.random_element(['alimentacao', 'transporte', 'servicos'])
             )
             transactions.append(transaction)
             db_session.add(transaction)
@@ -515,3 +515,4 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.database)
         if "ai" in item.name:
             item.add_marker(pytest.mark.ai)
+

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Performance tests for Maria Conciliadora application.
 
 Tests cover:
@@ -81,7 +81,7 @@ class TestFileProcessingPerformance:
                 'description': f'Large dataset entry {i}',
                 'valor': -100.0 - (i % 1000),
                 'tipo': 'despesa' if i % 2 == 0 else 'receita',
-                'categoria': ['alimentacao', 'transporte', 'casa', 'saude'][i % 4]
+                'categoria': ['alimentacao', 'transporte', 'servicos', 'multa', 'saude'][i % 5]
             })
         
         df = pd.DataFrame(large_data)
@@ -241,7 +241,7 @@ class TestDatabasePerformance:
                 amount=-100.0 - (i % 1000),
                 description=f'Bulk test transaction {i}',
                 transaction_type='debit',
-                category=['alimentacao', 'transporte', 'casa', 'saude'][i % 4]
+                category=['alimentacao', 'transporte', 'servicos', 'multa', 'saude'][i % 5]
             )
             transactions.append(transaction)
         
@@ -515,7 +515,7 @@ class TestAPIPerformance:
         
         # Performance assertions
         assert len(errors) == 0  # No errors should occur
-        assert len(results) == 15  # 3 requests × 5 endpoints
+        assert len(results) == 15  # 3 requests Ã— 5 endpoints
         assert all(r['status_code'] == 200 for r in results)
         assert total_time < 30  # Should complete within 30 seconds
         

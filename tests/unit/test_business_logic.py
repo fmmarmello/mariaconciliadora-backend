@@ -113,7 +113,7 @@ class TestFinancialCalculations:
                 amount=-500.00,
                 description='Rent',
                 transaction_type='debit',
-                category='casa'
+                category='servicos'
             ),
             Transaction(
                 bank_name='TEST_BANK',
@@ -146,7 +146,7 @@ class TestFinancialCalculations:
         assert summary['total_income'] == 3000.00
         assert summary['total_expenses'] == 700.50
         assert summary['net_income'] == 2299.50
-        assert summary['expense_by_category']['casa'] == 500.00
+        assert summary['expense_by_category']['servicos'] == 500.00
         assert summary['expense_by_category']['alimentacao'] == 200.50
     
     def test_reconciliation_matching_accuracy(self, reconciliation_service):
@@ -178,7 +178,7 @@ class TestFinancialCalculations:
                 amount=-500.00,
                 description='Aluguel escritório',
                 transaction_type='expense',
-                category='casa'
+                category='servicos'
             ),
             CompanyFinancial(
                 date=date(2024, 1, 16),
@@ -480,7 +480,7 @@ class TestBusinessRuleEnforcement:
             {
                 'description': 'PAGAMENTO ALUGUEL',
                 'amount': -1200.00,
-                'expected_category': 'casa'
+                'expected_category': 'servicos'
             },
             # Income
             {

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Unit tests for AIService.
 
 Tests cover:
@@ -40,7 +40,7 @@ class TestAIService:
         
         expected_categories = [
             'alimentacao', 'transporte', 'saude', 'educacao', 'lazer',
-            'casa', 'vestuario', 'investimento', 'transferencia', 'saque',
+            'servicos', 'multa', 'vestuario', 'investimento', 'transferencia', 'saque',
             'salario', 'outros'
         ]
         
@@ -54,12 +54,13 @@ class TestAIService:
         ("FARMACIA DROGASIL", "saude"),
         ("ESCOLA OBJETIVO", "educacao"),
         ("CINEMA MULTIPLEX", "lazer"),
-        ("CONTA DE LUZ", "casa"),
+        ("CONTA DE LUZ", "servicos"),
         ("LOJA RENNER", "vestuario"),
         ("APLICACAO CDB", "investimento"),
         ("TED TRANSFERENCIA", "transferencia"),
         ("SAQUE CAIXA", "saque"),
         ("SALARIO EMPRESA", "salario"),
+        ("MULTA PARCELAMENTO", "multa"),
         ("TRANSACAO DESCONHECIDA", "outros")
     ])
     def test_categorize_transaction(self, ai_service, description, expected_category):
@@ -417,7 +418,7 @@ class TestAIService:
         # Should fall back to basic insights
         result = ai_service.generate_ai_insights(transactions)
         assert isinstance(result, str)
-        assert "temporariamente indisponível" in result
+        assert "temporariamente indisponÃ­vel" in result
     
     def test_create_insights_prompt(self, ai_service):
         """Test insights prompt creation."""
@@ -441,7 +442,7 @@ class TestAIService:
         assert '3000.00' in result  # total_credits
         assert '1500.00' in result  # total_debits
         assert 'alimentacao' in result
-        assert 'português' in result
+        assert 'portuguÃªs' in result
     
     def test_generate_fallback_insights(self, ai_service):
         """Test fallback insights generation."""
@@ -449,8 +450,8 @@ class TestAIService:
         
         assert isinstance(result, str)
         assert '50' in result
-        assert 'temporariamente indisponível' in result
-        assert 'Recomendações gerais' in result
+        assert 'temporariamente indisponÃ­vel' in result
+        assert 'RecomendaÃ§Ãµes gerais' in result
     
     def test_train_custom_model_success(self, ai_service):
         """Test custom model training with valid data."""
@@ -490,7 +491,7 @@ class TestAIService:
         training_data = [
             {'description': 'Valid transaction', 'category': 'alimentacao'},
             {'description': '', 'category': 'transporte'},  # Empty description
-            {'description': 'AB', 'category': 'casa'},  # Too short
+            {'description': 'AB', 'category': 'servicos'},  # Too short
             {'description': 'Another valid transaction', 'category': 'saude'},
             {'category': 'lazer'}  # Missing description
         ]
@@ -700,7 +701,7 @@ class TestAIServiceErrorHandling:
         # Should fall back to basic insights
         result = ai_service.generate_ai_insights(transactions)
         assert isinstance(result, str)
-        assert "temporariamente indisponível" in result
+        assert "temporariamente indisponÃ­vel" in result
     
     @patch('openai.OpenAI')
     def test_ai_service_timeout(self, mock_openai_class, ai_service):
@@ -719,7 +720,7 @@ class TestAIServiceErrorHandling:
         # Should fall back to basic insights
         result = ai_service.generate_ai_insights(transactions)
         assert isinstance(result, str)
-        assert "temporariamente indisponível" in result
+        assert "temporariamente indisponÃ­vel" in result
 
 
 class TestAIServicePerformance:
@@ -757,3 +758,4 @@ class TestAIServicePerformance:
         assert processing_time < 30  # 30 seconds max for 1000 transactions
         assert len(result) == len(large_transaction_dataset)
         assert all('is_anomaly' in t for t in result)
+
