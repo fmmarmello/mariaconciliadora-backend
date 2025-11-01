@@ -2,6 +2,7 @@
 # NOTE: Preserve UTF-8 encoding; this module includes Portuguese text.
 import os
 import json
+import warnings
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -1156,68 +1157,118 @@ class AIService:
     @with_timeout(60)  # 1 minute timeout for predictions
     def predict_financial_trends(self, historical_data: List[Dict], periods: int = 12) -> Dict[str, Any]:
         """
-        Prevê tendências financeiras com base em dados históricos
+        Preve tendencias financeiras com base em dados historicos.
         """
         if not historical_data:
             raise InsufficientDataError('financial trend prediction', 30, 0)
-        
+
         if len(historical_data) < 30:
             raise InsufficientDataError('financial trend prediction', 30, len(historical_data))
-        
+
         if periods <= 0 or periods > 24:
             raise ValidationError("Periods must be between 1 and 24")
-        
+
         try:
-            # Converte dados históricos para DataFrame
+            # Converte dados historicos para DataFrame
             df = pd.DataFrame(historical_data)
-            
+
             # Validate required columns
             required_columns = ['date', 'amount']
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
                 raise ValidationError(f"Missing required columns: {missing_columns}")
-            
+
             # Clean and validate data
             df = self._clean_historical_data(df)
-            
+
             if len(df) < 10:
                 raise InsufficientDataError('financial trend prediction', 10, len(df))
-            
+
             # Converte datas
             df['date'] = pd.to_datetime(df['date'])
             df = df.sort_values('date')
-            
-            # Prepara dados para predição (simplificada)
-            # Numa implementação real, isso usaria modelos de séries temporais
-            
-            # Calcula tendências básicas
-            total_income = df[df['amount'] > 0]['amount'].sum() if len(df[df['amount'] > 0]) > 0 else 0
-            total_expenses = abs(df[df['amount'] < 0]['amount'].sum()) if len(df[df['amount'] < 0]) > 0 else 0
+
+            # Prepara dados para previsao (simplificada)
+            # Numa implementacao real, isso usaria modelos de series temporais
+
+            # Calcula resumos agregados
+            total_income = float(df.loc[df['amount'] > 0, 'amount'].sum())
+            total_expenses = float(abs(df.loc[df['amount'] < 0, 'amount'].sum()))
             net_flow = total_income - total_expenses
-            
-            # Calcula médias mensais
-            df['month'] = df['date'].dt.to_period('M')
-            monthly_data = df.groupby('month')['amount'].sum().reset_index()
-            avg_monthly_income = monthly_data[monthly_data['amount'] > 0]['amount'].mean() if len(monthly_data[monthly_data['amount'] > 0]) > 0 else 0
-            avg_monthly_expenses = abs(monthly_data[monthly_data['amount'] < 0]['amount'].mean()) if len(monthly_data[monthly_data['amount'] < 0]) > 0 else 0
-            
-            # Previsões para próximos períodos (simplificadas)
+
+            # Cria series mensais para detectar tendencia
+            df['month'] = df['date'].dt.to_period('M').dt.to_timestamp()
+            timeline_start = df['month'].min()
+            timeline_end = df['month'].max()
+            all_months = pd.date_range(timeline_start, timeline_end, freq='MS')
+            if len(all_months) == 0:
+                all_months = pd.DatetimeIndex([timeline_start])
+
+            income_series = (
+                df[df['amount'] > 0]
+                .groupby('month')['amount']
+                .sum()
+                .reindex(all_months, fill_value=0.0)
+            )
+            expense_series = (
+                df[df['amount'] < 0]
+                .groupby('month')['amount']
+                .sum()
+                .abs()
+                .reindex(all_months, fill_value=0.0)
+            )
+
+            def _compute_trend(series: pd.Series):
+                if len(series) == 0:
+                    return 0.0, 0.0
+                if len(series) == 1:
+                    return 0.0, float(series.iloc[0])
+                if np.isclose(series.std(), 0):
+                    return 0.0, float(series.iloc[-1])
+
+                x = np.arange(len(series), dtype=float)
+                try:
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings('ignore', category=np.RankWarning)
+                        slope, intercept = np.polyfit(x, series.values, 1)
+                except Exception:
+                    return 0.0, float(series.iloc[-1])
+
+                return float(slope), float(intercept)
+
+            income_slope, income_intercept = _compute_trend(income_series)
+            expense_slope, expense_intercept = _compute_trend(expense_series)
+
+            period_months = len(all_months)
+            avg_monthly_income = float(income_series.mean()) if period_months > 0 else 0.0
+            avg_monthly_expenses = float(expense_series.mean()) if period_months > 0 else 0.0
+
+            last_month = all_months[-1]
             predictions = []
-            current_date = df['date'].max() if len(df) > 0 else pd.Timestamp.now()
-            
+
             for i in range(1, periods + 1):
-                future_date = current_date + pd.DateOffset(months=i)
-                predicted_income = avg_monthly_income if not pd.isna(avg_monthly_income) else total_income / len(monthly_data) if len(monthly_data) > 0 else 0
-                predicted_expenses = avg_monthly_expenses if not pd.isna(avg_monthly_expenses) else total_expenses / len(monthly_data) if len(monthly_data) > 0 else 0
+                future_index = period_months + i - 1
+                raw_income = income_slope * future_index + income_intercept
+                raw_expenses = expense_slope * future_index + expense_intercept
+
+                if np.isnan(raw_income):
+                    raw_income = avg_monthly_income
+                if np.isnan(raw_expenses):
+                    raw_expenses = avg_monthly_expenses
+
+                predicted_income = max(0.0, float(raw_income))
+                predicted_expenses = max(0.0, float(raw_expenses))
                 predicted_net_flow = predicted_income - predicted_expenses
-                
+
+                future_date = last_month + pd.DateOffset(months=i)
+
                 predictions.append({
                     'date': future_date.strftime('%Y-%m'),
                     'predicted_income': round(predicted_income, 2),
                     'predicted_expenses': round(predicted_expenses, 2),
                     'predicted_net_flow': round(predicted_net_flow, 2)
                 })
-            
+
             return {
                 'success': True,
                 'data': {
@@ -1225,12 +1276,11 @@ class AIService:
                         'total_income': round(total_income, 2),
                         'total_expenses': round(total_expenses, 2),
                         'net_flow': round(net_flow, 2),
-                        'period_months': len(monthly_data)
+                        'period_months': period_months
                     },
                     'predictions': predictions
                 }
             }
-            
         except Exception as e:
             if isinstance(e, (InsufficientDataError, ValidationError)):
                 raise

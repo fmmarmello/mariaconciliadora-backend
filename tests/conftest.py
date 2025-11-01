@@ -19,8 +19,10 @@ from typing import Dict, List, Any, Generator
 import pandas as pd
 from faker import Faker
 
-# Add src to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+# Ensure project root is on the import path for src package resolution
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 # Set test environment variables
 os.environ['FLASK_ENV'] = 'testing'
