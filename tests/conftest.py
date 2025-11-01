@@ -153,7 +153,7 @@ def sample_company_financial_data():
         'date': fake.date_between(start_date='-1y', end_date='today'),
         'description': fake.sentence(nb_words=4),
         'amount': round(fake.pyfloat(left_digits=4, right_digits=2), 2),
-        'category': fake.random_element(['alimentacao', 'transporte', 'servicos', 'multa', 'saude']),
+        'category': fake.random_element(['alimentacao', 'transporte', 'servicos', 'Juros/Multa', 'saude']),
         'cost_center': fake.random_element(['TI', 'RH', 'Vendas', 'Marketing']),
         'department': fake.random_element(['Administrativo', 'Operacional', 'Comercial']),
         'project': fake.random_element(['Projeto A', 'Projeto B', 'Projeto C']),
@@ -385,7 +385,7 @@ def large_transaction_dataset():
             'amount': round(fake.pyfloat(left_digits=4, right_digits=2), 2),
             'description': fake.sentence(nb_words=6),
             'transaction_type': fake.random_element(['credit', 'debit']),
-            'category': fake.random_element(['alimentacao', 'transporte', 'servicos', 'multa', 'saude', 'lazer'])
+            'category': fake.random_element(['alimentacao', 'transporte', 'servicos', 'Juros/Multa', 'saude', 'lazer'])
         })
     return transactions
 

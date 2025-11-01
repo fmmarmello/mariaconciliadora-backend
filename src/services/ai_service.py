@@ -40,34 +40,34 @@ class AIService:
         self.categories = {
             # Existentes
             'alimentacao': ['mercado', 'supermercado', 'padaria', 'restaurante', 'lanchonete', 'delivery', 'ifood', 'uber eats', 'rappi'],
-            'transporte': ['uber', '99', '99pop', 'taxi', 'combustivel', 'posto', 'onibus', 'metro', 'estacionamento', 'pedagio', 'pedágio'],
-            'saude': ['farmacia', 'hospital', 'clinica', 'clínica', 'medico', 'médico', 'dentista', 'laboratorio', 'laboratório', 'exame'],
+            'transporte': ['uber', '99', '99pop', 'taxi', 'combustivel', 'posto', 'onibus', 'metro', 'estacionamento', 'pedagio', 'pedagio'],
+            'saude': ['farmacia', 'hospital', 'clinica', 'clinica', 'medico', 'medico', 'dentista', 'laboratorio', 'laboratorio', 'exame'],
             'educacao': ['escola', 'faculdade', 'curso', 'livro', 'material escolar', 'ead', 'treinamento'],
             'lazer': ['cinema', 'teatro', 'show', 'viagem', 'hotel', 'netflix', 'spotify', 'lazer'],
-            'servicos': ['aluguel', 'condominio', 'luz', 'energia', 'agua', 'água', 'gas', 'gás', 'internet', 'telefone', 'claro', 'vivo', 'tim', 'oi'],
+            'servicos': ['aluguel', 'condominio', 'luz', 'energia', 'agua', 'agua encanada', 'gas', 'internet', 'telefone', 'claro', 'vivo', 'tim', 'oi'],
             'vestuario': ['roupa', 'sapato', 'loja', 'shopping', 'uniforme'],
-            'investimento': ['aplicacao', 'aplicação', 'poupanca', 'poupança', 'cdb', 'tesouro', 'acao', 'ação'],
-            'multa': ['multa parcelamento', 'parcelamento multa', 'multa', 'multas', 'juros de mora', 'juros mora', 'encargo por atraso', 'encargos de atraso', 'encargo mora'],
-            'transferencia': ['ted', 'doc', 'pix', 'transferencia', 'transferência', 'boleto'],
-            'saque': ['saque', 'caixa eletronico', 'caixa eletrônico'],
-            'salario': ['salario', 'salário', 'ordenado', 'pagamento'],
+            'investimento': ['aplicacao', 'aplicacao financeira', 'poupanca', 'cdb', 'tesouro', 'acao', 'investimento'],
+            'Juros/Multa': ['multa parcelamento', 'parcelamento multa', 'multa', 'multas', 'juros de mora', 'juros mora', 'juros multa', 'encargo por atraso', 'encargos de atraso', 'encargo mora'],
+            'transferencia': ['ted', 'doc', 'pix', 'transferencia', 'transferencia enviada', 'boleto'],
+            'saque': ['saque', 'caixa eletronico', 'caixa eletronico'],
+            'salario': ['salario', 'salario', 'ordenado', 'pagamento'],
 
             # Novas categorias orientadas a PMEs
-            'impostos': ['darf', 'das', 'simples', 'mei', 'iss', 'icms', 'irpj', 'csll', 'pis', 'cofins', 'gps', 'inss', 'sefaz', 'prefeitura', 'taxa', 'alvara', 'alvará', 'guia'],
-            'contabilidade': ['contabilidade', 'contador', 'escritorio contabil', 'escritório contábil', 'honorarios contabeis', 'honorários contábeis', 'balanco', 'balanço'],
-            'folha_pagamento': ['folha', 'pro labore', 'prolabore', 'pró-labore', 'fgts', 'vale refeicao', 'vale refeição', 'vr', 'vale alimentacao', 'vale alimentação', 'va', 'vale transporte', 'vt', '13o', '13º', 'ferias', 'férias'],
-            'fornecedores': ['fornecedor', 'fornecedores', 'compra de materiais', 'insumos', 'materiais', 'mercadoria', 'estoque', 'materia-prima', 'matéria-prima', 'compra', 'nfe', 'nf-e', 'nota fiscal de compra'],
+            'impostos': ['darf', 'das', 'simples', 'mei', 'iss', 'icms', 'irpj', 'csll', 'pis', 'cofins', 'gps', 'inss', 'sefaz', 'prefeitura', 'taxa', 'alvara', 'guia'],
+            'contabilidade': ['contabilidade', 'contador', 'escritorio contabil', 'escritorio contabilidade', 'honorarios contabeis', 'balanco'],
+            'folha_pagamento': ['folha', 'pro labore', 'prolabore', 'folha pagamento', 'fgts', 'vale refeicao', 'vale alimentacao', 'vale transporte', '13o', 'ferias'],
+            'fornecedores': ['fornecedor', 'fornecedores', 'compra de materiais', 'insumos', 'materiais', 'mercadoria', 'estoque', 'materia-prima', 'compra', 'nfe', 'nf-e', 'nota fiscal de compra'],
             'logistica': ['frete', 'transportadora', 'correios', 'sedex', 'pac', 'jadlog', 'loggi', 'envio', 'entrega', 'motoboy', 'coleta', 'despacho'],
-            'marketing': ['marketing', 'publicidade', 'anuncio', 'anúncio', 'ads', 'facebook ads', 'google ads', 'meta ads', 'instagram ads', 'linkedin ads', 'campanha', 'impulsionamento'],
-            'tarifas_bancarias': ['tarifa', 'cesta de servicos', 'cesta de serviços', 'manutencao de conta', 'manutenção de conta', 'taxa bancaria', 'taxa bancária', 'pix tarifa', 'ted tarifa', 'doc tarifa', 'boleto tarifa'],
-            'assinaturas_saas': ['assinatura', 'subscription', 'mensalidade', 'plano', 'licenca', 'licença', 'saas', 'software', 'ferramenta', 'google workspace', 'microsoft 365', 'office 365', 'notion', 'slack', 'zoom', 'github', 'gitlab'],
-            'juridico': ['juridico', 'jurídico', 'advogado', 'escritorio advocacia', 'escritório advocacia', 'honorarios', 'honorários'],
-            'manutencao': ['manutencao', 'manutenção', 'reparo', 'conserto', 'assistencia tecnica', 'assistência técnica', 'suporte tecnico', 'suporte técnico', 'calibracao', 'calibração'],
-            'ti': ['aws', 'amazon web services', 'azure', 'gcp', 'google cloud', 'cloudflare', 'hospedagem', 'dominio', 'domínio', 'registro br', 'digitalocean', 'linode', 'vultr', 'heroku', 'railway', 'servidor', 'dns'],
-            'seguros': ['seguro', 'apolice', 'apólice', 'premio', 'prêmio', 'seguradora', 'porto seguro', 'sulamerica', 'sulamérica', 'bradesco seguros'],
-            'equipamentos': ['equipamento', 'impressora', 'computador', 'laptop', 'notebook', 'teclado', 'mouse', 'monitor', 'hardware', 'periferico', 'periférico', 'celular', 'smartphone', 'tablet'],
+            'marketing': ['marketing', 'publicidade', 'anuncio', 'anuncios', 'ads', 'facebook ads', 'google ads', 'meta ads', 'instagram ads', 'linkedin ads', 'campanha', 'impulsionamento'],
+            'tarifas_bancarias': ['tarifa', 'cesta de servicos', 'manutencao de conta', 'taxa bancaria', 'taxa banco', 'pix tarifa', 'ted tarifa', 'doc tarifa', 'boleto tarifa'],
+            'assinaturas_saas': ['assinatura', 'subscription', 'mensalidade', 'plano', 'licenca', 'saas', 'software', 'ferramenta', 'google workspace', 'microsoft 365', 'office 365', 'notion', 'slack', 'zoom', 'github', 'gitlab'],
+            'juridico': ['juridico', 'advogado', 'escritorio advocacia', 'honorarios juridicos'],
+            'manutencao': ['manutencao', 'reparo', 'conserto', 'assistencia tecnica', 'suporte tecnico', 'calibracao'],
+            'ti': ['aws', 'amazon web services', 'azure', 'gcp', 'google cloud', 'cloudflare', 'hospedagem', 'dominio', 'registro br', 'digitalocean', 'linode', 'vultr', 'heroku', 'railway', 'servidor', 'dns'],
+            'seguros': ['seguro', 'apolice', 'premio seguro', 'seguradora', 'porto seguro', 'sulamerica', 'bradesco seguros'],
+            'equipamentos': ['equipamento', 'impressora', 'computador', 'laptop', 'notebook', 'teclado', 'mouse', 'monitor', 'hardware', 'periferico', 'celular', 'smartphone', 'tablet'],
             'limpeza': ['limpeza', 'higiene', 'desinfetante', 'material de limpeza'],
-            'escritorio': ['papelaria', 'cartucho', 'toner', 'caneta', 'grampeador', 'pastas', 'envelope', 'impressoes', 'impressoes', 'xerox', 'copias', 'cópias'],
+            'escritorio': ['papelaria', 'cartucho', 'toner', 'caneta', 'grampeador', 'pastas', 'envelope', 'impressoes', 'xerox', 'copias'],
 
             'outros': []
         }
@@ -84,7 +84,7 @@ class AIService:
             normalize(name) for name in (
                 'tarifas bancarias', 'impostos', 'fornecedores', 'marketing', 'assinaturas saas',
                 'contabilidade', 'juridico', 'manutencao', 'manutenção', 'ti', 'folha_pagamento',
-                'folha pagamento', 'lazer', 'servicos', 'saude', 'transporte', 'multa',
+                'folha pagamento', 'lazer', 'servicos', 'saude', 'transporte', 'Juros/Multa',
                 'educacao', 'vestuario', 'logistica', 'seguros', 'equipamentos', 'limpeza',
                 'escritorio', 'alimentacao'
             )
@@ -169,9 +169,9 @@ class AIService:
         for category, keywords in self.categories.items():
             for keyword in keywords:
                 if self._normalize_text(keyword) in description_lower:
-                    return category
+                    return self._canonicalize_category(category)
         
-        return 'outros'
+        return self._canonicalize_category('outros')
 
     def _rule_based_override(self, description: str) -> Optional[str]:
         """Return a high-confidence rule-based category for override decisions.
@@ -191,14 +191,31 @@ class AIService:
             ('seguros', ['seguro','apolice']),
             ('escritorio', ['papelaria','toner','cartucho','caneta']),
             ('equipamentos', ['impressora','computador','notebook','monitor','teclado','mouse']),
-            ('multa', ['multa parcelamento','multa','multas','juros de mora','juros mora','encargo por atraso','encargos por atraso']),
+            ('Juros/Multa', ['multa parcelamento','multa','multas','juros de mora','juros mora','juros multa','encargo por atraso','encargos por atraso']),
             ('folha_pagamento', ['prolabore','fgts','13o','13']),
         ]
         for cat, kws in checks:
             for kw in kws:
                 if kw in text:
-                    return cat
+                    return self._canonicalize_category(cat)
         return None
+
+    def _canonicalize_category(self, category: Optional[str]) -> Optional[str]:
+        """Normalize legacy or alias category names to canonical values."""
+        if not category:
+            return category
+
+        normalized = self._normalize_text(category)
+        alias_map = {
+            'multa': 'Juros/Multa',
+            'juros/multa': 'Juros/Multa',
+            'juros / multa': 'Juros/Multa',
+        }
+
+        for alias, target in alias_map.items():
+            if normalized == self._normalize_text(alias):
+                return target
+        return category
 
     def _adjust_category_by_amount(self, transaction: Dict[str, Any]) -> None:
         """
@@ -207,7 +224,9 @@ class AIService:
         and vice-versa, falling back to rule-based classification when needed.
         """
         amount = transaction.get('amount')
-        category = transaction.get('category')
+        category = self._canonicalize_category(transaction.get('category'))
+        if category != transaction.get('category'):
+            transaction['category'] = category
         if amount is None or category is None:
             return
 

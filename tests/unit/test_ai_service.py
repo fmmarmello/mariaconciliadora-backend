@@ -40,7 +40,7 @@ class TestAIService:
         
         expected_categories = [
             'alimentacao', 'transporte', 'saude', 'educacao', 'lazer',
-            'servicos', 'multa', 'vestuario', 'investimento', 'transferencia', 'saque',
+            'servicos', 'Juros/Multa', 'vestuario', 'investimento', 'transferencia', 'saque',
             'salario', 'outros'
         ]
         
@@ -60,7 +60,7 @@ class TestAIService:
         ("TED TRANSFERENCIA", "transferencia"),
         ("SAQUE CAIXA", "saque"),
         ("SALARIO EMPRESA", "salario"),
-        ("MULTA PARCELAMENTO", "multa"),
+        ("MULTA PARCELAMENTO", "Juros/Multa"),
         ("TRANSACAO DESCONHECIDA", "outros")
     ])
     def test_categorize_transaction(self, ai_service, description, expected_category):

@@ -523,7 +523,7 @@ class XLSXProcessor:
         lbl = ''.join(ch for ch in unicodedata.normalize('NFD', lbl) if unicodedata.category(ch) != 'Mn')
         expense_terms = {
             'despesa', 'expense', 'debito', 'retirada socio', 'impostos / tributos', 'impostos', 'tributos',
-            'tarifas bancarias', 'juros / multa', 'juros', 'multa', 'seguro', 'emprestimo', 'pagamento', 'compra',
+            'tarifas bancarias', 'Juros/Multa', 'juros', 'multa', 'seguro', 'emprestimo', 'pagamento', 'compra',
             'fatura', 'taxa', 'tarifa', 'saque'
         }
         income_terms = {

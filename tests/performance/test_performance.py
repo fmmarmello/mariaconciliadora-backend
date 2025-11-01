@@ -81,7 +81,7 @@ class TestFileProcessingPerformance:
                 'description': f'Large dataset entry {i}',
                 'valor': -100.0 - (i % 1000),
                 'tipo': 'despesa' if i % 2 == 0 else 'receita',
-                'categoria': ['alimentacao', 'transporte', 'servicos', 'multa', 'saude'][i % 5]
+                'categoria': ['alimentacao', 'transporte', 'servicos', 'Juros/Multa', 'saude'][i % 5]
             })
         
         df = pd.DataFrame(large_data)
@@ -241,7 +241,7 @@ class TestDatabasePerformance:
                 amount=-100.0 - (i % 1000),
                 description=f'Bulk test transaction {i}',
                 transaction_type='debit',
-                category=['alimentacao', 'transporte', 'servicos', 'multa', 'saude'][i % 5]
+                category=['alimentacao', 'transporte', 'servicos', 'Juros/Multa', 'saude'][i % 5]
             )
             transactions.append(transaction)
         
